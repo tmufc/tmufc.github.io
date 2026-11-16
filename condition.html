@@ -184,27 +184,28 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--sel)}
 .gh{font-size:12px;color:var(--sub);margin:12px 0 6px}
 .empty{padding:18px;text-align:center;color:var(--sub);font-size:13px}
 @media (min-width:700px){.todo{grid-template-columns:repeat(4,1fr)}.pick{grid-template-columns:repeat(3,1fr)}}
-</style></head><body>
-<header><div class="wrap"><div class="hrow"><h1>TMU FC App</h1><span class="trial">コンディション試作版</span></div>
+</style></head><body data-page="cond">
+<header><div class="wrap"><div class="hrow"><h1>TMU FC App</h1></div>
 <nav class="apptabs" aria-label="アプリの切り替え"><a href="./#pos">ポジション</a><a href="./#game">メンバー選考</a><span class="on" aria-current="page">コンディション</span></nav>
 <div class="role" role="tablist" aria-label="表示の切り替え"><button data-role="player" role="tab">選手として</button><button data-role="staff" role="tab">スタッフとして</button></div><div id="who"></div></div></header>
 <main class="wrap" id="main"></main>
 <nav class="nav" id="nav" aria-label="メニュー"><div class="wrap" id="navin"></div></nav>
 <script>
-(function(){
-const ROSTER_SEED=[{"id": "n15", "name": "上坂 緩大", "grade": 3}, {"id": "n9", "name": "中崎 琉斗", "grade": 3}, {"id": "n12", "name": "中田 幹登", "grade": 3}, {"id": "n54", "name": "寳理 永翔", "grade": 3}, {"id": "n18", "name": "後藤 志郎", "grade": 3}, {"id": "n11", "name": "杉崎 志信", "grade": 3}, {"id": "n44", "name": "深津 啓一郎", "grade": 3}, {"id": "n7", "name": "程塚 駿太", "grade": 3}, {"id": "n22", "name": "若山 璃皇", "grade": 3}, {"id": "n71", "name": "西川 大翔", "grade": 3}, {"id": "n99", "name": "中田 涼介", "grade": 2}, {"id": "n26", "name": "五島 凛也", "grade": 2}, {"id": "n30", "name": "加賀 獅音", "grade": 2}, {"id": "n24", "name": "坂井 玲仁", "grade": 2}, {"id": "a02", "name": "大汐 徹平", "grade": 2}, {"id": "a03", "name": "小林 巧実", "grade": 2}, {"id": "n92", "name": "山田 琉空", "grade": 2}, {"id": "n84", "name": "林 陸斗", "grade": 2}, {"id": "n21", "name": "森山 太稀", "grade": 2}, {"id": "n25", "name": "橋本 岳空", "grade": 2}, {"id": "n47", "name": "渡辺 康太", "grade": 2}, {"id": "n27", "name": "西田 有之介", "grade": 2}, {"id": "a01", "name": "金山 範諏", "grade": 2}, {"id": "n23", "name": "須藤 星空", "grade": 2}, {"id": "a06", "name": "佐々木 蒼太", "grade": 1}, {"id": "a08", "name": "佐藤 和樹", "grade": 1}, {"id": "n31", "name": "勝野 幹太", "grade": 1}, {"id": "n19", "name": "堤崎 陽琉", "grade": 1}, {"id": "n29", "name": "太田 金治", "grade": 1}, {"id": "n20", "name": "小柳 走", "grade": 1}, {"id": "a10", "name": "新田 桜生", "grade": 1}, {"id": "n33", "name": "朝見 元太", "grade": 1}, {"id": "a07", "name": "柴田 尊", "grade": 1}, {"id": "a04", "name": "秋山 奏翔", "grade": 1}, {"id": "n2", "name": "竹谷 晄希", "grade": 1}, {"id": "a09", "name": "織田 唯楽", "grade": 1}, {"id": "n61", "name": "荒瀬 智文", "grade": 1}, {"id": "n17", "name": "飯塚 惇", "grade": 1}, {"id": "n97", "name": "高澤 陽介", "grade": 1}];
+window.__COND_MAIN=(function(CTX){
+const ROSTER_SEED=[];
 // ---------- storage ----------
 const K='tmu-cond-data',KP='tmu-pos-data',KU='tmu-cond-ui';
 let mem={};
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return mem[k]??null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){mem[k]=v}}};
 const jget=(k,d)=>{try{return JSON.parse(ls.get(k))??d}catch(e){return d}};
-let DB=jget(K,null);
+let DB=CTX.db;
 const pos=jget(KP,null);
-const ROSTER=(pos&&Array.isArray(pos.players)&&pos.players.length?pos.players.filter(p=>!p.out).map(p=>({id:p.id,name:p.name,grade:p.grade||0,team:p.team||'',p1:p.p1||''})):ROSTER_SEED.map(p=>({...p,team:'',p1:''}))).sort((a,b)=>(b.grade-a.grade)||a.name.localeCompare(b.name,'ja'));
+const ROSTER=CTX.roster.map(p=>({id:p.id,name:p.name,grade:p.grade||0,team:p.team||'',p1:p.p1||''})).sort((a,b)=>(b.grade-a.grade)||a.name.localeCompare(b.name,'ja'));
 const byId=id=>ROSTER.find(p=>p.id===id);
 const SELFK=['筋トレ','ランニング','ボール・技術','ケア','リハビリ','その他'];
 let UI=jget(KU,{role:'player',me:'',tab:'home',stab:'today'});
-function save(){ls.set(K,JSON.stringify(DB));syncPos();}
+UI.role=CTX.role==='player'?'player':'staff';if(CTX.role==='player')UI.me=CTX.pid;
+function save(){CTX.save();syncPos();}
 function saveUI(){ls.set(KU,JSON.stringify(UI));}
 // ---------- dates ----------
 const pad=n=>String(n).padStart(2,'0');
@@ -239,13 +240,11 @@ function makeSample(){
   if(db.injuries[0])db.injuries[0].events=[{id:'e1',date:ds(addD(TODAY,3)),text:'整形外科で再評価'}];
   return db;
 }
-if(!DB){DB=makeSample();save();}
+
 if(!DB.self)DB.self=[];DB.injuries.forEach(fixInj);
 DB.self.forEach(x=>{x.kinds=x.kinds.map(k=>k==='走り'?'ランニング':k==='ストレッチ・ケア'?'ケア':k);if(!x.likes)x.likes=[];});
 // injuries -> position app (ケガ中の選手をメンバー選考から外す)
-function syncPos(){const p=jget(KP,null);if(!p||!Array.isArray(p.players))return;let ch=false;
-  p.players.forEach(pl=>{const on=DB.injuries.some(j=>j.active&&!j.sample&&j.pid===pl.id&&j.stage<3);if(!!pl.inj!==on&&(on||pl.injFromCond)){pl.inj=on;pl.injFromCond=on;ch=true;}});
-  if(ch)ls.set(KP,JSON.stringify(p));}
+function syncPos(){if(CTX.role==='player')return;const m={};ROSTER.forEach(p=>m[p.id]=DB.injuries.some(j=>j.active&&!j.sample&&j.pid===p.id&&j.stage<3));CTX.syncInj(m);}
 // ---------- helpers ----------
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -307,7 +306,7 @@ let stack=[];
 function render(){
   document.querySelectorAll('[data-role]').forEach(b=>{b.classList.toggle('on',b.dataset.role===UI.role);b.setAttribute('aria-selected',b.dataset.role===UI.role);});
   const me=byId(UI.me);
-  $('#who').innerHTML=UI.role==='player'?(me?`<div class="who">ログイン中：<b>${esc(me.name)}</b><button id="chgme">切り替え</button></div>`:'<div class="who">試作版のため、名前を選んでログインの代わりにします</div>'):'<div class="who">監督・学生コーチ・トレーナーの画面</div>';
+  $('#who').innerHTML=UI.role==='player'?(me?`<div class="who">ログイン中：<b>${esc(me.name)}</b></div>`:'<div class="who">試作版のため、名前を選んでログインの代わりにします</div>'):'<div class="who">コンディション管理（スタッフ）</div>';
   const cm=$('#chgme');if(cm)cm.onclick=()=>{UI.me='';stack=[];saveUI();render();};
   let html,navs;
   if(stack.length)html=stack[stack.length-1]();
@@ -335,6 +334,7 @@ function bind(){
   document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{UI.stab=b.dataset.goto;stack=[];saveUI();render();window.scrollTo(0,0);});
   if(window.__bind){const f=window.__bind;window.__bind=null;f();}
 }
+document.querySelector('.role').style.display='none';if(CTX.role==='player')document.querySelector('.apptabs').style.display='none';
 document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{UI.role=b.dataset.role;stack=[];saveUI();render();window.scrollTo(0,0);});
 // ================= PLAYER =================
 function pickMe(){const g={};ROSTER.forEach(p=>(g[p.grade]=g[p.grade]||[]).push(p));
@@ -408,7 +408,7 @@ function formView(){const me=byId(UI.me),k=F._k;let body='',title='';
     if(F.pain_s===undefined&&F.pain!=null)F.pain_s=F.pain?'ある':'ない';}
   if(k==='pm'){title='練習後のきつさ';body=`<div class="q"><div class="ql">今日の練習は、全体としてどのくらいきつかったですか<small>0〜10</small></div>${scale('rpe',0,10,'まったく楽','限界','rpe')}<div class="rpedesc">${F.rpe!=null?RPED[F.rpe]:''}</div></div>
 <div class="q"><div class="ql">練習時間<small>分</small></div>${choice('min_s',['60','90','100','110','120','150'])}</div>
-<div class="q"><div class="ql">ひと言<small>任意</small></div><textarea class="in" id="f_note" placeholder="気になったことがあれば">${esc(F.note||'')}</textarea></div>`;if(F.min_s===undefined)F.min_s=String(F.min||120);}
+<div class="q"><div class="ql">振り返り・反省<small>任意</small></div><textarea class="in" id="f_note" placeholder="例：前からのプレスで2人目の寄せが遅れた。次は声をかけて早めに動く">${esc(F.note||'')}</textarea></div>`;if(F.min_s===undefined)F.min_s=String(F.min||120);}
   if(k==='pain'){title='痛み・ケガの報告';body=`<div class="q"><div class="ql">部位</div><div class="parts">${PARTS.map(p=>`<button type="button" data-ch="part" data-v="${p}" class="${F.part===p?'on':''}">${p}</button>`).join('')}</div></div>
 <div class="q"><div class="ql">左右</div>${choice('side',['左','右','両方','なし'])}</div>
 <div class="q"><div class="ql">痛みの程度</div>${scale('level',1,5,'少し気になる','とても痛い')}</div>
@@ -444,11 +444,11 @@ function submitForm(){keepText();const me=byId(UI.me),k=F._k;const err=t=>{$('#f
     toast('朝のチェックを送信しました');return home();}
   if(k==='pm'){if(F.rpe==null)return err('きつさを選んでください。');setEnt(T,me.id,'pm',{rpe:F.rpe,min:+F.min_s||120,note:F.note||''});save();toast('送信しました。おつかれさまでした');return home();}
   if(k==='pain'){const miss=[['part','部位'],['side','左右'],['level','痛みの程度'],['join','練習への参加']].filter(([x])=>!F[x]).map(x=>x[1]);if(miss.length)return err(`${miss.join('・')}を選んでください。`);
-    DB.reports.push({id:'r'+Date.now(),pid:me.id,date:T,at:hm,part:F.part,side:F.side,level:F.level,join:F.join,when:F.when||'',status:'new'});save();toast('トレーナーに報告しました');return home();}
+    DB.reports.push({id:'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),pid:me.id,date:T,at:hm,part:F.part,side:F.side,level:F.level,join:F.join,when:F.when||'',status:'new'});save();toast('トレーナーに報告しました');return home();}
   if(k==='self'){if(!F.kinds.length)return err('内容を選んでください。');if(F.rpe==null)return err('きつさを選んでください。');if(!F.date)return err('日付を入れてください。');
-    DB.self.push({id:'s'+Date.now(),pid:me.id,date:F.date,ts:Date.now(),kinds:F.kinds.slice(),min:F.min,rpe:F.rpe,note:F.note||'',shared:F.share==='共有する',likes:[]});save();toast(F.share==='共有する'?'記録してチームに共有しました':'自主トレを記録しました');return home();}
+    DB.self.push({id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),pid:me.id,date:F.date,ts:Date.now(),kinds:F.kinds.slice(),min:F.min,rpe:F.rpe,note:F.note||'',shared:F.share==='共有する',likes:[]});save();toast(F.share==='共有する'?'記録してチームに共有しました':'自主トレを記録しました');return home();}
   if(k==='abs'){if(!F.kind)return err('欠席・遅刻・早退のどれかを選んでください。');if(!F.reason)return err('理由を選んでください。');if(!F.date)return err('日付を入れてください。');
-    DB.absences=DB.absences.filter(a=>!(a.pid===me.id&&a.date===F.date));DB.absences.push({id:'a'+Date.now(),pid:me.id,date:F.date,kind:F.kind,reason:F.reason,note:F.note||''});save();toast('連絡しました');return home();}}
+    DB.absences=DB.absences.filter(a=>!(a.pid===me.id&&a.date===F.date));DB.absences.push({id:'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),pid:me.id,date:F.date,kind:F.kind,reason:F.reason,note:F.note||''});save();toast('連絡しました');return home();}}
 // ================= STAFF =================
 function sToday(){
   const filled=ROSTER.filter(p=>ent(T,p.id).am).length;const al=allAlerts();const red=new Set(al.filter(a=>a.lv==='red').map(a=>a.pid));const warnP=new Set(al.map(a=>a.pid));
@@ -463,8 +463,7 @@ ${newRep.length?`<h2>新しい痛みの報告<small>トレーナーが確認</sm
 <h2>今日の欠席・遅刻</h2><div class="card"><ul class="list">${abs.map(a=>{const p=byId(a.pid);return `<li class="tap" data-player="${a.pid}"><div class="m">${esc(p?p.name:'?')}<small>${a.kind}${a.note?'・'+esc(a.note):''}</small></div><span class="tag ${a.reason==='体調不良'||a.reason==='ケガ'?'t-warn':''}">${a.reason}</span></li>`;}).join('')}${DB.injuries.filter(j=>j.active&&j.stage<3).map(j=>{const p=byId(j.pid);return `<li class="tap" data-injury="${j.id}"><div class="m">${esc(p?p.name:'?')}<small>${esc(j.part)}・${STGD[j.stage]}</small></div><span class="tag ${j.stage<2?'t-red':'t-blue'}">ケガ（${STG[j.stage]}）</span></li>`;}).join('')||''}${abs.length||injN?'':'<li class="empty">いません</li>'}</ul></div>
 <h2>今朝の未入力<small>${un.length}人</small></h2><div class="card pad" style="font-size:14px">${un.length?un.map(p=>esc(p.name)).join('、'):'全員入力しました'}</div>
 <h2>チームの練習負荷<small>きつさ×時間の平均・昨日までの14日</small></h2><div class="card chart">${(()=>{const D=days(15).slice(0,14);const v=D.map(d=>{const xs=ROSTER.map(p=>load(p.id,d)).filter(x=>x>0);return xs.length?Math.round(xs.reduce((s,x)=>s+x,0)/xs.length):0;});const mx=Math.max(...v);return bars(v,{labels:D.map((d,i)=>i%2===1?md(d):''),hi:x=>x>=mx*.95&&x>0});})()}</div>
-<div class="acts"><button class="btn ghost sm" id="resetS">サンプルデータを入れ直す</button><button class="btn red sm" id="clearS">データをすべて消す</button></div>
-<p class="note">試作版のため、データはこの端末の中だけに保存されます。「選手として」で入力した内容は、すぐこの画面に反映されます。サンプルのケガは、メンバー選考には反映しません。</p>`;}
+<p class="note">選手の入力は、送信されるとすぐこの画面に反映されます。</p>`;}
 window.addEventListener('click',async e=>{if(e.target.id==='resetS'){if(!await ask('いまのデータを消して、サンプルデータを入れ直します。よろしいですか？'))return;DB=makeSample();save();render();toast('サンプルデータを入れました');}
   if(e.target.id==='clearS'){if(!await ask('入力されたデータをすべて消します。よろしいですか？'))return;DB={entries:{},reports:[],injuries:[],absences:[]};save();render();toast('データを消しました');}});
 function sList(){const f=UI.filter||'all';const al=allAlerts();const ap=new Set(al.map(a=>a.pid));
@@ -486,11 +485,12 @@ ${al.length?`<div class="card"><ul class="list">${al.map(a=>`<li><span class="al
 ${selfRec(pid,true)}
 <h2>ケガ</h2><div class="card"><ul class="list">${injs.map(j=>`<li class="tap" data-injury="${j.id}"><div class="m">${esc(j.part)}・${esc(j.what)}<small>${md(j.date)}〜</small></div><span class="tag ${!j.active?'':j.stage<2?'t-red':'t-blue'}">${j.active?STG[j.stage]:'終了'}</span><span class="go">›</span></li>`).join('')||'<li class="empty">記録はありません</li>'}</ul></div>
 ${reps.length?`<h2>痛みの報告</h2><div class="card"><ul class="list">${reps.map(r=>`<li class="tap" data-report="${r.id}"><div class="m">${r.side}${r.part}・程度${r.level}<small>${md(r.date)} ${r.at}・${esc(r.when)}</small></div><span class="tag ${r.status==='new'?'t-red':''}">${r.status==='new'?'未確認':r.status==='watch'?'様子見':'ケガ登録済み'}</span></li>`).join('')}</ul></div>`:''}
+${(()=>{const L=days(14).slice().reverse().map(d=>({d,x:ent(d,pid).pm})).filter(o=>o.x&&o.x.note);return L.length?`<h2>練習の振り返り（本人）</h2><div class="card"><ul class="list">${L.map(o=>`<li><div class="m">${esc(o.x.note)}<small>${mdw(o.d)}・きつさ${o.x.rpe}</small></div></li>`).join('')}</ul></div>`:'';})()}
 ${abs.length?`<h2>欠席・遅刻</h2><div class="card"><ul class="list">${abs.map(a=>`<li><div class="m">${mdw(a.date)} ${a.kind}<small>${a.reason}${a.note?'・'+esc(a.note):''}</small></div></li>`).join('')}</ul></div>`:''}`;}
 function sReport(id){const r=DB.reports.find(x=>x.id===id),p=byId(r.pid);const am=ent(r.date,r.pid).am;
   window.__bind=()=>{const ok=$('#rp_ok');if(ok)ok.onclick=()=>{const what=$('#rp_what').value.trim()||'痛み（詳細確認中）';const dts=[1,2,3].map(k=>$('#rp_d'+k).value||'');
       if(dts.some((d,i)=>d&&dts.slice(i+1).some(e=>e&&e<d))){$('#rp_err').textContent='段階の日付が前後しています。';return;}
-      const st=+$('#rp_s').value;const j=fixInj({id:'i'+Date.now(),pid:r.pid,part:r.part,side:r.side,what,date:r.date,dates:dts,stage:st,by:'トレーナー',active:true});for(let k=1;k<=st;k++)j.actual[k]=T;DB.injuries.unshift(j);r.status='injury';save();toast('ケガとして登録しました');stack=[];stack.push(()=>sInjury(j.id));render();window.scrollTo(0,0);};
+      const st=+$('#rp_s').value;const j=fixInj({id:'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),pid:r.pid,part:r.part,side:r.side,what,date:r.date,dates:dts,stage:st,by:'トレーナー',active:true});for(let k=1;k<=st;k++)j.actual[k]=T;DB.injuries.unshift(j);r.status='injury';save();toast('ケガとして登録しました');stack=[];stack.push(()=>sInjury(j.id));render();window.scrollTo(0,0);};
     const wt=$('#rp_watch');if(wt)wt.onclick=()=>{r.status='watch';save();toast('様子見にしました');back();};};
   return `<button class="back" data-back>‹ 戻る</button><h2 style="margin-top:4px">痛みの報告</h2>
 <div class="card pad"><div class="kv"><span>選手</span><span>${esc(p.name)}</span><span>部位</span><span>${r.side}・${r.part}</span><span>程度</span><span>${r.level} / 5</span><span>練習</span><span>${r.join}</span><span>状況</span><span>${esc(r.when)||'－'}</span><span>報告</span><span>${mdw(r.date)} ${r.at}</span>${am?`<span>今朝の体調</span><span>疲労${am.fat}・張り${am.sore}・睡眠${am.sleep}h</span>`:''}</div></div>
@@ -532,7 +532,7 @@ function sInjEdit(id){const j=fixInj(DB.injuries.find(x=>x.id===id)),p=byId(j.pi
     const redraw=()=>{$('#evs').innerHTML=evHtml();bindEv();};
     const bindEv=()=>{document.querySelectorAll('[data-evx]').forEach(b=>b.onclick=()=>{sync();evs.splice(+b.dataset.evx,1);redraw();});};
     bindEv();
-    $('#ev_add').onclick=()=>{sync();evs.push({id:'e'+Date.now(),date:T,text:''});redraw();};
+    $('#ev_add').onclick=()=>{sync();evs.push({id:'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),date:T,text:''});redraw();};
     $('#ie_ok').onclick=()=>{sync();const date=$('#ie_date').value;const dts=[1,2,3].map(k=>$('#ie_d'+k).value||'');
       if(!date)return $('#ie_err').textContent='受傷日を入れてください。';
       const all=[date,...dts];if(all.some((d,i)=>d&&all.slice(i+1).some(e=>e&&e<d)))return $('#ie_err').textContent='段階の日付が前後しています。';
@@ -544,6 +544,9 @@ function sInjEdit(id){const j=fixInj(DB.injuries.find(x=>x.id===id)),p=byId(j.pi
 ${[0,1,2,3].map(k=>`<h2>${STG[k]}<small>${STGD[k]}</small></h2><div class="card pad" style="display:flex;flex-direction:column;gap:10px">${k>0?`<label class="dl"><span>開始の予定日</span><input type="date" class="in" id="ie_d${k}" value="${j.dates[k-1]||''}"></label>`:''}<label style="font-size:13px;color:var(--sub)">内容・メニュー<textarea class="in" id="ie_n${k}" style="margin-top:4px" placeholder="${['例：安静・アイシング','例：チューブで可動域と筋力、バイク20分','例：ジョグ→パス→対人なしのメニュー','例：フル参加。最初の1週間は練習試合30分まで'][k]}">${esc(j.notes[k]||'')}</textarea></label></div>`).join('')}
 <h2>通院・再評価など</h2><div class="card pad"><div id="evs" style="display:flex;flex-direction:column;gap:8px">${evHtml()}</div><button class="btn ghost sm" id="ev_add" style="margin-top:10px">＋予定を追加</button></div>
 <div class="submit"><p class="err" id="ie_err"></p><button class="btn block" id="ie_ok">保存する</button></div>`;}
+CTX.onRemote(()=>{const top=stack[stack.length-1];if(top===formView||document.querySelector('.modal'))return;const y=window.scrollY;render();window.scrollTo(0,y);});
 render();
-})();
-</script></body></html>
+});
+</script>
+<script type="module" src="fb.js"></script>
+</body></html>

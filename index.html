@@ -304,10 +304,10 @@ select.bad{border-color:var(--short)}
 .prow:disabled{opacity:.45;cursor:default}
 .note{font-size:12px;color:var(--sub);margin:8px 2px 0}
 button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-</style></head><body>
+</style></head><body data-page="pos">
 <div id="root"></div>
 <script id="app">
-(function(){
+window.__APP_MAIN=(function(){
 const HEAD='<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>TMU FC App｜都立大サッカー部</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">';
 const POS=['GK','CB','HV','WB','CM','AM','CF'];
 const SYS={
@@ -441,26 +441,26 @@ function renderAdd(){
     touch();adding=false;renderTop();renderList();
   };
 }
-function touch(){try{localStorage.setItem(DATA_KEY,JSON.stringify(state));lastSaved=new Date();dirty=false;}catch(e){dirty=true;}const m=document.getElementById('savemsg');if(m)renderSave();}
+function touch(){try{localStorage.setItem(DATA_KEY,JSON.stringify(state));lastSaved=new Date();dirty=false;}catch(e){dirty=true;}if(window.TMU)window.TMU.statePush(state);const m=document.getElementById('savemsg');if(m)renderSave();}
 function renderSave(){
   const b=$('#savebtn'),m=$('#savemsg');if(!b||!m)return;b.disabled=false;
-  m.textContent=dirty?'この端末に保存できませんでした（容量やプライベートブラウズを確認）':lastSaved?`この端末に自動保存しました（${lastSaved.getHours()}:${String(lastSaved.getMinutes()).padStart(2,'0')}）`:'入力はこの端末に自動で保存されます';
+  const st=window.__TMU_SAVE_STATUS;m.textContent=st==='wait'?'保存しています…':st==='err'?'保存できませんでした。通信状況を確認してください':lastSaved?`保存して共有しました（${lastSaved.getHours()}:${String(lastSaved.getMinutes()).padStart(2,'0')}）`:'入力は自動で保存され、スタッフ全員に共有されます';
 }
+window.__renderSave=renderSave;
 function stamp(){const d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');}
 function save(){
   const d=modal(`<div class="shead"><b>データ</b><button class="btn ghost sm" data-x>閉じる</button></div>
 <div class="slist" style="display:flex;flex-direction:column;gap:10px;padding-bottom:6px">
-<p class="note" style="margin:0">データはこの端末の中だけに保存されます。ほかの人や別の端末と同じデータを使うときは、書き出したファイルを送り、相手が読み込みます。</p>
-<button class="btn" id="d_exp">データを書き出す（共有）</button>
+<p class="note" style="margin:0">データはクラウドに保存され、スタッフ全員で共有されています。「書き出す」は控え（バックアップ）用です。「読み込む」と、全員のデータが置き換わります。</p>
+<button class="btn" id="d_exp">データを書き出す（控え）</button>
 <label class="btn ghost" style="text-align:center;cursor:pointer">データを読み込む<input type="file" id="d_imp" accept=".json,application/json" style="display:none"></label>
-<p class="note" id="d_msg" style="margin:0"></p>
-<button class="btn ghost sm" id="d_clear" style="border-color:var(--short);color:var(--short);align-self:flex-start">この端末のデータを消す</button></div>`);
+<p class="note" id="d_msg" style="margin:0"></p></div>`);
   d.querySelector('[data-x]').onclick=closeModal;
   $('#d_exp').onclick=async()=>{const blob=new Blob([JSON.stringify(state)],{type:'application/json'});try{const dl=await getDl();await dl.save({filename:`tmu-position-data-${stamp()}.json`,data:blob});$('#d_msg').textContent='書き出しました。LINEなどで送った相手は「データを読み込む」から取り込めます。';}catch(e){$('#d_msg').textContent=e&&e.code==='declined'?'書き出しをやめました。':'書き出せませんでした。';}};
   $('#d_imp').onchange=async e=>{const f=e.target.files[0];if(!f)return;let obj;try{obj=JSON.parse(await f.text());}catch(er){$('#d_msg').textContent='ファイルを読み取れませんでした。';return;}
     if(!obj||!Array.isArray(obj.players)){$('#d_msg').textContent='このツールのデータではないようです。';return;}
-    if(state.players.length&&!await ask(`いまのデータ（選手${state.players.length}人）を、読み込むデータ（選手${obj.players.length}人）で置き換えます。よろしいですか？`))return;
-    try{localStorage.setItem(DATA_KEY,JSON.stringify(obj));}catch(er){$('#d_msg').textContent='この端末に保存できませんでした。';return;}location.reload();};
+    if(state.players.length&&!await ask(`いまのデータ（選手${state.players.length}人）を、読み込むデータ（選手${obj.players.length}人）で置き換えます。全員の画面に反映されます。よろしいですか？`))return;
+    try{localStorage.setItem(DATA_KEY,JSON.stringify(obj));localStorage.setItem('tmu-push-local','1');}catch(er){$('#d_msg').textContent='この端末に保存できませんでした。';return;}location.reload();};
   const _dc=$('#d_clear');if(_dc)_dc.onclick=async()=>{if(!await ask('この端末のデータをすべて消します。先に「データを書き出す」で控えをとっておくことをおすすめします。消しますか？'))return;try{localStorage.removeItem(DATA_KEY);localStorage.removeItem(KEY);}catch(er){}location.reload();};
 }
 // ---- 紅白戦 ----
@@ -818,9 +818,10 @@ function openImgMenu(g){
 const HELP=[
 ['はじめに',`<p>このアプリは、選手のポジション（1st／2nd）とA／Bの整理、試合のメンバー選考と出場時間の管理をするためのものです。</p>
 <ul><li><b>ホーム画面に追加</b>：Safariで開き、共有ボタン→「ホーム画面に追加」を選ぶと、アプリのように使えます。</li>
-<li><b>保存</b>：入力はこの端末に自動で保存されます。保存ボタンはありません。</li>
+<li><b>保存</b>：入力は自動でクラウドに保存され、スタッフ全員に共有されます。ほかのスタッフが更新すると、画面が自動で最新になります。</li>
 <li><b>画面の切り替え</b>：上の「ポジション」「メンバー選考」で切り替えます。</li>
-<li><b>コンディション（試作版）</b>：上の「コンディション」から、選手の体調・痛みの報告・欠席連絡・自主トレの入力と、スタッフの確認画面（ケガと回復計画を含む）を試せます。データはこの端末の中だけに保存されます。ここでケガとして登録した選手は、メンバー選考で自動的に「ケガ中」になります。</li></ul>`],
+<li><b>コンディション</b>：上の「コンディション」から、選手の体調・痛みの報告・欠席連絡・自主トレ、ケガと回復計画を確認できます。ケガとして登録した選手は、メンバー選考で自動的に「ケガ中」になります。</li>
+<li><b>ログインと権限</b>：右上の名前のボタンからログアウトできます。監督は「メンバー管理」で、承認や権限（選手・スタッフ・管理者）の変更ができます。</li></ul>`],
 ['ポジション：選手を整理する',`<ul><li><b>A／B</b>：選手ごとのボタンで分けます。もう一度押すと未分類に戻ります。</li>
 <li><b>1st／2nd</b>：プルダウンで選びます（GK・CB・HV・WB・CM・AM・CF）。2ndが1stと同じだと赤枠になります。</li>
 <li><b>ケガ</b>：押すと「ケガ中」になり、集計やメンバー選考の候補から外れます。治ったらもう一度押します。</li>
@@ -1249,5 +1250,8 @@ setTab(tab==='game'?'game':'pos');
 renderSave();
 try{if(!localStorage.getItem('tmu-help-seen'))setTimeout(openHelp,400);}catch(e){}
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
-})();
-</script></body></html>
+if(window.TMU&&window.TMU.needSeed){window.TMU.needSeed=false;touch();}
+});
+</script>
+<script type="module" src="fb.js"></script>
+</body></html>
