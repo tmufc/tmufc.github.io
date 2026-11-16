@@ -93,6 +93,11 @@ textarea.in{min-height:76px;resize:vertical}
 .shead{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700;font-size:17px;margin-bottom:10px}
 .sfoot{display:flex;gap:8px;justify-content:space-between;margin-top:16px;flex-wrap:wrap}
 .lib li{cursor:pointer}
+.gtabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:22px}
+.gtabs button{border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:10px;font-size:17px;font-weight:700;color:var(--sub);display:flex;flex-direction:column;align-items:center;line-height:1.3}
+.gtabs button small{font-size:12px;font-weight:400}
+.gtabs button.on.gA{border-color:var(--ga);color:var(--ga);background:color-mix(in srgb,var(--ga) 10%,var(--surface))}
+.gtabs button.on.gB{border-color:var(--gb);color:var(--gb);background:color-mix(in srgb,var(--gb) 10%,var(--surface))}
 .toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#14202E;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:80;max-width:86vw;text-align:center}
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:60vh;overflow:auto}
 .pgrid button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 10px;text-align:left;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:6px}
@@ -127,13 +132,24 @@ function closeSheet(){const d=$('#sheet');if(d)d.remove();}
 const fmtN=v=>{v=+v||0;return String(Math.round(v*10)/10);};
 const timeTxt=m=>m.play?`${fmtN(m.play)}分×${m.sets||1}セット${m.rest&&(m.sets||1)>1?`（レスト${fmtN(m.rest)}分）`:''}`:'';
 const calcTotal=(p,r,n)=>Math.round(((+p||0)*(n||1)+(+r||0)*Math.max(0,(n||1)-1))*10)/10;
-const totalMin=t=>(t.menus||[]).reduce((a,m)=>a+(+m.min||0),0);
+const sumMin=ms=>(ms||[]).reduce((a,m)=>a+(+m.min||0),0);
+let curG='A';
+const clone=o=>JSON.parse(JSON.stringify(o||null));
+function ensureParts(t){if(t.parts&&t.parts.A&&t.parts.B)return t.parts;const ms=t.menus||[];
+  t.parts={A:{theme:t.theme||'',menus:clone(ms.filter(m=>m.group!=='B')).map(m=>({...m,group:'all'})),review:clone(t.review)||{}},
+           B:{theme:t.theme||'',menus:clone(ms.filter(m=>m.group==='B'||!m.group||m.group==='all')).map(m=>({...m,id:uid('m'),group:'all'})),review:{}}};return t.parts;}
+// いま編集している単位（全員一緒＝練習全体、A・B分け＝選んでいるチーム）
+function P(t){if(t.mode==='ab'){ensureParts(t);return t.parts[curG];}t.menus=t.menus||[];return t;}
+const totalMin=t=>t.mode==='ab'&&t.parts?Math.max(sumMin(t.parts.A.menus),sumMin(t.parts.B.menus)):sumMin(t.menus);
+const themeTxt=t=>t.mode==='ab'&&t.parts?(['A','B'].map(k=>t.parts[k].theme?k+'：'+t.parts[k].theme:'').filter(Boolean).join('　')||'テーマ未設定'):(t.theme||'テーマ未設定');
+const menuCnt=t=>t.mode==='ab'&&t.parts?t.parts.A.menus.length+t.parts.B.menus.length:(t.menus||[]).length;
+const hasRv=r=>r&&(r.good||r.issue||r.next);
 const trs=()=>Object.values(CTX.trainings).sort((a,b)=>b.date.localeCompare(a.date)||(b.start||'').localeCompare(a.start||''));
 
 // ---------- 一覧 ----------
 function listView(){
   const L=trs();const up=L.filter(t=>t.date>=T).reverse(),past=L.filter(t=>t.date<T);
-  const row=t=>`<li class="tap" data-open="${t.id}"><div class="m"><b>${fmt(t.date)}</b>${t.start?` <span class="num" style="font-weight:400">${esc(t.start)}</span>`:''}　${esc(t.theme||'テーマ未設定')}<small>${(t.menus||[]).length}メニュー・${totalMin(t)}分${t.cnt?`・参加${t.cnt}人`:''}${t.review&&(t.review.good||t.review.issue)?'・振り返りあり':''}</small></div><span class="go">›</span></li>`;
+  const row=t=>`<li class="tap" data-open="${t.id}"><div class="m"><b>${fmt(t.date)}</b>${t.start?` <span class="num" style="font-weight:400">${esc(t.start)}</span>`:''}　${esc(themeTxt(t))}<small>${t.mode==='ab'?'A・B分け・':''}${menuCnt(t)}メニュー・${totalMin(t)}分${t.cnt?`・参加${t.cnt}人`:''}${hasRv(t.review)||(t.parts&&(hasRv(t.parts.A.review)||hasRv(t.parts.B.review)))?'・振り返りあり':''}</small></div><span class="go">›</span></li>`;
   const months={};past.forEach(t=>(months[t.date.slice(0,7)]=months[t.date.slice(0,7)]||[]).push(t));
   return `<div class="acts" style="margin-top:0"><button class="btn" id="new">＋ 練習を作る</button><button class="btn ghost" id="lib">メニュー集（${Object.keys(CTX.menus).length}）</button></div>
 <h2>今日・これから</h2>${up.length?`<div class="card"><ul class="list">${up.map(row).join('')}</ul></div>`:'<div class="card empty">予定している練習はありません</div>'}
@@ -147,12 +163,13 @@ function newTraining(){
   const d=sheet(`<div class="shead">練習を作る<button class="btn ghost sm" data-x>閉じる</button></div>
 <label class="fl">日付</label><input type="date" class="in" id="n_date" value="${T}">
 <label class="fl">開始時刻</label><input type="time" class="in" id="n_start" value="${prev&&prev.start||''}">
-${prev?`<label style="display:flex;gap:8px;align-items:center;margin-top:14px;font-size:14px"><input type="checkbox" id="n_copy"> 前回（${fmt(prev.date)} ${esc(prev.theme||'')}）のメニューをコピーする</label>`:''}
+${prev?`<label style="display:flex;gap:8px;align-items:center;margin-top:14px;font-size:14px"><input type="checkbox" id="n_copy"> 前回（${fmt(prev.date)} ${esc(themeTxt(prev))}）のメニューをコピーする</label>`:''}
 <div class="sfoot" style="justify-content:flex-end"><button class="btn" id="n_ok">作る</button></div>`);
   d.querySelector('[data-x]').onclick=closeSheet;
   d.querySelector('#n_ok').onclick=async()=>{const date=d.querySelector('#n_date').value;if(!date){toast('日付を選んでください');return;}
     const cp=d.querySelector('#n_copy');const t={id:uid('t'),date,start:d.querySelector('#n_start').value,place:prev?prev.place||'':'',theme:'',mode:prev?prev.mode||'ab':'ab',groups:{},menus:[],review:{good:'',issue:'',next:''},videos:[]};
-    if(cp&&cp.checked){t.theme=prev.theme||'';t.menus=JSON.parse(JSON.stringify(prev.menus||[])).map(m=>({...m,id:uid('m'),note:''}));}
+    if(cp&&cp.checked){const cm=ms=>clone(ms||[]).map(m=>({...m,id:uid('m'),note:''}));t.theme=prev.theme||'';t.menus=cm(prev.menus);
+      if(prev.parts)t.parts={A:{theme:prev.parts.A.theme||'',menus:cm(prev.parts.A.menus),review:{}},B:{theme:prev.parts.B.theme||'',menus:cm(prev.parts.B.menus),review:{}}};}
     await CTX.saveTraining(t);closeSheet();openDay(t.id);};}
 
 // ---------- 1日の練習 ----------
@@ -173,13 +190,14 @@ function dayView(){
   const t=CTX.trainings[view.id];if(!t)return '<button class="back" data-back>‹ 一覧</button><p class="empty">この練習は削除されました</p>';
   const G=groupsOf(t);const play=t.mode==='ab'?G.A.length+G.B.length:G.P.length;
   const ent=DAY?DAY.ent:{};const pm=Object.entries(ent).filter(([,e])=>e&&e.pm).map(([pid,e])=>({p:byId(pid),pm:e.pm})).filter(x=>x.p);
+  const inG=x=>!(t.mode==='ab')||!DAY||statusOf(t,x.p.id).g===curG;
   const rpeAvg=pm.length?(pm.reduce((a,x)=>a+(+x.pm.rpe||0),0)/pm.length).toFixed(1):'－';
   const gsec=k=>`<div class="grp"><h3><span class="tag ${GC[k]}">${GL[k]}</span> <span class="num">${G[k].length}</span>人</h3><div class="chips">${G[k].length?G[k].map(({p,s})=>`<span class="chip">${esc(p.name)}${s.flag?`<i>${esc(s.flag.split('（')[0])}</i>`:''}</span>`).join(''):'<span class="note" style="margin:0">いません</span>'}</div></div>`;
   const flags=ROSTER.map(p=>({p,s:statusOf(t,p.id)})).filter(x=>x.s.flag);
-  const menus=t.menus||[];
+  const C=P(t);const menus=C.menus;const ab=t.mode==='ab';
   return `<div class="top"><button class="back" data-back>‹ 一覧</button><button class="btn ghost sm" id="share">テキストで共有</button></div>
 <div class="dhead"><h2>${fmt(t.date)}${t.start?` <span class="num" style="font-size:20px">${esc(t.start)}</span>`:''}</h2><button class="btn ghost sm" id="edhead">日付・テーマを編集</button></div>
-<div class="meta"><span>テーマ <b>${esc(t.theme||'未設定')}</b></span>${t.place?`<span>場所 <b>${esc(t.place)}</b></span>`:''}<span>合計 <b class="num">${totalMin(t)}</b>分</span></div>
+<div class="meta">${ab?'':`<span>テーマ <b>${esc(t.theme||'未設定')}</b></span>`}${t.place?`<span>場所 <b>${esc(t.place)}</b></span>`:''}${ab?'':`<span>合計 <b class="num">${totalMin(t)}</b>分</span>`}</div>
 <div class="stats"><div class="stat"><small>参加</small><b class="num">${DAY?play:'…'}</b></div><div class="stat"><small>リハビリ</small><b class="num">${DAY?G.R.length:'…'}</b></div><div class="stat"><small>休み</small><b class="num">${DAY?G.X.length:'…'}</b></div><div class="stat"><small>平均きつさ</small><b class="num">${DAY?rpeAvg:'…'}</b></div></div>
 
 <h2>参加メンバー<span><span class="seg"><button data-mode="ab" class="${t.mode==='ab'?'on':''}">A・B分け</button><button data-mode="all" class="${t.mode==='all'?'on':''}">全員一緒</button></span></span></h2>
@@ -188,18 +206,20 @@ ${flags.length?`<p class="note">${flags.map(x=>`${esc(x.p.name)}：${esc(x.s.fla
 <div class="acts"><button class="btn ghost sm" id="assign">メンバーを振り分ける</button></div>
 <p class="note">欠席連絡・ケガ（離脱／リハビリ）はコンディションから自動で反映します。${t.mode==='ab'?'A・Bはポジション画面のチーム分けが初期値です。':''}</p>`:'<div class="card empty">コンディションを読み込んでいます…</div>'}
 
-<h2>メニュー<small>${menus.length}本・${totalMin(t)}分</small></h2>
-<div class="card">${menus.length?menus.map((m,i)=>`<div class="menu"><div class="no num">${i+1}</div><div class="b tap" data-med="${i}"><div class="t"><b>${esc(m.name||'（名前なし）')}</b><span class="num">${fmtN(m.min)}分</span>${t.mode==='ab'&&m.group&&m.group!=='all'?`<span class="tag ${m.group==='A'?'t-a':m.group==='B'?'t-b':'t-r'}">${m.group==='R'?'リハビリ':m.group}</span>`:''}</div>
+${ab?`<div class="gtabs">${['A','B'].map(k=>`<button data-cg="${k}" class="${curG===k?'on g'+k:''}">${k}チーム<small>${DAY?groupsOf(t)[k].length+'人・':''}${sumMin(t.parts[k].menus)}分</small></button>`).join('')}</div>
+<div class="meta" style="margin-top:8px"><span>${curG}のテーマ <b>${esc(C.theme||'未設定')}</b></span></div>`:''}
+<h2>${ab?curG+'の':''}メニュー<small>${menus.length}本・${sumMin(menus)}分</small></h2>
+<div class="card">${menus.length?menus.map((m,i)=>`<div class="menu"><div class="no num">${i+1}</div><div class="b tap" data-med="${i}"><div class="t"><b>${esc(m.name||'（名前なし）')}</b><span class="num">${fmtN(m.min)}分</span></div>
 <div class="d">${[timeTxt(m),m.players,m.size].filter(Boolean).map(esc).join('・')}</div>${m.aim?`<div class="d">狙い：${esc(m.aim)}</div>`:''}${m.desc?`<div class="x">${esc(m.desc)}</div>`:''}${m.note?`<div class="x" style="color:var(--blue)">メモ：${esc(m.note)}</div>`:''}</div>
 <div class="ops"><button data-up="${i}" aria-label="上へ" ${i===0?'disabled':''}>▲</button><button data-dn="${i}" aria-label="下へ" ${i===menus.length-1?'disabled':''}>▼</button></div></div>`).join(''):'<div class="empty">まだメニューがありません</div>'}</div>
 <div class="acts"><button class="btn" id="madd">＋ 新しいメニュー</button><button class="btn ghost" id="mlib">メニュー集から追加</button></div>
 
-<h2>選手の振り返り<small>${DAY?`入力 ${pm.length}人`:''}</small></h2>
-${DAY?(pm.filter(x=>x.pm.note).length?`<div class="card">${pm.filter(x=>x.pm.note).sort((a,b)=>(b.pm.rpe||0)-(a.pm.rpe||0)).map(x=>`<div class="refl"><div class="w">${esc(x.p.name)}<span class="tag">きつさ ${x.pm.rpe??'－'}</span></div><p>${esc(x.pm.note)}</p></div>`).join('')}</div>`:'<div class="card empty">振り返りの入力はまだありません</div>'):'<div class="card empty">読み込んでいます…</div>'}
+<h2>${ab?curG+'の':''}選手の振り返り<small>${DAY?`入力 ${pm.filter(inG).length}人`:''}</small></h2>
+${DAY?(pm.filter(x=>x.pm.note&&inG(x)).length?`<div class="card">${pm.filter(x=>x.pm.note&&inG(x)).sort((a,b)=>(b.pm.rpe||0)-(a.pm.rpe||0)).map(x=>`<div class="refl"><div class="w">${esc(x.p.name)}<span class="tag">きつさ ${x.pm.rpe??'－'}</span></div><p>${esc(x.pm.note)}</p></div>`).join('')}</div>`:'<div class="card empty">振り返りの入力はまだありません</div>'):'<div class="card empty">読み込んでいます…</div>'}
 <p class="note">選手がコンディションの「練習後のきつさ」に書いた振り返りが、この日の分だけ出ます。</p>
 
-<h2>スタッフの振り返り<button class="btn ghost sm" id="rv">${t.review&&(t.review.good||t.review.issue||t.review.next)?'編集':'書く'}</button></h2>
-<div class="card pad">${t.review&&(t.review.good||t.review.issue||t.review.next)?`<div class="rvh">良かったこと</div><p class="rv">${esc(t.review.good||'－')}</p><div class="rvh">課題</div><p class="rv">${esc(t.review.issue||'－')}</p><div class="rvh">次の練習へ</div><p class="rv">${esc(t.review.next||'－')}</p>${t.review.by?`<p class="note">${esc(t.review.by)}</p>`:''}`:'<p class="note" style="margin:0">練習後に、良かったこと・課題・次の練習へのつなぎを残します。</p>'}</div>
+<h2>${ab?curG+'の':''}スタッフの振り返り<button class="btn ghost sm" id="rv">${hasRv(C.review)?'編集':'書く'}</button></h2>
+<div class="card pad">${hasRv(C.review)?`<div class="rvh">良かったこと</div><p class="rv">${esc(C.review.good||'－')}</p><div class="rvh">課題</div><p class="rv">${esc(C.review.issue||'－')}</p><div class="rvh">次の練習へ</div><p class="rv">${esc(C.review.next||'－')}</p>${C.review.by?`<p class="note">${esc(C.review.by)}</p>`:''}`:'<p class="note" style="margin:0">練習後に、良かったこと・課題・次の練習へのつなぎを残します。</p>'}</div>
 
 <h2>映像<button class="btn ghost sm" id="vadd">＋ リンクを追加</button></h2>
 <div class="card">${(t.videos||[]).length?`<ul class="list vid">${t.videos.map((v,i)=>`<li><div class="m"><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.label||v.url)}</a>${v.label?`<small>${esc(v.url)}</small>`:''}</div><button class="btn ghost sm" data-vdel="${i}">削除</button></li>`).join('')}</ul>`:'<div class="empty">YouTubeやGoogleドライブなどの映像のリンクを登録できます</div>'}</div>
@@ -208,13 +228,14 @@ ${DAY?(pm.filter(x=>x.pm.note).length?`<div class="card">${pm.filter(x=>x.pm.not
 function bindDay(){
   const t=CTX.trainings[view.id];$('[data-back]').onclick=()=>{view={name:'list'};render();window.scrollTo(0,0);};if(!t)return;
   const save=()=>CTX.saveTraining(t);
-  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{t.mode=b.dataset.mode;save();render();});
+  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{t.mode=b.dataset.mode;if(t.mode==='ab')ensureParts(t);save();render();});
+  document.querySelectorAll('[data-cg]').forEach(b=>b.onclick=()=>{curG=b.dataset.cg;render();});
   const as=$('#assign');if(as)as.onclick=()=>openAssign(t);
   $('#edhead').onclick=()=>editHead(t);
   $('#madd').onclick=()=>editMenu(t,-1);$('#mlib').onclick=()=>openLib(t);
   document.querySelectorAll('[data-med]').forEach(b=>b.onclick=()=>editMenu(t,+b.dataset.med));
-  document.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{const i=+b.dataset.up;if(i<1)return;const m=t.menus;[m[i-1],m[i]]=[m[i],m[i-1]];save();render();});
-  document.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>{const i=+b.dataset.dn;const m=t.menus;if(i>=m.length-1)return;[m[i+1],m[i]]=[m[i],m[i+1]];save();render();});
+  document.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{const i=+b.dataset.up;if(i<1)return;const m=P(t).menus;[m[i-1],m[i]]=[m[i],m[i-1]];save();render();});
+  document.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>{const i=+b.dataset.dn;const m=P(t).menus;if(i>=m.length-1)return;[m[i+1],m[i]]=[m[i],m[i+1]];save();render();});
   $('#rv').onclick=()=>editReview(t);
   $('#vadd').onclick=()=>addVideo(t);
   document.querySelectorAll('[data-vdel]').forEach(b=>b.onclick=async()=>{if(!await ask('このリンクを削除しますか？'))return;t.videos.splice(+b.dataset.vdel,1);save();render();});
@@ -224,11 +245,11 @@ function editHead(t){
   const d=sheet(`<div class="shead">日付・テーマ<button class="btn ghost sm" data-x>閉じる</button></div>
 <div class="row2"><div><label class="fl">日付</label><input type="date" class="in" id="h_date" value="${t.date}"></div><div><label class="fl">開始時刻</label><input type="time" class="in" id="h_start" value="${esc(t.start||'')}"></div></div>
 <label class="fl">場所</label><input class="in" id="h_place" value="${esc(t.place||'')}" placeholder="例：南大沢グラウンド">
-<label class="fl">この日のテーマ</label><input class="in" id="h_theme" value="${esc(t.theme||'')}" placeholder="例：ボール保持　前進の判断">
+${t.mode==='ab'?['A','B'].map(k=>`<label class="fl">${k}チームのテーマ</label><input class="in" id="h_theme${k}" value="${esc(ensureParts(t)[k].theme||'')}" placeholder="例：ボール保持　前進の判断">`).join(''):`<label class="fl">この日のテーマ</label><input class="in" id="h_theme" value="${esc(t.theme||'')}" placeholder="例：ボール保持　前進の判断">`}
 <div class="sfoot" style="justify-content:flex-end"><button class="btn" id="h_ok">保存</button></div>`);
   d.querySelector('[data-x]').onclick=closeSheet;
   d.querySelector('#h_ok').onclick=()=>{const nd=d.querySelector('#h_date').value;if(!nd){toast('日付を選んでください');return;}if(nd!==t.date){t.date=nd;dayKey='';}
-    t.start=d.querySelector('#h_start').value;t.place=d.querySelector('#h_place').value.trim();t.theme=d.querySelector('#h_theme').value.trim();CTX.saveTraining(t);closeSheet();openDay(t.id);};}
+    t.start=d.querySelector('#h_start').value;t.place=d.querySelector('#h_place').value.trim();if(t.mode==='ab'){['A','B'].forEach(k=>{t.parts[k].theme=d.querySelector('#h_theme'+k).value.trim();});}else t.theme=d.querySelector('#h_theme').value.trim();CTX.saveTraining(t);closeSheet();openDay(t.id);};}
 function menuForm(m,t){return `<label class="fl">メニュー名</label><input class="in" id="m_name" value="${esc(m.name||'')}" placeholder="例：4対4＋2　ロンド">
 <div class="row2"><div><label class="fl">プレータイム（分）</label><input type="number" inputmode="decimal" min="0" step="0.5" class="in" id="m_play" value="${m.play??''}" placeholder="例：4"></div><div><label class="fl">レスト（分）</label><input type="number" inputmode="decimal" min="0" step="0.5" class="in" id="m_rest" value="${m.rest??''}" placeholder="例：1"></div></div>
 <div class="row2"><div><label class="fl">セット数</label><input type="number" inputmode="numeric" min="1" class="in" id="m_sets" value="${m.sets??''}" placeholder="例：3"></div><div><label class="fl">合計時間（分）</label><input type="number" inputmode="decimal" min="0" step="0.5" class="in" id="m_min" value="${m.min??''}" placeholder="自動で計算"></div></div>
@@ -237,14 +258,14 @@ function menuForm(m,t){return `<label class="fl">メニュー名</label><input c
 <label class="fl">コートの広さ</label><input class="in" id="m_size" value="${esc(m.size||'')}" placeholder="例：40×30m">
 <label class="fl">狙い・テーマ</label><input class="in" id="m_aim" value="${esc(m.aim||'')}" placeholder="例：前進のための3人目の関わり">
 <label class="fl">説明（オーガナイズ・ルール・コーチングポイント）</label><textarea class="in" id="m_desc" style="min-height:120px" placeholder="例：2タッチ制限。中央ゾーンを通過したら得点…">${esc(m.desc||'')}</textarea>
-${t&&t.mode==='ab'?`<label class="fl">対象</label><div class="seg" id="m_grp">${[['all','全員'],['A','A'],['B','B'],['R','リハビリ']].map(([k,l])=>`<button type="button" data-g="${k}" class="${(m.group||'all')===k?'on':''}">${l}</button>`).join('')}</div>`:''}
+
 ${t?`<label class="fl">この日のメモ（任意）</label><input class="in" id="m_note" value="${esc(m.note||'')}" placeholder="例：2本目からタッチ数を3に">`:''}`;}
 function bindTime(d){const g=id=>d.querySelector(id);const tot=g('#m_min');if(!tot)return;let manual=tot.value!==''&&+tot.value!==calcTotal(g('#m_play').value,g('#m_rest').value,+g('#m_sets').value||1);
   const upd=()=>{if(manual||!g('#m_play').value)return;tot.value=calcTotal(g('#m_play').value,g('#m_rest').value,+g('#m_sets').value||1);};
   ['#m_play','#m_rest','#m_sets'].forEach(id=>g(id).oninput=upd);tot.oninput=()=>{manual=tot.value!=='';if(!manual)upd();};}
 function readMenu(d,m){m.name=d.querySelector('#m_name').value.trim();const nv=id=>{const v=d.querySelector(id).value;return v===''?null:Math.max(0,+v);};m.play=nv('#m_play');m.rest=nv('#m_rest');m.sets=nv('#m_sets');if(m.sets!=null)m.sets=Math.max(1,Math.round(m.sets));m.min=nv('#m_min');if(m.min==null)m.min=m.play?calcTotal(m.play,m.rest,m.sets||1):0;m.players=d.querySelector('#m_players').value.trim();m.size=d.querySelector('#m_size').value.trim();m.aim=d.querySelector('#m_aim').value.trim();m.desc=d.querySelector('#m_desc').value;const n=d.querySelector('#m_note');if(n)m.note=n.value.trim();const g=d.querySelector('#m_grp .on');if(g)m.group=g.dataset.g;return m;}
 function editMenu(t,i){
-  const m=i>=0?{...t.menus[i]}:{id:uid('m'),group:'all'};
+  const C=P(t);const m=i>=0?{...C.menus[i]}:{id:uid('m'),group:'all'};
   const inLib=m.lib&&CTX.menus[m.lib];
   const d=sheet(`<div class="shead">${i>=0?'メニューを編集':'新しいメニュー'}<button class="btn ghost sm" data-x>閉じる</button></div>${menuForm(m,t)}
 <label style="display:flex;gap:8px;align-items:center;margin-top:14px;font-size:14px"><input type="checkbox" id="m_lib" ${inLib?'checked':''}> メニュー集に${inLib?'も反映する':'保存する'}</label>
@@ -252,14 +273,14 @@ function editMenu(t,i){
   bindSeg(d);bindTime(d);d.querySelector('[data-x]').onclick=closeSheet;
   d.querySelector('#m_ok').onclick=()=>{readMenu(d,m);if(!m.name){toast('メニュー名を入れてください');return;}
     if(d.querySelector('#m_lib').checked){const lid=m.lib&&CTX.menus[m.lib]?m.lib:uid('L');m.lib=lid;CTX.saveMenu({id:lid,name:m.name,min:m.min,play:m.play??null,rest:m.rest??null,sets:m.sets??null,players:m.players,size:m.size,aim:m.aim,desc:m.desc,used:(CTX.menus[lid]&&CTX.menus[lid].used)||0});}
-    if(i>=0)t.menus[i]=m;else t.menus.push(m);CTX.saveTraining(t);closeSheet();render();};
-  const del=d.querySelector('#m_del');if(del)del.onclick=()=>{t.menus.splice(i,1);CTX.saveTraining(t);closeSheet();render();};}
+    if(i>=0)C.menus[i]=m;else C.menus.push(m);CTX.saveTraining(t);closeSheet();render();};
+  const del=d.querySelector('#m_del');if(del)del.onclick=()=>{C.menus.splice(i,1);CTX.saveTraining(t);closeSheet();render();};}
 function bindSeg(d){d.querySelectorAll('#m_grp [data-g]').forEach(b=>b.onclick=()=>{d.querySelectorAll('#m_grp [data-g]').forEach(x=>x.classList.toggle('on',x===b));});}
 function openLib(t){
   let q='';
   const draw=()=>{const L=Object.values(CTX.menus).filter(m=>!q||[m.name,m.aim,m.players,m.desc].join(' ').toLowerCase().includes(q.toLowerCase())).sort((a,b)=>(b.used||0)-(a.used||0)||a.name.localeCompare(b.name,'ja'));
     d.querySelector('#lib_l').innerHTML=L.length?L.map(m=>`<li data-lid="${m.id}"><div class="m"><b>${esc(m.name)}</b> <span class="num">${fmtN(m.min)}分</span><small>${[timeTxt(m),m.players,m.size,m.aim].filter(Boolean).map(esc).join('・')}</small></div>${t?'<span class="btn sm">追加</span>':'<span class="go">›</span>'}</li>`).join(''):`<li class="empty" style="display:block">${q?'見つかりません':'まだメニュー集がありません。メニューを作るときに「メニュー集に保存する」を選ぶと、ここに入ります。'}</li>`;
-    d.querySelectorAll('[data-lid]').forEach(li=>li.onclick=()=>{const m=CTX.menus[li.dataset.lid];if(t){t.menus.push({id:uid('m'),lib:m.id,name:m.name,min:m.min,play:m.play??null,rest:m.rest??null,sets:m.sets??null,players:m.players,size:m.size,aim:m.aim,desc:m.desc,group:'all',note:''});CTX.saveTraining(t);CTX.saveMenu({...m,used:(m.used||0)+1});toast('「'+m.name+'」を追加しました');render();}else editLib(m);});};
+    d.querySelectorAll('[data-lid]').forEach(li=>li.onclick=()=>{const m=CTX.menus[li.dataset.lid];if(t){P(t).menus.push({id:uid('m'),lib:m.id,name:m.name,min:m.min,play:m.play??null,rest:m.rest??null,sets:m.sets??null,players:m.players,size:m.size,aim:m.aim,desc:m.desc,group:'all',note:''});CTX.saveTraining(t);CTX.saveMenu({...m,used:(m.used||0)+1});toast('「'+m.name+'」を'+(t.mode==='ab'?curG+'に':'')+'追加しました');render();}else editLib(m);});};
   const d=sheet(`<div class="shead">メニュー集<button class="btn ghost sm" data-x>閉じる</button></div><input class="in" id="lib_q" placeholder="探す（名前・狙い・説明）"><ul class="list lib" id="lib_l" style="margin-top:8px"></ul>${t?'':'<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="lib_new">＋ メニュー集に追加</button></div>'}`);
   d.querySelector('[data-x]').onclick=closeSheet;d.querySelector('#lib_q').oninput=e=>{q=e.target.value;draw();};
   const nb=d.querySelector('#lib_new');if(nb)nb.onclick=()=>editLib({id:uid('L'),used:0},true);
@@ -279,13 +300,13 @@ function openAssign(t){
   d.querySelector('#as_reset').onclick=()=>{t.groups={};draw();};
   d.querySelector('#as_ok').onclick=()=>{CTX.saveTraining(t);closeSheet();render();};}
 function editReview(t){
-  const r=t.review||{};const d=sheet(`<div class="shead">スタッフの振り返り<button class="btn ghost sm" data-x>閉じる</button></div>
+  const C=P(t);const r=C.review||{};const d=sheet(`<div class="shead">${t.mode==='ab'?curG+'の':''}スタッフの振り返り<button class="btn ghost sm" data-x>閉じる</button></div>
 <label class="fl">良かったこと</label><textarea class="in" id="r_good">${esc(r.good||'')}</textarea>
 <label class="fl">課題</label><textarea class="in" id="r_issue">${esc(r.issue||'')}</textarea>
 <label class="fl">次の練習へ</label><textarea class="in" id="r_next">${esc(r.next||'')}</textarea>
 <div class="sfoot" style="justify-content:flex-end"><button class="btn" id="r_ok">保存</button></div>`);
   d.querySelector('[data-x]').onclick=closeSheet;
-  d.querySelector('#r_ok').onclick=()=>{t.review={good:d.querySelector('#r_good').value,issue:d.querySelector('#r_issue').value,next:d.querySelector('#r_next').value,by:CTX.me.name||''};CTX.saveTraining(t);closeSheet();render();};}
+  d.querySelector('#r_ok').onclick=()=>{C.review={good:d.querySelector('#r_good').value,issue:d.querySelector('#r_issue').value,next:d.querySelector('#r_next').value,by:CTX.me.name||''};CTX.saveTraining(t);closeSheet();render();};}
 function addVideo(t){
   const d=sheet(`<div class="shead">映像のリンク<button class="btn ghost sm" data-x>閉じる</button></div>
 <label class="fl">URL</label><input class="in" id="v_url" type="url" inputmode="url" placeholder="https://">
@@ -295,8 +316,10 @@ function addVideo(t){
   d.querySelector('#v_ok').onclick=()=>{const url=d.querySelector('#v_url').value.trim();if(!/^https?:\/\//.test(url)){toast('https:// から始まるURLを入れてください');return;}t.videos=t.videos||[];t.videos.push({url,label:d.querySelector('#v_label').value.trim()});CTX.saveTraining(t);closeSheet();render();};}
 async function shareText(t){
   const G=DAY?groupsOf(t):null;
-  let s=`【練習】${fmt(t.date)}${t.start?' '+t.start:''}${t.place?'　'+t.place:''}\nテーマ：${t.theme||'－'}\n合計${totalMin(t)}分\n\n`;
-  (t.menus||[]).forEach((m,i)=>{s+=`${i+1}. ${m.name}（${fmtN(m.min)}分${m.play?'＝'+timeTxt(m):''}）${t.mode==='ab'&&m.group&&m.group!=='all'?'［'+(m.group==='R'?'リハビリ':m.group)+'］':''}\n`;if(m.players||m.size)s+=`　${[m.players,m.size].filter(Boolean).join('・')}\n`;if(m.aim)s+=`　狙い：${m.aim}\n`;});
+  let s=`【練習】${fmt(t.date)}${t.start?' '+t.start:''}${t.place?'　'+t.place:''}\n`;
+  const menuTxt=ms=>{let x='';(ms||[]).forEach((m,i)=>{x+=`${i+1}. ${m.name}（${fmtN(m.min)}分${m.play?'＝'+timeTxt(m):''}）\n`;if(m.players||m.size)x+=`　${[m.players,m.size].filter(Boolean).join('・')}\n`;if(m.aim)x+=`　狙い：${m.aim}\n`;});return x;};
+  if(t.mode==='ab'){ensureParts(t);['A','B'].forEach(k=>{const p=t.parts[k];s+=`\n■${k}チーム　テーマ：${p.theme||'－'}（${sumMin(p.menus)}分）\n`+menuTxt(p.menus);});}
+  else s+=`テーマ：${t.theme||'－'}\n合計${totalMin(t)}分\n\n`+menuTxt(t.menus);
   if(G){s+='\n';(t.mode==='ab'?['A','B','R']:['P','R']).forEach(k=>{if(G[k].length)s+=`${GL[k]}（${G[k].length}人）：${G[k].map(x=>x.p.name).join('、')}\n`;});}
   try{if(navigator.share){await navigator.share({text:s});return;}}catch(e){if(e&&e.name==='AbortError')return;}
   try{await navigator.clipboard.writeText(s);toast('コピーしました。LINEなどに貼り付けられます');}catch(e){const d=sheet(`<div class="shead">テキスト<button class="btn ghost sm" data-x>閉じる</button></div><textarea class="in" style="min-height:300px">${esc(s)}</textarea>`);d.querySelector('[data-x]').onclick=closeSheet;}}

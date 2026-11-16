@@ -144,6 +144,9 @@ select.bad{border-color:var(--short)}
 .subin{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-style:normal;font-size:10px;background:var(--warn);color:#111;border-radius:3px;padding:0 4px;white-space:nowrap;font-family:"Barlow Condensed",sans-serif;font-weight:700}
 .shead2{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .shead2 h2{margin:0}
+.vlist{list-style:none;margin:0;padding:0}.vlist li{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}.vlist li:last-child{border-bottom:0}
+.vlist li>div{flex:1;min-width:0}.vlist a{color:var(--blue);word-break:break-all}.vlist small{display:block;font-size:12px;color:var(--sub);word-break:break-all}
+.vf{display:block;font-size:12px;color:var(--sub);margin-top:10px}.vf input{display:block;width:100%;margin-top:4px;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
 .btn:disabled{opacity:.4;cursor:default}
 .sublist{list-style:none;margin:0;padding:0}
 .sublist li{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:14px}
@@ -1068,6 +1071,8 @@ ${alertHtml(g)}
 ${timelineHtml(g)}
 <div class="seglist">${g.segs.map((s,i)=>{const[a,b]=segRange(g,i);const lv=segAl.find(x=>x.seg===i&&x.lv!=='info');return `<button data-pt="${i}" class="${pt===i?'on':''}${lv?' al-'+lv.lv:''}"><b class="num">${i+1}</b><span>${segLabel(g,i)}</span><small class="num">${b-a}分</small></button>`;}).join('')}<button data-pt="time" class="${pt==='time'?'on':''}"><b>⏱</b><span>出場時間を見る</span></button></div></section>
 ${body}
+<section><div class="shead2"><h2>映像</h2><button class="btn ghost sm" id="g_vadd">＋ リンクを追加</button></div>
+<div class="card">${(g.videos||[]).length?`<ul class="vlist">${g.videos.map((v,i)=>`<li><div><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.label||v.url)}</a>${v.label?`<small>${esc(v.url)}</small>`:''}</div><button class="btn ghost sm" data-vdel="${i}">削除</button></li>`).join('')}</ul>`:'<p class="note" style="margin:0;padding:12px 14px">YouTubeやGoogleドライブなどの試合映像のリンクを登録できます。</p>'}</div></section>
 <section style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="g_img">画像で出力</button><button class="btn ghost" id="g_text">テキストで書き出す</button><button class="btn ghost" id="g_del" style="border-color:var(--short);color:var(--short)">この試合を削除</button></section><div id="g_out"></div>`;
   $('#g_sel').onchange=e=>{state.curGame=e.target.value;pt=0;touch();renderGame();};
   $('#g_new').onclick=()=>{const n=newGame();state.games.push(n);state.curGame=n.id;pt=0;touch();renderGame();};
@@ -1082,6 +1087,13 @@ ${body}
   $('#g_addseg').onclick=()=>openSegTime(g,null);
   v.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>{pt=b.dataset.pt==='time'?'time':+b.dataset.pt;renderGame();});
   $('#g_text').onclick=()=>{const t=gameText();$('#g_out').innerHTML='<textarea class="mtext" readonly rows="16"></textarea><p class="note">長押しまたは全選択してコピーしてください。</p>';const ta=$('#g_out textarea');ta.value=t;ta.focus();ta.select();try{navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>{$('#g_out .note').textContent='コピーしました。';},()=>{});}catch(e){}};
+  const _va=$('#g_vadd');if(_va)_va.onclick=()=>{const d=modal(`<div class="shead"><b>試合映像のリンク</b><button class="btn ghost sm" data-x>閉じる</button></div>
+<label class="vf">URL<input id="v_url" type="url" inputmode="url" placeholder="https://"></label><label class="vf">名前（任意）<input id="v_label" placeholder="例：前半／後半、ハイライト"></label><p class="err" id="v_err" style="color:var(--short);font-size:13px;margin:6px 0 0"></p>
+<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="v_ok">追加</button></div>`);
+    d.querySelector('[data-x]').onclick=closeModal;
+    d.querySelector('#v_ok').onclick=()=>{const url=d.querySelector('#v_url').value.trim();if(!/^https?:\/\//.test(url)){d.querySelector('#v_err').textContent='https:// から始まるURLを入れてください';return;}
+      g.videos=g.videos||[];g.videos.push({url,label:d.querySelector('#v_label').value.trim()});touch();closeModal();renderGame();};};
+  document.querySelectorAll('[data-vdel]').forEach(b=>b.onclick=async()=>{if(!await ask('このリンクを削除しますか？'))return;g.videos.splice(+b.dataset.vdel,1);touch();renderGame();});
   const _gd=$('#g_del');if(_gd)_gd.onclick=async()=>{if(!await ask('この試合（'+fmtDate(g.date)+(g.opp?' vs '+g.opp:'')+'）を削除しますか？'))return;state.games=state.games.filter(x=>x.id!==g.id);state.curGame=null;pt=0;touch();renderGame();};
   const ab=document.querySelector('.alertbox');if(ab)ab.ontoggle=()=>{alertOpen=ab.open;};
   const li=$('#a_lim');if(li)li.onchange=e=>{const v=parseInt(e.target.value);g.maxMin=v>0?Math.min(300,v):90;touch();renderGame();};
@@ -1226,6 +1238,7 @@ function gameText(){
   const mins=minutesBy(g,-1);
   const sq=isOff(g)?new Set([...starters(g),...(g.bench||[])]):null;
   t+='\n■出場時間\n'+gAll().filter(p=>!sq||sq.has(p.id)).map(p=>({p,m:(mins[p.id]||{tot:0}).tot})).sort((a,b)=>b.m-a.m).map(r=>`${r.p.name} ${r.m}分`).join('\n')+'\n';
+  if((g.videos||[]).length)t+='\n■映像\n'+g.videos.map(v=>(v.label?v.label+'：':'')+v.url).join('\n')+'\n';
   return t;
 }
 
