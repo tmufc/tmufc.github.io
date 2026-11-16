@@ -331,6 +331,7 @@ function bind(){
   document.querySelectorAll('[data-player]').forEach(b=>b.onclick=()=>go(()=>sPlayer(b.dataset.player)));
   document.querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>go(()=>sReport(b.dataset.report)));
   document.querySelectorAll('[data-injury]').forEach(b=>b.onclick=()=>go(()=>sInjury(b.dataset.injury)));
+  document.querySelectorAll('[data-newinj]').forEach(b=>b.onclick=()=>go(()=>sInjNew(b.dataset.newinj)));
   document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{UI.filter=b.dataset.filter;saveUI();render();});
   document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{UI.stab=b.dataset.goto;stack=[];saveUI();render();window.scrollTo(0,0);});
   if(window.__bind){const f=window.__bind;window.__bind=null;f();}
@@ -484,14 +485,14 @@ ${al.length?`<div class="card"><ul class="list">${al.map(a=>`<li><span class="al
 <h2>睡眠時間</h2><div class="card chart">${bars(ams.map(x=>x?x.sleep:null),{labels:lab,hi:v=>v<5.5,mark:7})}</div>
 <h2>練習負荷<small>きつさ×時間</small></h2><div class="card chart">${sbars(ldT,ldS,{labels:lab})}<div class="legend"><span><i style="background:var(--blue);height:8px;width:8px"></i>チーム練習</span><span><i style="background:var(--ok);height:8px;width:8px"></i>自主トレ</span></div></div>
 ${selfRec(pid,true)}
-<h2>ケガ</h2><div class="card"><ul class="list">${injs.map(j=>`<li class="tap" data-injury="${j.id}"><div class="m">${esc(j.part)}・${esc(j.what)}<small>${md(j.date)}〜</small></div><span class="tag ${!j.active?'':j.stage<2?'t-red':'t-blue'}">${j.active?STG[j.stage]:'終了'}</span><span class="go">›</span></li>`).join('')||'<li class="empty">記録はありません</li>'}</ul></div>
+<h2>ケガ<button class="btn ghost sm" data-newinj="${pid}">＋ ケガを登録</button></h2><div class="card"><ul class="list">${injs.map(j=>`<li class="tap" data-injury="${j.id}"><div class="m">${esc(j.part)}・${esc(j.what)}<small>${md(j.date)}〜</small></div><span class="tag ${!j.active?'':j.stage<2?'t-red':'t-blue'}">${j.active?STG[j.stage]:'終了'}</span><span class="go">›</span></li>`).join('')||'<li class="empty">記録はありません</li>'}</ul></div>
 ${reps.length?`<h2>痛みの報告</h2><div class="card"><ul class="list">${reps.map(r=>`<li class="tap" data-report="${r.id}"><div class="m">${r.side}${r.part}・程度${r.level}<small>${md(r.date)} ${r.at}・${esc(r.when)}</small></div><span class="tag ${r.status==='new'?'t-red':''}">${r.status==='new'?'未確認':r.status==='watch'?'様子見':'ケガ登録済み'}</span></li>`).join('')}</ul></div>`:''}
 ${(()=>{const L=days(14).slice().reverse().map(d=>({d,x:ent(d,pid).pm})).filter(o=>o.x&&o.x.note);return L.length?`<h2>練習の振り返り（本人）</h2><div class="card"><ul class="list">${L.map(o=>`<li><div class="m">${esc(o.x.note)}<small>${mdw(o.d)}・きつさ${o.x.rpe}</small></div></li>`).join('')}</ul></div>`:'';})()}
 ${abs.length?`<h2>欠席・遅刻</h2><div class="card"><ul class="list">${abs.map(a=>`<li><div class="m">${mdw(a.date)} ${a.kind}<small>${a.reason}${a.note?'・'+esc(a.note):''}</small></div></li>`).join('')}</ul></div>`:''}`;}
 function sReport(id){const r=DB.reports.find(x=>x.id===id),p=byId(r.pid);const am=ent(r.date,r.pid).am;
   window.__bind=()=>{const ok=$('#rp_ok');if(ok)ok.onclick=()=>{const what=$('#rp_what').value.trim()||'痛み（詳細確認中）';const dts=[1,2,3].map(k=>$('#rp_d'+k).value||'');
       if(dts.some((d,i)=>d&&dts.slice(i+1).some(e=>e&&e<d))){$('#rp_err').textContent='段階の日付が前後しています。';return;}
-      const st=+$('#rp_s').value;const j=fixInj({id:'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),pid:r.pid,part:r.part,side:r.side,what,date:r.date,dates:dts,stage:st,by:'トレーナー',active:true});for(let k=1;k<=st;k++)j.actual[k]=T;DB.injuries.unshift(j);r.status='injury';save();toast('ケガとして登録しました');stack=[];stack.push(()=>sInjury(j.id));render();window.scrollTo(0,0);};
+      const st=+$('#rp_s').value;const j=fixInj({id:'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),pid:r.pid,part:r.part,side:r.side,what,date:r.date,dates:dts,stage:st,by:STAFFNAME(),active:true});for(let k=1;k<=st;k++)j.actual[k]=T;DB.injuries.unshift(j);r.status='injury';save();toast('ケガとして登録しました');stack=[];stack.push(()=>sInjury(j.id));render();window.scrollTo(0,0);};
     const wt=$('#rp_watch');if(wt)wt.onclick=()=>{r.status='watch';save();toast('様子見にしました');back();};};
   return `<button class="back" data-back>‹ 戻る</button><h2 style="margin-top:4px">痛みの報告</h2>
 <div class="card pad"><div class="kv"><span>選手</span><span>${esc(p.name)}</span><span>部位</span><span>${r.side}・${r.part}</span><span>程度</span><span>${r.level} / 5</span><span>練習</span><span>${r.join}</span><span>状況</span><span>${esc(r.when)||'－'}</span><span>報告</span><span>${mdw(r.date)} ${r.at}</span>${am?`<span>今朝の体調</span><span>疲労${am.fat}・張り${am.sore}・睡眠${am.sleep}h</span>`:''}</div></div>
@@ -501,14 +502,39 @@ ${r.status==='new'?`<h2>トレーナーの確認</h2><div class="card pad" style
 ${[1,2,3].map(k=>`<label class="dl"><span>${STG[k]}</span><input type="date" class="in" id="rp_d${k}"></label>`).join('')}
 <label style="font-size:13px;color:var(--sub)">いまの段階<select class="in" id="rp_s" style="margin-top:4px">${STG.slice(0,3).map((s,i)=>`<option value="${i}">${s}（${STGD[i]}）</option>`).join('')}</select></label>
 <p class="err" id="rp_err"></p><div class="acts" style="margin:0"><button class="btn" id="rp_ok">ケガとして登録</button><button class="btn ghost" id="rp_watch">様子見にする</button></div></div>`:`<p class="note">この報告は「${r.status==='watch'?'様子見':'ケガ登録済み'}」です。</p>`}`;}
+function STAFFNAME(){const m=CTX.me||{};return m.name||'スタッフ';}
+function sInjNew(pid){const N={pid:pid||'',part:null,side:null};
+  const draw=()=>{const m=$('#main');m.innerHTML=view();bindN();};
+  const view=()=>`<button class="back" data-back>‹ 戻る</button><h2 style="margin-top:4px">ケガを登録</h2>
+<div class="card pad" style="display:flex;flex-direction:column;gap:12px">
+<label style="font-size:13px;color:var(--sub)">選手<select class="in" id="nj_p" style="margin-top:4px"><option value="">選んでください</option>${ROSTER.map(p=>`<option value="${p.id}" ${N.pid===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select></label>
+<div style="font-size:13px;color:var(--sub)">部位<div class="parts" style="margin-top:6px">${PARTS.map(x=>`<button type="button" data-np="${x}" class="${N.part===x?'on':''}">${x}</button>`).join('')}</div></div>
+<div style="font-size:13px;color:var(--sub)">左右<div class="choice" style="margin-top:6px">${['左','右','両方','なし'].map(x=>`<button type="button" data-ns="${x}" class="${N.side===x?'on':''}">${x}</button>`).join('')}</div></div>
+<label style="font-size:13px;color:var(--sub)">内容（診断名や症状）<input class="in" id="nj_what" value="${esc(N.what||'')}" placeholder="例：右足首の捻挫（軽度）" style="margin-top:4px"></label>
+<label style="font-size:13px;color:var(--sub)">ケガをした日<input type="date" class="in" id="nj_date" value="${N.date||T}" max="${T}" style="margin-top:4px"></label>
+<div style="font-size:13px;color:var(--sub)">復帰までの予定<small style="display:block">わかる段階の日付だけ入れてください。あとから編集できます。</small></div>
+${[1,2,3].map(k=>`<label class="dl"><span>${STG[k]}</span><input type="date" class="in" id="nj_d${k}" value="${(N.dates||[])[k-1]||''}"></label>`).join('')}
+<label style="font-size:13px;color:var(--sub)">いまの段階<select class="in" id="nj_s" style="margin-top:4px">${STG.slice(0,3).map((x,i)=>`<option value="${i}" ${(N.stage||0)==i?'selected':''}>${x}（${STGD[i]}）</option>`).join('')}</select></label>
+<p class="err" id="nj_err"></p><button class="btn" id="nj_ok">登録する</button></div>`;
+  const keep=()=>{N.pid=$('#nj_p').value;N.what=$('#nj_what').value;N.date=$('#nj_date').value;N.dates=[1,2,3].map(k=>$('#nj_d'+k).value||'');N.stage=+$('#nj_s').value;};
+  const bindN=()=>{$('[data-back]').onclick=back;
+    document.querySelectorAll('[data-np]').forEach(b=>b.onclick=()=>{keep();N.part=b.dataset.np;draw();});
+    document.querySelectorAll('[data-ns]').forEach(b=>b.onclick=()=>{keep();N.side=b.dataset.ns;draw();});
+    $('#nj_ok').onclick=()=>{keep();const err=t=>{$('#nj_err').textContent=t;};
+      if(!N.pid)return err('選手を選んでください。');if(!N.part)return err('部位を選んでください。');if(!N.date)return err('ケガをした日を入れてください。');
+      if(N.dates.some((d,i)=>d&&N.dates.slice(i+1).some(e=>e&&e<d)))return err('段階の日付が前後しています。');
+      const j=fixInj({id:'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),pid:N.pid,part:N.part,side:N.side==='なし'?'':(N.side||''),what:N.what.trim()||'詳細確認中',date:N.date,dates:N.dates,stage:N.stage,by:STAFFNAME(),active:true});
+      for(let k=1;k<=N.stage;k++)j.actual[k]=T;DB.injuries.unshift(j);save();toast('ケガを登録しました');stack.pop();stack.push(()=>sInjury(j.id));render();window.scrollTo(0,0);};};
+  window.__bind=bindN;return view();}
 function sInj(){const nr=DB.reports.filter(r=>r.status==='new');const act=DB.injuries.filter(j=>j.active&&j.stage<3);const done=DB.injuries.filter(j=>!j.active||j.stage>=3);
   const due=act.map(j=>({j,pl:plan(j)})).filter(x=>x.pl[x.j.stage+1]&&x.pl[x.j.stage+1]<=ds(addD(TODAY,7)));
   const evs=act.flatMap(j=>j.events.filter(e=>e.date>=T&&e.date<=ds(addD(TODAY,7))).map(e=>({j,e}))).sort((a,b)=>a.e.date.localeCompare(b.e.date));
   return `${nr.length?`<h2 style="margin-top:4px">未確認の痛みの報告</h2><div class="card"><ul class="list">${nr.map(r=>`<li class="tap" data-report="${r.id}"><span class="al al-red"></span><div class="m">${esc(byId(r.pid).name)}<small>${r.side}${r.part}・程度${r.level}・${r.join}</small></div><span class="go">›</span></li>`).join('')}</ul></div>`:''}
-<h2${nr.length?'':' style="margin-top:4px"'}>今週、段階が変わる予定</h2><div class="card"><ul class="list">${due.map(({j,pl})=>{const late=pl[j.stage+1]<T;return `<li class="tap" data-injury="${j.id}"><div class="m">${esc(byId(j.pid).name)}<small>${STG[j.stage]} → ${STG[j.stage+1]}（${md(pl[j.stage+1])}）</small></div><span class="tag ${late?'t-red':'t-blue'}">${late?'予定超過':'予定'}</span><span class="go">›</span></li>`;}).join('')}${evs.map(({j,e})=>`<li class="tap" data-injury="${j.id}"><div class="m">${esc(byId(j.pid).name)}<small>${mdw(e.date)} ${esc(e.text)}</small></div><span class="tag">予定</span><span class="go">›</span></li>`).join('')}${due.length||evs.length?'':'<li class="empty">ありません</li>'}</ul></div>
+<div class="acts" style="margin-top:${nr.length?'12px':'4px'}"><button class="btn" data-newinj="">＋ ケガを登録</button></div>
+<h2>今週、段階が変わる予定</h2><div class="card"><ul class="list">${due.map(({j,pl})=>{const late=pl[j.stage+1]<T;return `<li class="tap" data-injury="${j.id}"><div class="m">${esc(byId(j.pid).name)}<small>${STG[j.stage]} → ${STG[j.stage+1]}（${md(pl[j.stage+1])}）</small></div><span class="tag ${late?'t-red':'t-blue'}">${late?'予定超過':'予定'}</span><span class="go">›</span></li>`;}).join('')}${evs.map(({j,e})=>`<li class="tap" data-injury="${j.id}"><div class="m">${esc(byId(j.pid).name)}<small>${mdw(e.date)} ${esc(e.text)}</small></div><span class="tag">予定</span><span class="go">›</span></li>`).join('')}${due.length||evs.length?'':'<li class="empty">ありません</li>'}</ul></div>
 <h2>調整中<small>${act.length}人</small></h2><div class="card"><ul class="list">${act.map(j=>`<li class="tap" data-injury="${j.id}"><div class="m">${esc(byId(j.pid).name)}<small>${esc(j.part)}・${esc(j.what)}・完全合流 ${mdx(plan(j)[3])}${plan(j)[3]?'予定':''}</small></div><span class="tag ${j.stage<2?'t-red':'t-blue'}">${STG[j.stage]}</span><span class="go">›</span></li>`).join('')||'<li class="empty">いません</li>'}</ul></div>
 ${done.length?`<h2>復帰した選手</h2><div class="card"><ul class="list">${done.map(j=>`<li class="tap" data-injury="${j.id}"><div class="m">${esc(byId(j.pid).name)}<small>${esc(j.part)}・${md(j.date)}〜${j.endDate?md(j.endDate):''}</small></div><span class="tag t-ok">完全合流</span></li>`).join('')}</ul></div>`:''}
-<p class="note">ケガで「離脱」「リハビリ」「部分合流」の選手は、同じ端末のポジション整理・メンバー選考で自動的に「ケガ中」になり、候補から外れます。</p>`;}
+<p class="note">ケガで「離脱」「リハビリ」「部分合流」の選手は、ポジション整理・メンバー選考で自動的に「ケガ中」になり、候補から外れます。スケジュールの参加予定にも反映されます。</p>`;}
 function sInjury(id){const j=fixInj(DB.injuries.find(x=>x.id===id)),p=byId(j.pid),pl=plan(j);
   const known=pl.every(Boolean);const w=[0,1,2,3].map(k=>{if(!known)return 1;const a=(pd(pl[k])-pd(pl[0]))/864e5,b=k<3?(pd(pl[k+1])-pd(pl[0]))/864e5:((pd(pl[3])-pd(pl[0]))/864e5)*1.12+1;return Math.max(1,b-a);});const sw=w.reduce((s,x)=>s+x,0);
   const D=days(14).filter(d=>d>=ds(addD(pd(j.date),-7)));const ams=D.map(d=>ent(d,j.pid).am);
@@ -545,7 +571,7 @@ function sInjEdit(id){const j=fixInj(DB.injuries.find(x=>x.id===id)),p=byId(j.pi
 ${[0,1,2,3].map(k=>`<h2>${STG[k]}<small>${STGD[k]}</small></h2><div class="card pad" style="display:flex;flex-direction:column;gap:10px">${k>0?`<label class="dl"><span>開始の予定日</span><input type="date" class="in" id="ie_d${k}" value="${j.dates[k-1]||''}"></label>`:''}<label style="font-size:13px;color:var(--sub)">内容・メニュー<textarea class="in" id="ie_n${k}" style="margin-top:4px" placeholder="${['例：安静・アイシング','例：チューブで可動域と筋力、バイク20分','例：ジョグ→パス→対人なしのメニュー','例：フル参加。最初の1週間は練習試合30分まで'][k]}">${esc(j.notes[k]||'')}</textarea></label></div>`).join('')}
 <h2>通院・再評価など</h2><div class="card pad"><div id="evs" style="display:flex;flex-direction:column;gap:8px">${evHtml()}</div><button class="btn ghost sm" id="ev_add" style="margin-top:10px">＋予定を追加</button></div>
 <div class="submit"><p class="err" id="ie_err"></p><button class="btn block" id="ie_ok">保存する</button></div>`;}
-CTX.onRemote(()=>{const top=stack[stack.length-1];if(top===formView||document.querySelector('.modal'))return;const y=window.scrollY;render();window.scrollTo(0,y);});
+CTX.onRemote(()=>{const top=stack[stack.length-1];if(top===formView||document.querySelector('.modal')||document.querySelector('#nj_ok,#rp_ok'))return;const y=window.scrollY;render();window.scrollTo(0,y);});
 render();
 });
 </script>

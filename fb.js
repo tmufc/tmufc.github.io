@@ -302,9 +302,15 @@ async function schInit(roster){
   const watch=(q,store,opt)=>new Promise(res=>{let first=true;onSnapshot(q,s=>{const seen=new Set();s.docs.forEach(d=>{seen.add(d.id);store[d.id]={...d.data(),id:d.id};});Object.keys(store).forEach(k=>{if(!seen.has(k))delete store[k];});
     if(first){first=false;res();}else if(onRemote)onRemote();},e=>{console.error(e);if(first){first=false;res();}});});
   const jobs=[watch(query(collection(db,'events'),where('date','>=',back)),E),watch(query(collection(db,'days'),where('date','>=',T)),D),watch(collection(db,'notices'),N)];
-  if(CONDS.includes(ME.role))jobs.push(watch(query(collection(db,'trainings'),where('date','>=',T)),TR));
+  const AB={},IJ={};const live=CONDS.includes(ME.role);
+  if(live){jobs.push(watch(query(collection(db,'trainings'),where('date','>=',T)),TR));jobs.push(watch(query(collection(db,'absences'),where('date','>=',T)),AB));jobs.push(watch(collection(db,'injuries'),IJ));}
   await Promise.all(jobs);
-  const days={};const dayMap=new Proxy(D,{get:(o,k)=>{const x=Object.values(o).find(v=>v.date===k);return x;}});
+  // スタッフはその場で計算（選手は15分ごとの自動処理の結果を見る）
+  const calcDay=date=>{const r={date,join:[],late:[],partial:[],rehab:[],off:[]};const inj=Object.values(IJ).filter(j=>j.active&&j.stage<3);const abs=Object.values(AB);
+    roster.forEach(p=>{const j=inj.find(x=>x.pid===p.id&&(!x.date||x.date<=date));const a=abs.find(x=>x.pid===p.id&&x.date===date);
+      if(j&&j.stage===0)r.off.push(p.id);else if(j&&j.stage===1)r.rehab.push(p.id);else if(a&&a.kind==='欠席')r.off.push(p.id);
+      else{r.join.push(p.id);if(j&&j.stage===2)r.partial.push(p.id);if(a)r.late.push(p.id);}});return r;};
+  const dayMap=new Proxy(D,{get:(o,k)=>{if(live&&typeof k==='string'&&k>=T&&k<=dstr(new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()+6)))return calcDay(k);return Object.values(o).find(v=>v.date===k);}});
   return {roster,events:E,days:dayMap,notices:N,trainings:CONDS.includes(ME.role)?TR:null,me:ME,canPost:ME.role!=='player',
     saveNotice:async(x,isNew)=>{const data={text:x.text,date:x.date||'',important:!!x.important,byName:isNew?(ME.name||''):(x.byName||ME.name||''),by:isNew?ME.uid:(x.by||ME.uid),at:isNew?Date.now():(x.at||Date.now()),editedBy:ME.uid};N[x.id]={...data,id:x.id};try{await setDoc(doc(db,'notices',x.id),data);}catch(e){console.error(e);toast('保存できませんでした（'+(e.code||'')+'）');}},
     deleteNotice:async id=>{delete N[id];try{await deleteDoc(doc(db,'notices',id));}catch(e){toast('削除できませんでした');}},
