@@ -187,7 +187,7 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--sel)}
 </style></head><body data-page="cond">
 <header><div class="wrap"><div class="hrow"><h1>TMU FC App</h1></div>
 <nav class="apptabs" aria-label="アプリの切り替え"><a href="./#pos">ポジション</a><a href="./#game">メンバー選考</a><span class="on" aria-current="page">コンディション</span></nav>
-<div class="role" role="tablist" aria-label="表示の切り替え"><button data-role="player" role="tab">選手として</button><button data-role="staff" role="tab">スタッフとして</button></div><div id="who"></div></div></header>
+<div class="role" role="tablist" aria-label="表示の切り替え"><button data-role="player" role="tab">自分の入力</button><button data-role="staff" role="tab">チームの管理</button></div><div id="who"></div></div></header>
 <main class="wrap" id="main"></main>
 <nav class="nav" id="nav" aria-label="メニュー"><div class="wrap" id="navin"></div></nav>
 <script>
@@ -204,7 +204,7 @@ const ROSTER=CTX.roster.map(p=>({id:p.id,name:p.name,grade:p.grade||0,team:p.tea
 const byId=id=>ROSTER.find(p=>p.id===id);
 const SELFK=['筋トレ','ランニング','ボール・技術','ケア','リハビリ','その他'];
 let UI=jget(KU,{role:'player',me:'',tab:'home',stab:'today'});
-UI.role=CTX.role==='player'?'player':'staff';if(CTX.role==='player')UI.me=CTX.pid;
+UI.role=CTX.role==='player'?'player':CTX.role==='leader'?(UI.role==='player'?'player':'staff'):'staff';if(CTX.role==='player'||CTX.role==='leader')UI.me=CTX.pid;
 function save(){CTX.save();syncPos();}
 function saveUI(){ls.set(KU,JSON.stringify(UI));}
 // ---------- dates ----------
@@ -334,7 +334,7 @@ function bind(){
   document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{UI.stab=b.dataset.goto;stack=[];saveUI();render();window.scrollTo(0,0);});
   if(window.__bind){const f=window.__bind;window.__bind=null;f();}
 }
-document.querySelector('.role').style.display='none';if(CTX.role==='player')document.querySelector('.apptabs').style.display='none';
+if(CTX.role!=='leader')document.querySelector('.role').style.display='none';if(CTX.role==='player'||CTX.role==='medical')document.querySelector('.apptabs').style.display='none';
 document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{UI.role=b.dataset.role;stack=[];saveUI();render();window.scrollTo(0,0);});
 // ================= PLAYER =================
 function pickMe(){const g={};ROSTER.forEach(p=>(g[p.grade]=g[p.grade]||[]).push(p));

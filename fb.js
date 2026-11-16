@@ -7,8 +7,10 @@ const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
 const firebaseConfig={apiKey:"AIzaSyAu4LiAEFy7-e1ILCMoN2U__XNDAJybad8",authDomain:"tmufc-app.firebaseapp.com",projectId:"tmufc-app",storageBucket:"tmufc-app.firebasestorage.app",messagingSenderId:"820014072624",appId:"1:820014072624:web:c23b0b8bae92c6a9333ef5"};
 const KEY_LOCAL='tmu-pos-data';
 const ADMIN_EMAILS=[];
-const TITLES=['監督','コーチ','学生コーチ','トレーナー','マネージャー','その他'];
-const ROLE_LABEL={admin:'監督（管理者）',staff:'スタッフ',player:'選手',pending:'承認待ち',disabled:'利用停止'};
+const TITLES=['総監督','監督','コーチ','トレーナー','マネージャー'];
+const FULL=['admin','staff','leader'],CONDS=['admin','staff','leader','medical'],NEEDPID=['player','leader'],NAMED=['admin','staff','medical'];
+const ROLE_ORDER=['pending','player','leader','medical','staff','admin','disabled'];
+const ROLE_LABEL={admin:'管理者（全機能＋メンバー管理）',staff:'総監督・監督・コーチ（全機能）',medical:'トレーナー・マネージャー（コンディションのみ）',leader:'幹部（全機能＋選手の入力）',player:'選手（選手の入力）',pending:'承認待ち',disabled:'利用停止'};
 
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
@@ -97,12 +99,12 @@ async function route(user){
   const r=ME.role;
   if(r==='disabled'){showGate(`<p>このアカウントは利用停止になっています。監督に確認してください。</p><p style="font-size:12px;opacity:.7">${esc(ME.email)}</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}
   if(r==='pending')return pendingScreen();
-  if(r==='player'&&PAGE==='pos'){location.replace('condition.html');return;}
-  if(r==='player'&&!ME.pid){showGate(`<p>選手として承認されていますが、名簿の名前と結びついていません。監督に確認してください。</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}
+  if(!FULL.includes(r)&&PAGE==='pos'){location.replace('condition.html');return;}
+  if(NEEDPID.includes(r)&&!ME.pid){showGate(`<p>選手として承認されていますが、名簿の名前と結びついていません。監督に確認してください。</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}
   started=true;showGate('<p>データを読み込んでいます…</p>');
   try{
     if(PAGE==='pos'){await stateInit();hideGate();window.__APP_MAIN();addAcct();}
-    else{const roster=await getRoster();if(r==='player'&&!roster.some(p=>p.id===ME.pid)){showGate(`<p>名簿にあなたの名前が見つかりません。監督に確認してください。</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}const ctx=await condInit(r,ME.pid,roster);hideGate();window.__COND_MAIN(ctx);addAcct();}
+    else{const roster=await getRoster();if(NEEDPID.includes(r)&&!roster.some(p=>p.id===ME.pid)){showGate(`<p>名簿にあなたの名前が見つかりません。監督に確認してください。</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}const ctx=await condInit(r,ME.pid,roster);hideGate();window.__COND_MAIN(ctx);addAcct();}
   }catch(e){console.error(e);showGate(`<p>データを読み込めませんでした（${esc(e.code||e.message)}）。</p><button class="tb" onclick="location.reload()">読み込み直す</button>`);}
 }
 let pendTab=null;
@@ -134,7 +136,7 @@ function addAcct(){
 function openAcct(){
   const m=document.createElement('div');m.className='tmod';m.innerHTML=`<div class="sh"><div class="hd">アカウント<button class="x" data-x>閉じる</button></div>
 <p style="margin:0">${esc(ME.name)}${ME.raw.title?`<small style="color:var(--sub)">（${esc(ME.raw.title)}）</small>`:''}<br><small style="color:var(--sub)">${esc(ME.email)}</small></p><p>権限：<b>${ROLE_LABEL[ME.role]||ME.role}</b></p>
-${ME.role==='admin'||ME.role==='staff'?`<div class="r" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input class="nm" data-mynm value="${esc(ME.name)}" placeholder="名前"><select data-myti>${TITLES.map(t=>`<option ${ME.raw.title===t?'selected':''}>${t}</option>`).join('')}</select><button class="sv" data-mysv>名前を保存</button></div>`:''}
+${NAMED.includes(ME.role)?`<div class="r" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input class="nm" data-mynm value="${esc(ME.name)}" placeholder="名前"><select data-myti>${TITLES.map(t=>`<option ${ME.raw.title===t?'selected':''}>${t}</option>`).join('')}</select><button class="sv" data-mysv>名前を保存</button></div>`:''}
 <div class="btnrow">${ME.role==='admin'?'<button data-users>メンバー管理</button>':''}<button data-tout>ログアウト</button></div></div>`;
   m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);
   m.querySelector('[data-x]').onclick=()=>m.remove();
@@ -147,22 +149,22 @@ let rosterCache=null;
 async function openUsers(){rosterCache=rosterCache||await getRoster();const m=document.createElement('div');m.className='tmod users';m.innerHTML='<div class="sh"></div>';m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);renderUsers();}
 function renderUsers(){
   const m=document.querySelector('.tmod.users');if(!m)return;const sh=m.querySelector('.sh');const R=rosterCache||[];
-  const ord={pending:0,admin:1,staff:2,player:3,disabled:4};const L=usersCache.slice().sort((a,b)=>(ord[a.role]??9)-(ord[b.role]??9)||String(a.name).localeCompare(String(b.name),'ja'));
-  const linked=new Set(usersCache.filter(u=>u.role==='player'&&u.pid).map(u=>u.pid));
-  const row=u=>{const self=u.uid===ME.uid;return `<div class="u" data-uid="${u.uid}"><div><b>${esc(u.name||'（名前なし）')}</b>${u.title&&(u.role==='staff'||u.role==='admin')?` <small>${esc(u.title)}</small>`:''} ${u.role==='pending'?'<span class="tag">承認待ち</span>':''}<br><small>${esc(u.email)}${u.role==='pending'&&u.requestName?`　申請：${u.requestStaff?'スタッフ（'+esc(u.requestTitle||'')+'）':'選手'} ${esc(u.requestName)}`:''}</small></div>
-<div class="r"><select data-role ${self?'disabled':''}>${['pending','player','staff','admin','disabled'].map(r=>`<option value="${r}" ${(u.role==='pending'&&u.requestStaff?r==='staff':u.role==='pending'&&u.requestPid?r==='player':u.role===r)?'selected':''}>${ROLE_LABEL[r]}</option>`).join('')}</select>
-<input class="nm" data-nm value="${esc(u.role==='pending'&&u.requestStaff?u.requestName:(u.name||''))}" placeholder="名前" ${(u.role==='pending'&&u.requestStaff)||u.role==='staff'||u.role==='admin'?'':'style="display:none"'} ${self?'disabled':''}>
-<select data-ti ${(u.role==='pending'&&u.requestStaff)||u.role==='staff'||u.role==='admin'?'':'style="display:none"'} ${self?'disabled':''}>${TITLES.map(t=>`<option ${(u.title||u.requestTitle)===t?'selected':''}>${t}</option>`).join('')}</select>
-<select data-pid ${u.role==='player'||(u.role==='pending'&&u.requestPid&&!u.requestStaff)?'':'style="display:none"'}><option value="">名簿の名前を選ぶ</option>${R.map(p=>`<option value="${esc(p.id)}" ${(u.pid||u.requestPid)===p.id?'selected':''}>${esc(p.name)}${linked.has(p.id)&&u.pid!==p.id?'（登録済み）':''}</option>`).join('')}</select>
+  const ord={pending:0,admin:1,staff:2,medical:3,leader:4,player:5,disabled:6};const L=usersCache.slice().sort((a,b)=>(ord[a.role]??9)-(ord[b.role]??9)||String(a.name).localeCompare(String(b.name),'ja'));
+  const linked=new Set(usersCache.filter(u=>NEEDPID.includes(u.role)&&u.pid).map(u=>u.pid));
+  const row=u=>{const self=u.uid===ME.uid;return `<div class="u" data-uid="${u.uid}"><div><b>${esc(u.name||'（名前なし）')}</b>${u.title&&NAMED.includes(u.role)?` <small>${esc(u.title)}</small>`:''} ${u.role==='pending'?'<span class="tag">承認待ち</span>':''}<br><small>${esc(u.email)}${u.role==='pending'&&u.requestName?`　申請：${u.requestStaff?'スタッフ（'+esc(u.requestTitle||'')+'）':'選手'} ${esc(u.requestName)}`:''}</small></div>
+<div class="r"><select data-role ${self?'disabled':''}>${ROLE_ORDER.map(r=>`<option value="${r}" ${(u.role==='pending'&&u.requestStaff?r===(['トレーナー','マネージャー'].includes(u.requestTitle)?'medical':'staff'):u.role==='pending'&&u.requestPid?r==='player':u.role===r)?'selected':''}>${ROLE_LABEL[r]}</option>`).join('')}</select>
+<input class="nm" data-nm value="${esc(u.role==='pending'&&u.requestStaff?u.requestName:(u.name||''))}" placeholder="名前" ${(u.role==='pending'&&u.requestStaff)||NAMED.includes(u.role)?'':'style="display:none"'} ${self?'disabled':''}>
+<select data-ti ${(u.role==='pending'&&u.requestStaff)||NAMED.includes(u.role)?'':'style="display:none"'} ${self?'disabled':''}>${TITLES.map(t=>`<option ${(u.title||u.requestTitle)===t?'selected':''}>${t}</option>`).join('')}</select>
+<select data-pid ${NEEDPID.includes(u.role)||(u.role==='pending'&&u.requestPid&&!u.requestStaff)?'':'style="display:none"'}><option value="">名簿の名前を選ぶ</option>${R.map(p=>`<option value="${esc(p.id)}" ${(u.pid||u.requestPid)===p.id?'selected':''}>${esc(p.name)}${linked.has(p.id)&&u.pid!==p.id?'（登録済み）':''}</option>`).join('')}</select>
 <button class="sv" data-save ${self?'disabled':''}>保存</button></div></div>`;};
   sh.innerHTML=`<div class="hd">メンバー管理<button class="x" data-x>閉じる</button></div><p style="font-size:13px;color:var(--sub);margin:0">権限を選んで「保存」を押します。選手は名簿の名前と結びつけてください。</p>${L.map(row).join('')}`;
   sh.querySelector('[data-x]').onclick=()=>m.remove();
   sh.querySelectorAll('.u').forEach(el=>{const rs=el.querySelector('[data-role]'),ps=el.querySelector('[data-pid]');
     const ns=el.querySelector('[data-nm]'),ts=el.querySelector('[data-ti]');
-    rs.onchange=()=>{ps.style.display=rs.value==='player'?'':'none';const st=rs.value==='staff'||rs.value==='admin';ns.style.display=st?'':'none';ts.style.display=st?'':'none';};
-    el.querySelector('[data-save]').onclick=async()=>{const role=rs.value,pid=role==='player'?ps.value:'';if(role==='player'&&!pid){toast('名簿の名前を選んでください');return;}
-      const data={role,pid};if(role==='staff'||role==='admin'){const nm=ns.value.trim();if(nm)data.name=nm;data.title=ts.value;}
-      else if(role==='player'){const p=(rosterCache||[]).find(x=>x.id===pid);if(p)data.name=p.name;}
+    rs.onchange=()=>{ps.style.display=NEEDPID.includes(rs.value)?'':'none';const st=NAMED.includes(rs.value);ns.style.display=st?'':'none';ts.style.display=st?'':'none';};
+    el.querySelector('[data-save]').onclick=async()=>{const role=rs.value,pid=NEEDPID.includes(role)?ps.value:'';if(NEEDPID.includes(role)&&!pid){toast('名簿の名前を選んでください');return;}
+      const data={role,pid};if(NAMED.includes(role)){const nm=ns.value.trim();if(nm)data.name=nm;data.title=ts.value;}
+      else if(NEEDPID.includes(role)){const p=(rosterCache||[]).find(x=>x.id===pid);if(p)data.name=p.name;}
       try{await setDoc(doc(db,'users',el.dataset.uid),data,{merge:true});toast('保存しました');}catch(e){toast('保存できませんでした（'+(e.code||'')+'）');}};});
 }
 
@@ -192,10 +194,15 @@ async function stateInit(){
   else if(local){await writeState(JSON.parse(local),true);}
   else{window.TMU.needSeed=true;}
   if(baseJson)pushRoster(JSON.parse(baseJson));
+  onSnapshot(doc(db,'team','inj'),snap=>{if(!snap.exists())return;const m=snap.data().map||{};setTimeout(()=>applyInj(m).catch(e=>console.error(e)),window.__APP_STARTED?0:1500);},()=>{});
   onSnapshot(stateRef(),snap=>{if(!snap.exists())return;const d=snap.data();if(d.client===CLIENT||d.rev<=baseRev)return;
     if(pushing||pushTimer){return;}
     baseRev=d.rev;baseJson=d.json;localStorage.setItem(KEY,d.json);remoteChanged(d.by);},()=>{});
 }
+async function applyInj(map){let ch=false;await runTransaction(db,async tx=>{const s=await tx.get(stateRef());if(!s.exists())return;const d=s.data();const st=JSON.parse(d.json);
+  (st.players||[]).forEach(pl=>{if(!(pl.id in map))return;const on=!!map[pl.id];if(!!pl.inj!==on&&(on||pl.injFromCond)){pl.inj=on;pl.injFromCond=on;ch=true;}});
+  if(ch){const rev=d.rev+1;tx.set(stateRef(),{json:JSON.stringify(st),rev,client:CLIENT,by:'コンディション',at:serverTimestamp()});baseRev=rev;baseJson=JSON.stringify(st);}});
+  if(ch){localStorage.setItem(KEY,baseJson);remoteChanged('コンディション');}}
 function remoteChanged(by){
   const busy=document.querySelector('.modal,.askm,.tmod')||['INPUT','TEXTAREA','SELECT'].includes((document.activeElement||{}).tagName);
   if(!busy){try{sessionStorage.setItem('tmu-scroll',String(window.scrollY));}catch(e){}location.reload();return;}
@@ -213,7 +220,8 @@ function statePush(st){
 let statusEl=null;function setStatus(s){window.__TMU_SAVE_STATUS=s;const m=document.getElementById('savemsg');if(m&&window.__renderSave)window.__renderSave();}
 // コンディションのケガ → ポジションのケガ中
 let injTimer=null;
-function syncInj(map){if(!(ME.role==='admin'||ME.role==='staff'))return;clearTimeout(injTimer);injTimer=setTimeout(async()=>{try{await runTransaction(db,async tx=>{const s=await tx.get(stateRef());if(!s.exists())return;const d=s.data();const st=JSON.parse(d.json);let ch=false;
+let lastInj='';
+function syncInj(map){if(!CONDS.includes(ME.role))return;clearTimeout(injTimer);injTimer=setTimeout(async()=>{const j=JSON.stringify(map);if(j!==lastInj){try{await setDoc(doc(db,'team','inj'),{map,at:serverTimestamp()});lastInj=j;}catch(e){console.error(e);}}if(!FULL.includes(ME.role))return;try{await runTransaction(db,async tx=>{const s=await tx.get(stateRef());if(!s.exists())return;const d=s.data();const st=JSON.parse(d.json);let ch=false;
   (st.players||[]).forEach(pl=>{if(!(pl.id in map))return;const on=!!map[pl.id];if(!!pl.inj!==on&&(on||pl.injFromCond)){pl.inj=on;pl.injFromCond=on;ch=true;}});
   if(ch)tx.set(stateRef(),{json:JSON.stringify(st),rev:d.rev+1,client:CLIENT,by:ME.email,at:serverTimestamp()});});}catch(e){console.error(e);}},800);}
 
@@ -221,7 +229,7 @@ function syncInj(map){if(!(ME.role==='admin'||ME.role==='staff'))return;clearTim
 const pad=n=>String(n).padStart(2,'0');
 const dstr=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 async function condInit(role,pid,roster){
-  const staff=role==='admin'||role==='staff';
+  const staff=CONDS.includes(role);
   const DB={entries:{},reports:[],injuries:[],absences:[],self:[]};
   const synced={};const maps={reports:{},injuries:{},absences:{},self:{}};let listeners=[];let onRemote=null;
   const now=new Date();const from=dstr(new Date(now.getFullYear(),now.getMonth(),now.getDate()-40));
