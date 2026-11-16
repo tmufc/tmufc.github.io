@@ -7,6 +7,7 @@ const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
 const firebaseConfig={apiKey:"AIzaSyAu4LiAEFy7-e1ILCMoN2U__XNDAJybad8",authDomain:"tmufc-app.firebaseapp.com",projectId:"tmufc-app",storageBucket:"tmufc-app.firebasestorage.app",messagingSenderId:"820014072624",appId:"1:820014072624:web:c23b0b8bae92c6a9333ef5"};
 const KEY_LOCAL='tmu-pos-data';
 const ADMIN_EMAILS=[];
+const TITLES=['監督','コーチ','学生コーチ','トレーナー','マネージャー','その他'];
 const ROLE_LABEL={admin:'監督（管理者）',staff:'スタッフ',player:'選手',pending:'承認待ち',disabled:'利用停止'};
 
 const app=initializeApp(firebaseConfig);
@@ -21,8 +22,8 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 
 // ---------- UI（ゲート・トースト） ----------
 const css=document.createElement('style');
-css.textContent=`.tg{position:fixed;inset:0;z-index:100;background:#0E1A33;color:#fff;display:flex;align-items:center;justify-content:center;padding:24px;font-family:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;overflow:auto}
-.tg .box{width:100%;max-width:420px}
+css.textContent=`.tg{position:fixed;inset:0;z-index:100;background:#0E1A33;color:#fff;display:flex;padding:24px;font-family:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;overflow:auto}
+.tg .box{width:100%;max-width:420px;margin:auto}
 .tg h1{font-size:30px;margin:0 0 4px;letter-spacing:.02em}.tg h1 span{color:#6F93E0}
 .tg .sub{color:rgba(255,255,255,.7);font-size:14px;margin:0 0 28px}
 .tg p{font-size:14px;line-height:1.7;color:rgba(255,255,255,.85)}
@@ -48,6 +49,9 @@ css.textContent=`.tg{position:fixed;inset:0;z-index:100;background:#0E1A33;color
 .tmod .sv{border:0;background:#4366B0;color:#fff;border-radius:8px;padding:7px 14px;font:inherit;font-weight:700;cursor:pointer}
 .tmod .tag{font-size:11px;border-radius:4px;padding:1px 7px;background:#EE6A61;color:#fff}
 .tmod .sec{font-size:12px;color:var(--sub,#5B6B7E);margin:14px 0 2px}
+.tg .tabs{display:flex;gap:6px;margin:6px 0 4px}.tg .tabs button{flex:1;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;border-radius:10px;padding:9px;font:inherit;font-weight:700;cursor:pointer}.tg .tabs button.on{background:#fff;color:#13294B}
+.tg input,.tg select{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;margin-top:6px}.tg select option{color:#13294B}
+.tmod input.nm{font:inherit;font-size:14px;padding:6px 8px;border-radius:8px;border:1px solid var(--line,#D5DDE7);background:var(--bg,#EEF2F7);color:inherit;width:9em}
 .tmod .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .tmod .btnrow button{border:1px solid var(--line,#D5DDE7);background:none;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer;color:inherit}
 .ttoast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#14202E;color:#fff;font-size:13px;padding:9px 16px;border-radius:8px;z-index:120;max-width:90%;text-align:center}`;
@@ -98,17 +102,25 @@ async function route(user){
   started=true;showGate('<p>データを読み込んでいます…</p>');
   try{
     if(PAGE==='pos'){await stateInit();hideGate();window.__APP_MAIN();addAcct();}
-    else{const roster=await getRoster();const ctx=await condInit(r,ME.pid,roster);hideGate();window.__COND_MAIN(ctx);addAcct();}
+    else{const roster=await getRoster();if(r==='player'&&!roster.some(p=>p.id===ME.pid)){showGate(`<p>名簿にあなたの名前が見つかりません。監督に確認してください。</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}const ctx=await condInit(r,ME.pid,roster);hideGate();window.__COND_MAIN(ctx);addAcct();}
   }catch(e){console.error(e);showGate(`<p>データを読み込めませんでした（${esc(e.code||e.message)}）。</p><button class="tb" onclick="location.reload()">読み込み直す</button>`);}
 }
+let pendTab=null;
 async function pendingScreen(){
-  const roster=await getRoster();const u=ME.raw;
+  const roster=await getRoster();const u=ME.raw;if(!pendTab)pendTab=u.requestStaff?'staff':'player';
   const g={};roster.forEach(p=>(g[p.grade||0]=g[p.grade||0]||[]).push(p));
-  const list=Object.keys(g).sort((a,b)=>b-a).map(k=>`<div class="gh">${k>0?k+'年':'学年未設定'}</div><div class="names">${g[k].map(p=>`<button data-rp="${esc(p.id)}" class="${u.requestPid===p.id?'on':''}">${esc(p.name)}</button>`).join('')}</div>`).join('');
-  showGate(`<p>${u.requestPid?`<b>${esc(u.requestName)}</b> として申請中です。監督が承認すると使えるようになります（この画面は自動で切り替わります）。`:'はじめてのログインです。選手の方は、名簿から自分の名前を選んでください。スタッフの方は、選ばずに監督へ連絡してください。'}</p>
-${roster.length?list:'<p>名簿がまだ登録されていません。監督・スタッフが登録するまでお待ちください。</p>'}
+  const list=Object.keys(g).sort((a,b)=>b-a).map(k=>`<div class="gh">${k>0?k+'年':'学年未設定'}</div><div class="names">${g[k].map(p=>`<button data-rp="${esc(p.id)}" class="${!u.requestStaff&&u.requestPid===p.id?'on':''}">${esc(p.name)}</button>`).join('')}</div>`).join('');
+  const req=u.requestStaff?`スタッフ（${esc(u.requestTitle||'')}）の <b>${esc(u.requestName)}</b> として申請中です。`:u.requestPid?`選手の <b>${esc(u.requestName)}</b> として申請中です。`:'';
+  const playerPart=roster.length?`<p>名簿から自分の名前を選んでください。</p>${list}`:'<p>名簿がまだ登録されていません。監督・スタッフが登録するまでお待ちください。</p>';
+  const staffPart=`<p>名前と役職を入れて「申請する」を押してください。</p><input id="tg_nm" placeholder="名前（例：都立 太郎）" value="${esc(u.requestStaff?u.requestName:(u.name||''))}"><select id="tg_ti">${TITLES.map(t=>`<option ${u.requestTitle===t?'selected':''}>${t}</option>`).join('')}</select><button class="tb" id="tg_req">申請する</button>`;
+  showGate(`<p>${req?req+'監督が承認すると使えるようになります（この画面は自動で切り替わります）。':'はじめてのログインです。あてはまる方を選んでください。'}</p>
+<div class="tabs"><button data-tab="player" class="${pendTab==='player'?'on':''}">選手</button><button data-tab="staff" class="${pendTab==='staff'?'on':''}">スタッフ</button></div>
+${pendTab==='player'?playerPart:staffPart}
 <p class="gh">ログイン中：${esc(ME.email)}</p><button class="tb ghost" id="tg_out">ログアウト</button>`);
-  gate.querySelectorAll('[data-rp]').forEach(b=>b.onclick=async()=>{const p=roster.find(x=>x.id===b.dataset.rp);try{await setDoc(doc(db,'users',ME.uid),{requestPid:p.id,requestName:p.name,role:'pending'},{merge:true});ME.raw.requestPid=p.id;ME.raw.requestName=p.name;pendingScreen();}catch(e){toast('申請できませんでした');}});
+  const put=async data=>{try{await setDoc(doc(db,'users',ME.uid),{...data,role:'pending'},{merge:true});Object.assign(ME.raw,data);pendingScreen();}catch(e){toast('申請できませんでした');}};
+  gate.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{pendTab=b.dataset.tab;pendingScreen();});
+  gate.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{const p=roster.find(x=>x.id===b.dataset.rp);put({requestPid:p.id,requestName:p.name,requestStaff:false,requestTitle:''});});
+  const rq=gate.querySelector('#tg_req');if(rq)rq.onclick=()=>{const nm=gate.querySelector('#tg_nm').value.trim();if(!nm){toast('名前を入れてください');return;}put({requestPid:'',requestName:nm,requestStaff:true,requestTitle:gate.querySelector('#tg_ti').value});};
   gate.querySelector('#tg_out').onclick=()=>signOut(auth);
 }
 
@@ -121,12 +133,14 @@ function addAcct(){
 }
 function openAcct(){
   const m=document.createElement('div');m.className='tmod';m.innerHTML=`<div class="sh"><div class="hd">アカウント<button class="x" data-x>閉じる</button></div>
-<p style="margin:0">${esc(ME.name)}<br><small style="color:var(--sub)">${esc(ME.email)}</small></p><p>権限：<b>${ROLE_LABEL[ME.role]||ME.role}</b></p>
+<p style="margin:0">${esc(ME.name)}${ME.raw.title?`<small style="color:var(--sub)">（${esc(ME.raw.title)}）</small>`:''}<br><small style="color:var(--sub)">${esc(ME.email)}</small></p><p>権限：<b>${ROLE_LABEL[ME.role]||ME.role}</b></p>
+${ME.role==='admin'||ME.role==='staff'?`<div class="r" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input class="nm" data-mynm value="${esc(ME.name)}" placeholder="名前"><select data-myti>${TITLES.map(t=>`<option ${ME.raw.title===t?'selected':''}>${t}</option>`).join('')}</select><button class="sv" data-mysv>名前を保存</button></div>`:''}
 <div class="btnrow">${ME.role==='admin'?'<button data-users>メンバー管理</button>':''}<button data-tout>ログアウト</button></div></div>`;
   m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);
   m.querySelector('[data-x]').onclick=()=>m.remove();
   m.querySelector("[data-tout]").onclick=async()=>{if(confirmBox('ログアウトしますか？'))await signOut(auth);};
   const u=m.querySelector('[data-users]');if(u)u.onclick=()=>{m.remove();openUsers();};
+  const ms=m.querySelector('[data-mysv]');if(ms)ms.onclick=async()=>{const name=m.querySelector('[data-mynm]').value.trim();if(!name){toast('名前を入れてください');return;}try{await setDoc(doc(db,'users',ME.uid),{name,title:m.querySelector('[data-myti]').value},{merge:true});ME.name=name;toast('保存しました');m.remove();const b=document.querySelector('.tacct');if(b&&b.firstChild)b.firstChild.textContent=name.split(/[\s　]/)[0];}catch(e){toast('保存できませんでした');}};
 }
 function confirmBox(t){return window.confirm?window.confirm(t):true;}
 let rosterCache=null;
@@ -135,16 +149,21 @@ function renderUsers(){
   const m=document.querySelector('.tmod.users');if(!m)return;const sh=m.querySelector('.sh');const R=rosterCache||[];
   const ord={pending:0,admin:1,staff:2,player:3,disabled:4};const L=usersCache.slice().sort((a,b)=>(ord[a.role]??9)-(ord[b.role]??9)||String(a.name).localeCompare(String(b.name),'ja'));
   const linked=new Set(usersCache.filter(u=>u.role==='player'&&u.pid).map(u=>u.pid));
-  const row=u=>{const self=u.uid===ME.uid;return `<div class="u" data-uid="${u.uid}"><div><b>${esc(u.name||'（名前なし）')}</b> ${u.role==='pending'?'<span class="tag">承認待ち</span>':''}<br><small>${esc(u.email)}${u.requestName?`　申請：${esc(u.requestName)}`:''}</small></div>
-<div class="r"><select data-role ${self?'disabled':''}>${['pending','player','staff','admin','disabled'].map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${ROLE_LABEL[r]}</option>`).join('')}</select>
-<select data-pid ${u.role==='player'?'':'style="display:none"'}><option value="">名簿の名前を選ぶ</option>${R.map(p=>`<option value="${esc(p.id)}" ${(u.pid||u.requestPid)===p.id?'selected':''}>${esc(p.name)}${linked.has(p.id)&&u.pid!==p.id?'（登録済み）':''}</option>`).join('')}</select>
+  const row=u=>{const self=u.uid===ME.uid;return `<div class="u" data-uid="${u.uid}"><div><b>${esc(u.name||'（名前なし）')}</b>${u.title&&(u.role==='staff'||u.role==='admin')?` <small>${esc(u.title)}</small>`:''} ${u.role==='pending'?'<span class="tag">承認待ち</span>':''}<br><small>${esc(u.email)}${u.role==='pending'&&u.requestName?`　申請：${u.requestStaff?'スタッフ（'+esc(u.requestTitle||'')+'）':'選手'} ${esc(u.requestName)}`:''}</small></div>
+<div class="r"><select data-role ${self?'disabled':''}>${['pending','player','staff','admin','disabled'].map(r=>`<option value="${r}" ${(u.role==='pending'&&u.requestStaff?r==='staff':u.role==='pending'&&u.requestPid?r==='player':u.role===r)?'selected':''}>${ROLE_LABEL[r]}</option>`).join('')}</select>
+<input class="nm" data-nm value="${esc(u.role==='pending'&&u.requestStaff?u.requestName:(u.name||''))}" placeholder="名前" ${(u.role==='pending'&&u.requestStaff)||u.role==='staff'||u.role==='admin'?'':'style="display:none"'} ${self?'disabled':''}>
+<select data-ti ${(u.role==='pending'&&u.requestStaff)||u.role==='staff'||u.role==='admin'?'':'style="display:none"'} ${self?'disabled':''}>${TITLES.map(t=>`<option ${(u.title||u.requestTitle)===t?'selected':''}>${t}</option>`).join('')}</select>
+<select data-pid ${u.role==='player'||(u.role==='pending'&&u.requestPid&&!u.requestStaff)?'':'style="display:none"'}><option value="">名簿の名前を選ぶ</option>${R.map(p=>`<option value="${esc(p.id)}" ${(u.pid||u.requestPid)===p.id?'selected':''}>${esc(p.name)}${linked.has(p.id)&&u.pid!==p.id?'（登録済み）':''}</option>`).join('')}</select>
 <button class="sv" data-save ${self?'disabled':''}>保存</button></div></div>`;};
   sh.innerHTML=`<div class="hd">メンバー管理<button class="x" data-x>閉じる</button></div><p style="font-size:13px;color:var(--sub);margin:0">権限を選んで「保存」を押します。選手は名簿の名前と結びつけてください。</p>${L.map(row).join('')}`;
   sh.querySelector('[data-x]').onclick=()=>m.remove();
   sh.querySelectorAll('.u').forEach(el=>{const rs=el.querySelector('[data-role]'),ps=el.querySelector('[data-pid]');
-    rs.onchange=()=>{ps.style.display=rs.value==='player'?'':'none';};
+    const ns=el.querySelector('[data-nm]'),ts=el.querySelector('[data-ti]');
+    rs.onchange=()=>{ps.style.display=rs.value==='player'?'':'none';const st=rs.value==='staff'||rs.value==='admin';ns.style.display=st?'':'none';ts.style.display=st?'':'none';};
     el.querySelector('[data-save]').onclick=async()=>{const role=rs.value,pid=role==='player'?ps.value:'';if(role==='player'&&!pid){toast('名簿の名前を選んでください');return;}
-      try{await setDoc(doc(db,'users',el.dataset.uid),{role,pid},{merge:true});toast('保存しました');}catch(e){toast('保存できませんでした（'+(e.code||'')+'）');}};});
+      const data={role,pid};if(role==='staff'||role==='admin'){const nm=ns.value.trim();if(nm)data.name=nm;data.title=ts.value;}
+      else if(role==='player'){const p=(rosterCache||[]).find(x=>x.id===pid);if(p)data.name=p.name;}
+      try{await setDoc(doc(db,'users',el.dataset.uid),data,{merge:true});toast('保存しました');}catch(e){toast('保存できませんでした（'+(e.code||'')+'）');}};});
 }
 
 // ---------- ポジション整理・メンバー選考（team/state） ----------
