@@ -187,7 +187,7 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--sel)}
 @media (max-width:430px){.apptabs a,.apptabs span{font-size:12px;padding:5px 6px}}
 </style></head><body data-page="cond">
 <header><div class="wrap"><div class="hrow"><h1>TMU FC App</h1></div>
-<nav class="apptabs" aria-label="アプリの切り替え"><a href="./#pos">ポジション</a><a href="./#game">メンバー選考</a><a href="training.html">トレーニング</a><span class="on" aria-current="page">コンディション</span></nav>
+<nav class="apptabs" aria-label="アプリの切り替え"><a href="schedule.html">スケジュール</a><a href="./#pos">ポジション</a><a href="./#game">メンバー選考</a><a href="training.html">トレーニング</a><span class="on" aria-current="page">コンディション</span></nav>
 <div class="role" role="tablist" aria-label="表示の切り替え"><button data-role="player" role="tab">自分の入力</button><button data-role="staff" role="tab">チームの管理</button></div><div id="who"></div></div></header>
 <main class="wrap" id="main"></main>
 <nav class="nav" id="nav" aria-label="メニュー"><div class="wrap" id="navin"></div></nav>
@@ -335,7 +335,7 @@ function bind(){
   document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{UI.stab=b.dataset.goto;stack=[];saveUI();render();window.scrollTo(0,0);});
   if(window.__bind){const f=window.__bind;window.__bind=null;f();}
 }
-if(CTX.role!=='leader')document.querySelector('.role').style.display='none';if(CTX.role==='player')document.querySelector('.apptabs').style.display='none';
+if(CTX.role!=='leader')document.querySelector('.role').style.display='none';
 document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{UI.role=b.dataset.role;stack=[];saveUI();render();window.scrollTo(0,0);});
 // ================= PLAYER =================
 function pickMe(){const g={};ROSTER.forEach(p=>(g[p.grade]=g[p.grade]||[]).push(p));

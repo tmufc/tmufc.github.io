@@ -104,6 +104,7 @@ async function route(user){
   started=true;showGate('<p>データを読み込んでいます…</p>');
   try{
     if(PAGE==='pos'){await stateInit();hideGate();window.__APP_MAIN();addAcct();}
+    else if(PAGE==='sch'){const roster=await getRoster();const ctx=await schInit(roster);hideGate();window.__SCH_MAIN(ctx);addAcct();}
     else if(PAGE==='tr'){const roster=await getRoster();const ctx=await trInit(roster);hideGate();window.__TR_MAIN(ctx);addAcct();}
     else{const roster=await getRoster();if(NEEDPID.includes(r)&&!roster.some(p=>p.id===ME.pid)){showGate(`<p>名簿にあなたの名前が見つかりません。監督に確認してください。</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}const ctx=await condInit(r,ME.pid,roster);hideGate();window.__COND_MAIN(ctx);addAcct();}
   }catch(e){console.error(e);showGate(`<p>データを読み込めませんでした（${esc(e.code||e.message)}）。</p><button class="tb" onclick="location.reload()">読み込み直す</button>`);}
@@ -131,6 +132,8 @@ ${pendTab==='player'?playerPart:staffPart}
 let usersCache=[],usersUnsub=null;
 function addAcct(){
   if(!FULL.includes(ME.role))document.querySelectorAll('.apptabs a[href^="./#"]').forEach(a=>a.remove());
+  if(!CONDS.includes(ME.role))document.querySelectorAll('.apptabs a[href="training.html"]').forEach(a=>a.remove());
+  try{const on=document.querySelector('.apptabs .on');if(on)on.scrollIntoView({inline:'center',block:'nearest'});}catch(e){}
   const host=PAGE==='pos'?document.querySelector('header p'):document.querySelector('header .hrow');if(!host||host.querySelector('.tacct'))return;
   const b=document.createElement('button');b.className='tacct';b.type='button';b.innerHTML=`${esc((ME.name||ME.email).split(/[\s　@]/)[0])}<span class="cnt"></span>`;b.onclick=openAcct;host.appendChild(b);
   if(ME.role==='admin'){usersUnsub=onSnapshot(collection(db,'users'),s=>{usersCache=s.docs.map(d=>({uid:d.id,...d.data()}));const n=usersCache.filter(u=>u.role==='pending').length;b.querySelector('.cnt').innerHTML=n?`<i>${n}</i>`:'';if(document.querySelector('.tmod.users'))renderUsers();},()=>{});}
@@ -290,6 +293,21 @@ async function trInit(roster){
     saveTraining:t=>{T[t.id]=t;return put('trainings',t);},deleteTraining:id=>{delete T[id];return deleteDoc(doc(db,'trainings',id)).catch(e=>toast('削除できませんでした'));},
     saveMenu:m=>{M[m.id]=m;return put('menus',m);},deleteMenu:id=>{delete M[id];return deleteDoc(doc(db,'menus',id)).catch(e=>toast('削除できませんでした'));},
     setCount:(t,n)=>{if(n!=null&&t.cnt!==n){t.cnt=n;put('trainings',t);}},
+    onRemote:f=>{onRemote=f;}};
+}
+
+// ---------- スケジュール ----------
+async function schInit(roster){
+  const E={},D={},N={},TR={};let onRemote=null;const d0=new Date();const T=dstr(d0);const back=dstr(new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()-7));
+  const watch=(q,store,opt)=>new Promise(res=>{let first=true;onSnapshot(q,s=>{const seen=new Set();s.docs.forEach(d=>{seen.add(d.id);store[d.id]={...d.data(),id:d.id};});Object.keys(store).forEach(k=>{if(!seen.has(k))delete store[k];});
+    if(first){first=false;res();}else if(onRemote)onRemote();},e=>{console.error(e);if(first){first=false;res();}});});
+  const jobs=[watch(query(collection(db,'events'),where('date','>=',back)),E),watch(query(collection(db,'days'),where('date','>=',T)),D),watch(collection(db,'notices'),N)];
+  if(CONDS.includes(ME.role))jobs.push(watch(query(collection(db,'trainings'),where('date','>=',T)),TR));
+  await Promise.all(jobs);
+  const days={};const dayMap=new Proxy(D,{get:(o,k)=>{const x=Object.values(o).find(v=>v.date===k);return x;}});
+  return {roster,events:E,days:dayMap,notices:N,trainings:CONDS.includes(ME.role)?TR:null,me:ME,canPost:ME.role!=='player',
+    saveNotice:async(x,isNew)=>{const data={text:x.text,date:x.date||'',important:!!x.important,byName:isNew?(ME.name||''):(x.byName||ME.name||''),by:isNew?ME.uid:(x.by||ME.uid),at:isNew?Date.now():(x.at||Date.now()),editedBy:ME.uid};N[x.id]={...data,id:x.id};try{await setDoc(doc(db,'notices',x.id),data);}catch(e){console.error(e);toast('保存できませんでした（'+(e.code||'')+'）');}},
+    deleteNotice:async id=>{delete N[id];try{await deleteDoc(doc(db,'notices',id));}catch(e){toast('削除できませんでした');}},
     onRemote:f=>{onRemote=f;}};
 }
 
