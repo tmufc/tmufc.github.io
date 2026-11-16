@@ -6,7 +6,7 @@ const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
 
 const firebaseConfig={apiKey:"AIzaSyAu4LiAEFy7-e1ILCMoN2U__XNDAJybad8",authDomain:"tmufc-app.firebaseapp.com",projectId:"tmufc-app",storageBucket:"tmufc-app.firebasestorage.app",messagingSenderId:"820014072624",appId:"1:820014072624:web:c23b0b8bae92c6a9333ef5"};
 const KEY_LOCAL='tmu-pos-data';
-const ADMIN_EMAILS=['hp.tmusoccer@gmail.com'];
+const ADMIN_EMAILS=[];
 const ROLE_LABEL={admin:'監督（管理者）',staff:'スタッフ',player:'選手',pending:'承認待ち',disabled:'利用停止'};
 
 const app=initializeApp(firebaseConfig);
