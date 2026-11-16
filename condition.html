@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#13294B"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="TMU FC App">
+<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-192.png">
+<title>コンディション｜TMU FC App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF2F7;--surface:#FFFFFF;--ink:#14202E;--sub:#5B6B7E;--line:#D5DDE7;--navy:#13294B;--blue:#1F5FBF;--ok:#23885C;--warn:#B98510;--red:#C93C34;--chip:#E3EAF3;--sel:#DCE8FA;color-scheme:light;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D1520;--surface:#162130;--ink:#E5ECF4;--sub:#93A3B6;--line:#273548;--navy:#0B1A30;--blue:#6FA2EE;--ok:#45B985;--warn:#E0B13E;--red:#EE6A61;--chip:#203047;--sel:#1E3354;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0D1520;--surface:#162130;--ink:#E5ECF4;--sub:#93A3B6;--line:#273548;--navy:#0B1A30;--blue:#6FA2EE;--ok:#45B985;--warn:#E0B13E;--red:#EE6A61;--chip:#203047;--sel:#1E3354;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.55;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+.num{font-family:"Barlow Condensed","Zen Kaku Gothic New",system-ui,sans-serif;font-weight:700;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+header{background:var(--navy);color:#fff;padding:calc(12px + env(safe-area-inset-top,0px)) 0 0}
+.hrow{display:flex;align-items:center;gap:8px}
+.hrow h1{margin:0;font-size:18px;flex:1}
+.trial{font-size:11px;background:rgba(255,255,255,.15);border-radius:4px;padding:1px 7px}
+.hlink{color:rgba(255,255,255,.8);font-size:12px;text-decoration:none;border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:3px 10px}
+.apptabs{display:inline-flex;background:rgba(255,255,255,.1);border-radius:999px;padding:3px;margin-top:10px}
+.apptabs a,.apptabs span{color:rgba(255,255,255,.8);font-size:14px;padding:5px 12px;border-radius:999px;text-decoration:none;white-space:nowrap}
+.apptabs .on{background:#fff;color:var(--navy);font-weight:700}
+.role{display:flex;gap:2px;margin-top:10px}
+.role button{border:0;background:transparent;color:rgba(255,255,255,.7);font-size:14px;padding:8px 14px 10px;border-bottom:3px solid transparent}
+.role button.on{color:#fff;border-bottom-color:#fff;font-weight:700}
+.who{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.75);padding:4px 0 10px}
+.who b{color:#fff;font-size:15px}
+.who button{border:0;background:none;color:#9CC0FF;font-size:12px;padding:0}
+main{padding:14px 0 10px}
+h2{font-size:16px;margin:20px 0 8px;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+h2 small{font-size:12px;font-weight:400;color:var(--sub)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.pad{padding:14px}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.list li:last-child{border-bottom:0}
+.list .m{flex:1;min-width:0}
+.list .m small{display:block;font-size:12px;color:var(--sub)}
+.tap{cursor:pointer}.tap:hover{background:var(--sel)}
+.go{color:var(--sub);font-size:18px}
+.tag{font-size:11px;border-radius:4px;padding:1px 7px;white-space:nowrap;background:var(--chip);color:var(--sub)}
+.t-red{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
+.t-warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.t-blue{background:color-mix(in srgb,var(--blue) 15%,transparent);color:var(--blue)}
+.t-ok{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.btn{border:1px solid var(--blue);background:var(--blue);color:#fff;font-weight:700;font-size:15px;padding:11px 18px;border-radius:10px}
+.btn.ghost{background:transparent;color:var(--blue)}
+.btn.sm{font-size:13px;padding:6px 12px;font-weight:400;border-radius:8px}
+.btn.block{width:100%}
+.btn.red{background:transparent;color:var(--red);border-color:var(--red)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.note{font-size:12px;color:var(--sub);margin:8px 2px 0}
+.err{font-size:13px;color:var(--red);margin:8px 0 0}
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+.nav .wrap{display:grid;padding:0}
+.nav button{border:0;background:none;padding:8px 0 9px;font-size:11px;color:var(--sub);display:flex;flex-direction:column;align-items:center;gap:2px;min-height:56px}
+.nav button svg{width:22px;height:22px}
+.nav button.on{color:var(--blue)}
+.nav .badge{position:relative}
+.nav .badge i{position:absolute;top:-4px;right:-10px;background:var(--red);color:#fff;font-style:normal;font-size:10px;border-radius:999px;min-width:16px;height:16px;line-height:16px;padding:0 4px}
+/* player home */
+.hello{background:var(--navy);color:#fff;border-radius:14px;padding:16px;position:relative;overflow:hidden}
+.hello .d{font-size:13px;color:rgba(255,255,255,.75)}
+.hello .n{font-size:24px;font-weight:700;margin:2px 0 0}
+.hello svg{position:absolute;right:-10px;bottom:-14px;opacity:.16}
+.todo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.todo button{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:14px 12px;text-align:left;display:flex;flex-direction:column;gap:6px;min-height:96px}
+.todo button b{font-size:15px}
+.todo button small{font-size:12px;color:var(--sub)}
+.todo button.done{border-color:var(--ok)}
+.todo button.done .st{color:var(--ok)}
+.todo button .st{font-size:12px;font-weight:700;color:var(--blue)}
+.todo button.wide{grid-column:1/-1;min-height:0}
+.todo button.alert{border-color:var(--red)}
+.todo button.alert .st{color:var(--red)}
+.injbox{border-left:4px solid var(--red);border-radius:0;padding:12px 14px;background:var(--surface);margin-top:12px}
+/* forms */
+.fhead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.fhead h2{margin:0;flex:1}
+.back{border:0;background:none;color:var(--blue);font-size:14px;padding:4px 0}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+.q .ql{font-weight:700;font-size:15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:baseline}
+.q .ql small{font-weight:400;font-size:12px;color:var(--sub)}
+.scale{display:grid;gap:6px}
+.scale button{border:1px solid var(--line);background:var(--bg);border-radius:10px;height:48px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:22px}
+.scale button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.scale.rpe button{height:44px;font-size:19px}
+.ends{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-top:6px}
+.rpedesc{font-size:13px;text-align:center;margin-top:8px;min-height:20px;color:var(--blue);font-weight:700}
+.stepper{display:flex;align-items:center;justify-content:center;gap:18px}
+.stepper button{width:52px;height:52px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:26px;line-height:1}
+.stepper .v{font-size:44px;min-width:110px;text-align:center}
+.stepper .v small{font-size:18px;color:var(--sub)}
+.choice{display:flex;flex-wrap:wrap;gap:8px}
+.choice button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:9px 16px;font-size:15px}
+.choice button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.parts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.parts button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 4px;font-size:13px;min-height:46px}
+.parts button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.in{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-size:16px}
+textarea.in{min-height:72px;resize:vertical}
+.submit{position:sticky;bottom:calc(64px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,var(--bg) 30%);padding:16px 0 4px}
+/* staff */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:left}
+.kpi p{margin:0;font-size:11px;color:var(--sub);line-height:1.3}
+.kpi b{font-size:28px;line-height:1.1;display:block}
+.kpi b small{font-size:14px;color:var(--sub)}
+.kpi.r b{color:var(--red)}
+.al{flex:0 0 10px;width:10px;height:10px;border-radius:50%}
+.al-red{background:var(--red)}.al-warn{background:var(--warn)}.al-info{background:var(--blue)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:9px 6px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:400;color:var(--sub);font-size:12px}
+td:first-child,th:first-child{text-align:left;padding-left:14px}
+tr:last-child td{border-bottom:0}
+tbody tr{cursor:pointer}tbody tr:hover{background:var(--sel)}
+.dot{display:inline-block;min-width:30px;padding:1px 6px;border-radius:5px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:16px}
+.d-g{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.d-m{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.d-b{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px}
+.chips button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:999px;font-size:13px;padding:5px 13px}
+.chips button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chart{padding:12px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--sub);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:4px;vertical-align:3px}
+.ph{display:flex;align-items:flex-end;gap:12px;margin-bottom:10px}
+.ph h1{margin:0;font-size:22px}
+.ph p{margin:0;font-size:13px;color:var(--sub)}
+.post{display:flex;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.post.picked{border:2px solid var(--warn);padding:11px}
+.av{flex:0 0 40px;height:40px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.pb{flex:1;min-width:0}
+.pt{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.pt small{font-size:12px;color:var(--sub)}
+.tags{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:4px}
+.k-0{background:color-mix(in srgb,var(--blue) 15%,transparent);color:var(--blue)}
+.k-1{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.k-2{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.k-3{background:color-mix(in srgb,#8A5CC7 16%,transparent);color:#8A5CC7}
+.k-4{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
+.pmin{font-size:18px;margin-left:4px}.pmin small{font-size:12px;color:var(--sub)}
+.pn{margin:6px 0 0;font-size:14px;white-space:pre-wrap;word-break:break-word}
+.pa{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.likers{display:flex;align-items:center;gap:5px;border:0;background:none;padding:0;margin-top:8px;font-size:12px;color:var(--sub);text-align:left}
+.likers svg{width:14px;height:14px;flex:0 0 auto;color:var(--blue)}
+.likers span{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.like{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 12px;font-size:13px;min-height:34px}
+.like svg{width:16px;height:16px}
+.like.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.pickbtn{border:1px dashed var(--warn);background:none;color:var(--warn);border-radius:999px;padding:5px 12px;font-size:12px;min-height:34px}
+.pickbtn.on{border-style:solid;background:color-mix(in srgb,var(--warn) 15%,transparent);font-weight:700}
+.pickmark{font-size:12px;color:var(--warn);font-weight:700}
+.nudge{margin-top:12px;border-left:4px solid var(--warn);border-radius:0 12px 12px 0}
+.nudge small{color:var(--sub)}
+.dl{display:grid;grid-template-columns:92px 1fr;align-items:center;gap:8px;font-size:14px}
+.dl span{color:var(--sub)}
+.evrow{display:grid;grid-template-columns:140px 1fr auto;gap:6px;align-items:center}
+@media (max-width:420px){.evrow{grid-template-columns:1fr auto}.evrow input[type=date]{grid-column:1/-1}}
+.kv{display:grid;grid-template-columns:100px 1fr;gap:6px 10px;font-size:14px}
+.kv span:nth-child(odd){color:var(--sub)}
+.stages{display:flex;height:30px;border-radius:8px;overflow:hidden;margin:8px 0 4px}
+.stages span{display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff}
+.stages span.done{opacity:.4}
+.stages span.now{box-shadow:inset 0 0 0 3px rgba(255,255,255,.8);font-weight:700}
+.s0{background:var(--red)}.s1{background:var(--warn)}.s2{background:var(--blue)}.s3{background:var(--ok)}
+.stlab{display:flex;justify-content:space-between;font-size:11px;color:var(--sub)}
+.modal{position:fixed;inset:0;background:rgba(5,12,24,.5);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:560px;max-height:85vh;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;overflow:auto}
+.sheet.center{border-radius:16px;margin:auto 16px;max-width:420px}
+.modal.c{align-items:center}
+.shead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:17px;font-weight:700}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:14px;padding:10px 18px;border-radius:10px;z-index:40;max-width:90%;text-align:center}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pick button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px;text-align:left;font-size:15px}
+.pick button small{display:block;font-size:11px;color:var(--sub)}
+.gh{font-size:12px;color:var(--sub);margin:12px 0 6px}
+.empty{padding:18px;text-align:center;color:var(--sub);font-size:13px}
+@media (min-width:700px){.todo{grid-template-columns:repeat(4,1fr)}.pick{grid-template-columns:repeat(3,1fr)}}
+</style></head><body>
+<header><div class="wrap"><div class="hrow"><h1>TMU FC App</h1><span class="trial">コンディション試作版</span></div>
+<nav class="apptabs" aria-label="アプリの切り替え"><a href="./#pos">ポジション</a><a href="./#game">メンバー選考</a><span class="on" aria-current="page">コンディション</span></nav>
+<div class="role" role="tablist" aria-label="表示の切り替え"><button data-role="player" role="tab">選手として</button><button data-role="staff" role="tab">スタッフとして</button></div><div id="who"></div></div></header>
+<main class="wrap" id="main"></main>
+<nav class="nav" id="nav" aria-label="メニュー"><div class="wrap" id="navin"></div></nav>
+<script>
+(function(){
+const ROSTER_SEED=[{"id": "n15", "name": "上坂 緩大", "grade": 3}, {"id": "n9", "name": "中崎 琉斗", "grade": 3}, {"id": "n12", "name": "中田 幹登", "grade": 3}, {"id": "n54", "name": "寳理 永翔", "grade": 3}, {"id": "n18", "name": "後藤 志郎", "grade": 3}, {"id": "n11", "name": "杉崎 志信", "grade": 3}, {"id": "n44", "name": "深津 啓一郎", "grade": 3}, {"id": "n7", "name": "程塚 駿太", "grade": 3}, {"id": "n22", "name": "若山 璃皇", "grade": 3}, {"id": "n71", "name": "西川 大翔", "grade": 3}, {"id": "n99", "name": "中田 涼介", "grade": 2}, {"id": "n26", "name": "五島 凛也", "grade": 2}, {"id": "n30", "name": "加賀 獅音", "grade": 2}, {"id": "n24", "name": "坂井 玲仁", "grade": 2}, {"id": "a02", "name": "大汐 徹平", "grade": 2}, {"id": "a03", "name": "小林 巧実", "grade": 2}, {"id": "n92", "name": "山田 琉空", "grade": 2}, {"id": "n84", "name": "林 陸斗", "grade": 2}, {"id": "n21", "name": "森山 太稀", "grade": 2}, {"id": "n25", "name": "橋本 岳空", "grade": 2}, {"id": "n47", "name": "渡辺 康太", "grade": 2}, {"id": "n27", "name": "西田 有之介", "grade": 2}, {"id": "a01", "name": "金山 範諏", "grade": 2}, {"id": "n23", "name": "須藤 星空", "grade": 2}, {"id": "a06", "name": "佐々木 蒼太", "grade": 1}, {"id": "a08", "name": "佐藤 和樹", "grade": 1}, {"id": "n31", "name": "勝野 幹太", "grade": 1}, {"id": "n19", "name": "堤崎 陽琉", "grade": 1}, {"id": "n29", "name": "太田 金治", "grade": 1}, {"id": "n20", "name": "小柳 走", "grade": 1}, {"id": "a10", "name": "新田 桜生", "grade": 1}, {"id": "n33", "name": "朝見 元太", "grade": 1}, {"id": "a07", "name": "柴田 尊", "grade": 1}, {"id": "a04", "name": "秋山 奏翔", "grade": 1}, {"id": "n2", "name": "竹谷 晄希", "grade": 1}, {"id": "a09", "name": "織田 唯楽", "grade": 1}, {"id": "n61", "name": "荒瀬 智文", "grade": 1}, {"id": "n17", "name": "飯塚 惇", "grade": 1}, {"id": "n97", "name": "高澤 陽介", "grade": 1}];
+// ---------- storage ----------
+const K='tmu-cond-data',KP='tmu-pos-data',KU='tmu-cond-ui';
+let mem={};
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return mem[k]??null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){mem[k]=v}}};
+const jget=(k,d)=>{try{return JSON.parse(ls.get(k))??d}catch(e){return d}};
+let DB=jget(K,null);
+const pos=jget(KP,null);
+const ROSTER=(pos&&Array.isArray(pos.players)&&pos.players.length?pos.players.filter(p=>!p.out).map(p=>({id:p.id,name:p.name,grade:p.grade||0,team:p.team||'',p1:p.p1||''})):ROSTER_SEED.map(p=>({...p,team:'',p1:''}))).sort((a,b)=>(b.grade-a.grade)||a.name.localeCompare(b.name,'ja'));
+const byId=id=>ROSTER.find(p=>p.id===id);
+const SELFK=['筋トレ','ランニング','ボール・技術','ケア','リハビリ','その他'];
+let UI=jget(KU,{role:'player',me:'',tab:'home',stab:'today'});
+function save(){ls.set(K,JSON.stringify(DB));syncPos();}
+function saveUI(){ls.set(KU,JSON.stringify(UI));}
+// ---------- dates ----------
+const pad=n=>String(n).padStart(2,'0');
+const ds=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const TODAY=new Date();TODAY.setHours(0,0,0,0);const T=ds(TODAY);
+const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+const pd=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+const WD='日月火水木金土';
+const md=s=>{const d=pd(s);return `${d.getMonth()+1}/${d.getDate()}`;};
+const mdw=s=>{const d=pd(s);return `${d.getMonth()+1}/${d.getDate()}（${WD[d.getDay()]}）`;};
+const days=n=>[...Array(n)].map((_,i)=>ds(addD(TODAY,i-n+1)));
+// ---------- sample data ----------
+function makeSample(){
+  let seed=17;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280;};
+  const db={entries:{},reports:[],injuries:[],absences:[],sample:true};
+  ROSTER.forEach((p,pi)=>{let f=1.6+rnd()*1.2;
+    for(let i=-27;i<=0;i++){const d=ds(addD(TODAY,i));const dow=pd(d).getDay();
+      f=Math.max(1,Math.min(3.4,f+(rnd()-.5)*1.1));
+      const e=(db.entries[d]=db.entries[d]||{});const x=e[p.id]={};
+      if(i<0?rnd()<.92:rnd()<.72)x.am={sleep:Math.round((5.5+rnd()*3)*2)/2,sq:Math.max(1,Math.min(5,Math.round(3+rnd()*2-.5))),fat:Math.round(f),sore:Math.max(1,Math.min(4,Math.round(f+(rnd()-.5)*1.4))),mood:Math.max(1,Math.min(5,Math.round(5-f+rnd()*1.2))),pain:false,at:'07:'+pad(Math.floor(rnd()*50))};
+      if(i<0&&dow!==1&&rnd()<.9)x.pm={rpe:Math.max(2,Math.min(9,Math.round(4.5+rnd()*3.5+(dow===3?1:0)))),min:[90,100,110,120][Math.floor(rnd()*4)],note:''};
+    }});
+  const sp=(k,i,v)=>{const p=ROSTER[k];if(!p)return;const d=ds(addD(TODAY,i));db.entries[d][p.id].am=Object.assign({sleep:7,sq:3,fat:2,sore:2,mood:3,pain:false,at:'07:20'},db.entries[d][p.id].am||{},v);};
+  sp(0,-1,{fat:4});sp(0,0,{fat:5,sore:4});sp(5,0,{sleep:4.5,sq:2});sp(9,0,{sore:5});
+  [3,20].forEach(k=>{const p=ROSTER[k];if(p)for(let i=-7;i<0;i++){const x=db.entries[ds(addD(TODAY,i))][p.id];if(x.pm)x.pm.rpe=Math.min(10,x.pm.rpe+2),x.pm.min=120;}});
+  if(ROSTER[14]){db.entries[T][ROSTER[14].id].am={sleep:6.5,sq:3,fat:3,sore:4,mood:3,pain:true,at:'07:12'};db.reports.push({id:'r1',pid:ROSTER[14].id,date:T,at:'07:13',part:'ふくらはぎ・すね',side:'左',level:3,join:'一部なら可能',when:'昨日のゲームの後半から張りと痛み',status:'new'});}
+  const inj=(k,ago,part,what,weeks,stage)=>{const p=ROSTER[k];if(!p)return;db.injuries.push({id:'i'+k,pid:p.id,part,side:'',what,date:ds(addD(TODAY,-ago)),weeks,stage,by:'トレーナー',active:true,sample:true});};
+  inj(22,15,'左足首','ねんざ（中度）',4,1);inj(30,9,'太もも裏','肉ばなれ（軽度）',3,2);
+  [[25,'欠席','就活',''],[33,'遅刻','授業','19:00着']].forEach(([k,kind,reason,note])=>{const p=ROSTER[k];if(p)db.absences.push({id:'a'+k,pid:p.id,date:T,kind,reason,note});});
+  db.self=[];ROSTER.forEach((p,pi)=>{for(let i=-13;i<=0;i++){if(rnd()<.22){const k=SELFK[Math.floor(rnd()*4)];const sh=rnd()<.55;const NOTE={'筋トレ':['スクワットとデッドリフト。フォーム重視で','体幹メニュー3種×3セット','ジムで下半身。片脚系を多めに'],'ランニング':['朝ラン5km','坂ダッシュ10本','インターバル走 200m×8'],'ボール・技術':['左足のキック練習100本','壁当てで止める・蹴るを反復','リフティングとターンの練習'],'ケア':['ストレッチとフォームローラー','入浴後に股関節まわりのストレッチ','アイシングと早めに就寝']};db.self.push({id:'s'+pi+'_'+i,pid:p.id,date:ds(addD(TODAY,i)),ts:i*100000+pi,kinds:[k],min:[20,30,40,60][Math.floor(rnd()*4)],rpe:Math.round(3+rnd()*4),note:sh?NOTE[k][Math.floor(rnd()*3)]:'',shared:sh,likes:sh?ROSTER.filter(()=>rnd()<.06).map(q=>q.id).concat(rnd()<.3?['staff']:[]):[]});}}});
+  db.injuries.forEach(j=>{fixInj(j);j.notes=['安静・アイシング','チューブで足首の可動域と筋力','ジョグ→パス→対人なしのメニュー',''];});
+  if(db.injuries[0])db.injuries[0].events=[{id:'e1',date:ds(addD(TODAY,3)),text:'整形外科で再評価'}];
+  return db;
+}
+if(!DB){DB=makeSample();save();}
+if(!DB.self)DB.self=[];DB.injuries.forEach(fixInj);
+DB.self.forEach(x=>{x.kinds=x.kinds.map(k=>k==='走り'?'ランニング':k==='ストレッチ・ケア'?'ケア':k);if(!x.likes)x.likes=[];});
+// injuries -> position app (ケガ中の選手をメンバー選考から外す)
+function syncPos(){const p=jget(KP,null);if(!p||!Array.isArray(p.players))return;let ch=false;
+  p.players.forEach(pl=>{const on=DB.injuries.some(j=>j.active&&!j.sample&&j.pid===pl.id&&j.stage<3);if(!!pl.inj!==on&&(on||pl.injFromCond)){pl.inj=on;pl.injFromCond=on;ch=true;}});
+  if(ch)ls.set(KP,JSON.stringify(p));}
+// ---------- helpers ----------
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}
+function modal(html,center){const m=document.createElement('div');m.className='modal'+(center?' c':'');m.innerHTML=`<div class="sheet${center?' center':''}" role="dialog">${html}</div>`;m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);return m;}
+function ask(msg){return new Promise(res=>{const m=modal(`<p style="margin:4px 0 14px;font-size:15px">${esc(msg)}</p><div class="acts" style="justify-content:flex-end;margin:0"><button class="btn ghost sm" data-no>やめる</button><button class="btn sm" data-yes>OK</button></div>`,true);m.querySelector('[data-no]').onclick=()=>{m.remove();res(false)};m.querySelector('[data-yes]').onclick=()=>{m.remove();res(true)};});}
+const ent=(d,pid)=>((DB.entries[d]||{})[pid])||{};
+const setEnt=(d,pid,k,v)=>{DB.entries[d]=DB.entries[d]||{};DB.entries[d][pid]=DB.entries[d][pid]||{};DB.entries[d][pid][k]=v;};
+const lv=(v,inv)=>{const x=inv?6-v:v;return x<=2?'d-g':x===3?'d-m':'d-b';};
+const slv=h=>h>=7?'d-g':h>=5.5?'d-m':'d-b';
+const STG=['離脱','リハビリ','部分合流','完全合流'];
+const STGD=['練習には参加しない','ボールなしのリハビリ','ボールありで一部の練習に参加','すべての練習に参加'];
+function autoDates(date,weeks){const t=Math.round(weeks*7);return [.25,.6,.85].map(r=>ds(addD(pd(date),Math.round(t*r))));}
+function fixInj(j){if(!j.dates)j.dates=j.weeks?autoDates(j.date,j.weeks):['','',''];if(!j.notes)j.notes=['','','',''];if(!j.events)j.events=[];if(!j.actual)j.actual=[j.date,'','',''];return j;}
+function plan(j){fixInj(j);return [j.date,...j.dates];}
+const mdx=s=>s?md(s):'未定';
+const activeInj=pid=>DB.injuries.find(j=>j.active&&j.pid===pid&&j.stage<3);
+function pmLoad(pid,d){const x=ent(d,pid).pm;return x?x.rpe*x.min:0;}
+function selfOn(pid,d){return (DB.self||[]).filter(x=>x.pid===pid&&x.date===d);}
+function selfLoad(pid,d){return selfOn(pid,d).reduce((s,x)=>s+x.rpe*x.min,0);}
+function load(pid,d){return pmLoad(pid,d)+selfLoad(pid,d);}
+const PARTS=['頭・首','肩','腕・手','背中・腰','股関節・鼠径部','太もも前','太もも裏','ひざ','ふくらはぎ・すね','足首','足（足裏・指）','その他'];
+const RPED=['まったく楽','とても楽','楽','ふつう','ややきつい','きつい','きつい','とてもきつい','とてもきつい','非常にきつい','限界'];
+// ---------- alerts ----------
+function alertsFor(pid){
+  const out=[];const a=ent(T,pid).am,y=ent(ds(addD(TODAY,-1)),pid).am;
+  DB.reports.filter(r=>r.pid===pid&&r.status==='new').forEach(r=>out.push({lv:'red',t:`痛みの報告（${r.side}${r.part}・程度${r.level}）`,who:'トレーナー'}));
+  if(a){if(a.fat>=4&&y&&y.fat>=4)out.push({lv:'red',t:`疲労${a.fat}（2日続けて4以上）`,who:'トレーナー'});
+    else if(a.fat>=5)out.push({lv:'warn',t:'疲労5',who:'トレーナー'});
+    if(a.sore>=5)out.push({lv:'red',t:'筋肉の張り5',who:'トレーナー'});
+    if(a.sleep<5.5)out.push({lv:'warn',t:`睡眠${a.sleep}時間`,who:'学生スタッフ'});
+    const prev=days(8).slice(0,7).map(d=>ent(d,pid).am).filter(Boolean);
+    if(prev.length>=4){const av=prev.reduce((s,x)=>s+x.fat,0)/prev.length;if(a.fat-av>=2&&a.fat>=4&&!out.some(o=>o.t.startsWith('疲労')))out.push({lv:'warn',t:`疲労が急に上昇（${av.toFixed(1)}→${a.fat}）`,who:'トレーナー'});}}
+  const L=d=>d.reduce((s,x)=>s+load(pid,x),0);const W=days(29).slice(0,28);const ac=L(W.slice(21)),ch=L(W.slice(0,21))/3;
+  if(ch>0&&ac>ch*1.5)out.push({lv:'warn',t:`直近1週間の練習負荷がふだんの${(ac/ch).toFixed(1)}倍`,who:'学生コーチ'});
+  {const m3=days(3).reduce((s,d)=>s+selfOn(pid,d).reduce((t,x)=>t+x.min,0),0);if(a&&a.fat>=4&&m3>=90)out.push({lv:'warn',t:`疲労${a.fat}なのに自主トレが続いている（3日で${m3}分）`,who:'トレーナー'});}
+  const ret=DB.injuries.find(j=>j.pid===pid&&j.active&&j.stage>=2);if(ret&&a&&(a.fat>=3||a.sore>=3))out.push({lv:'warn',t:`復帰途中（${ret.part}）で疲労・張り${Math.max(a.fat,a.sore)}`,who:'トレーナー'});
+  return out;
+}
+function allAlerts(){return ROSTER.flatMap(p=>alertsFor(p.id).map(a=>({...a,pid:p.id}))).sort((x,y)=>(x.lv==='red'?0:1)-(y.lv==='red'?0:1));}
+// ---------- charts ----------
+function line(series,{h=120,min=1,max=5,labels=[],band=null}={}){const w=330,pl=22,pr=18,n=series[0].v.length;const x=i=>pl+(w-pl-pr)*i/(n-1),y=v=>h-18-(h-28)*(v-min)/(max-min);
+  let s=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="推移のグラフ">`;for(let v=min;v<=max;v++)s+=`<line x1="${pl}" x2="${w-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="4" y="${y(v)+4}" font-size="10" fill="var(--sub)">${v}</text>`;
+  if(band)s+=`<rect x="${pl}" width="${w-pl-pr}" y="${y(band[1])}" height="${y(band[0])-y(band[1])}" fill="var(--red)" opacity=".08"/>`;
+  series.forEach(se=>{let seg=[];const segs=[];se.v.forEach((v,i)=>{if(v==null){if(seg.length)segs.push(seg);seg=[];}else seg.push(`${x(i)},${y(v)}`);});if(seg.length)segs.push(seg);
+    segs.forEach(sg=>{s+=`<polyline fill="none" stroke="${se.c}" stroke-width="2.4" stroke-linejoin="round" points="${sg.join(' ')}"/>`;});se.v.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${x(i)}" cy="${y(v)}" r="${i===n-1?4:2.4}" fill="${se.c}"/>`;});});
+  labels.forEach((l,i)=>{if(l)s+=`<text x="${x(i)}" y="${h-3}" font-size="10" fill="var(--sub)" text-anchor="middle">${l}</text>`;});return s+'</svg>';}
+function bars(v,{h=100,labels=[],hi=null,mark=null}={}){const w=330,p=6,n=v.length,mx=Math.max(1,...v.filter(x=>x!=null),mark||0),bw=(w-p*2)/n;let s=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="棒グラフ">`;
+  if(mark)s+=`<line x1="${p}" x2="${w-p}" y1="${h-16-(h-24)*mark/mx}" y2="${h-16-(h-24)*mark/mx}" stroke="var(--ok)" stroke-dasharray="4 3"/>`;
+  v.forEach((x,i)=>{const bh=(h-24)*(x||0)/mx;s+=`<rect x="${p+i*bw+3}" y="${h-16-bh}" width="${bw-6}" height="${Math.max(bh,x?2:0)}" rx="3" fill="${hi&&x!=null&&hi(x)?'var(--red)':'var(--blue)'}"/>`;if(labels[i])s+=`<text x="${p+i*bw+bw/2}" y="${h-3}" font-size="10" fill="var(--sub)" text-anchor="middle">${labels[i]}</text>`;});return s+'</svg>';}
+function sbars(a,b,{h=100,labels=[]}={}){const w=330,p=6,n=a.length,mx=Math.max(1,...a.map((x,i)=>x+b[i])),bw=(w-p*2)/n;let s=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="積み上げ棒グラフ">`;
+  a.forEach((x,i)=>{const ha=(h-24)*x/mx,hb=(h-24)*b[i]/mx;const y0=h-16;if(x)s+=`<rect x="${p+i*bw+3}" y="${y0-ha}" width="${bw-6}" height="${ha}" fill="var(--blue)"/>`;if(b[i])s+=`<rect x="${p+i*bw+3}" y="${y0-ha-hb}" width="${bw-6}" height="${hb}" fill="var(--ok)"/>`;if(labels[i])s+=`<text x="${p+i*bw+bw/2}" y="${h-3}" font-size="10" fill="var(--sub)" text-anchor="middle">${labels[i]}</text>`;});return s+'</svg>';}
+// ---------- icons ----------
+const IC={feed:'<path d="M7 11l3-7c1.2 0 2 1 2 2v3h5.5a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 16.3 20H7z"/><path d="M3 11h4v9H3z"/>',home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',rec:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',today:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',list:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.5 3.2-5.5 6.5-5.5s6 2 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.5c3 .2 5 2 5.5 5"/>',inj:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M12 10v7M8.5 13.5h7"/>'};
+const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`;
+const FIELD='<svg width="180" height="110" viewBox="0 0 180 110" aria-hidden="true"><g fill="none" stroke="#fff" stroke-width="1.5"><rect x="5" y="5" width="170" height="120"/><line x1="90" y1="5" x2="90" y2="125"/><circle cx="90" cy="65" r="26"/><rect x="5" y="35" width="28" height="60"/><rect x="147" y="35" width="28" height="60"/></g></svg>';
+// ---------- shell ----------
+let stack=[];
+function render(){
+  document.querySelectorAll('[data-role]').forEach(b=>{b.classList.toggle('on',b.dataset.role===UI.role);b.setAttribute('aria-selected',b.dataset.role===UI.role);});
+  const me=byId(UI.me);
+  $('#who').innerHTML=UI.role==='player'?(me?`<div class="who">ログイン中：<b>${esc(me.name)}</b><button id="chgme">切り替え</button></div>`:'<div class="who">試作版のため、名前を選んでログインの代わりにします</div>'):'<div class="who">監督・学生コーチ・トレーナーの画面</div>';
+  const cm=$('#chgme');if(cm)cm.onclick=()=>{UI.me='';stack=[];saveUI();render();};
+  let html,navs;
+  if(stack.length)html=stack[stack.length-1]();
+  else if(UI.role==='player'){if(!me){html=pickMe();navs=null;}else{html=UI.tab==='rec'?pRecord(me):UI.tab==='feed'?feed():pHome(me);navs=[['home','入力','home'],['feed','チーム','feed'],['rec','自分の記録','rec']];}}
+  else{const v={today:sToday,list:sList,inj:sInj,feed:feed}[UI.stab]||sToday;html=v();const nr=DB.reports.filter(r=>r.status==='new').length;navs=[['today','今日','today'],['list','選手一覧','list'],['inj','ケガ','inj',nr],['feed','チーム','feed']];}
+  $('#main').innerHTML=html;
+  if(navs===undefined)navs=UI.role==='player'?[['home','入力','home'],['feed','チーム','feed'],['rec','自分の記録','rec']]:[['today','今日','today'],['list','選手一覧','list'],['inj','ケガ','inj',DB.reports.filter(r=>r.status==='new').length],['feed','チーム','feed']];
+  const cur=UI.role==='player'?UI.tab:UI.stab;
+  $('#nav').style.display=navs?'':'none';
+  if(navs){$('#navin').style.gridTemplateColumns=`repeat(${navs.length},1fr)`;$('#navin').innerHTML=navs.map(([k,l,ic,b])=>`<button data-nav="${k}" class="${cur===k&&!stack.length?'on':''}"><span class="badge">${svg(ic)}${b?`<i>${b}</i>`:''}</span>${l}</button>`).join('');}
+  bind();
+}
+function go(fn){stack.push(fn);render();window.scrollTo(0,0);}
+function back(){stack.pop();render();window.scrollTo(0,0);}
+function home(){stack=[];render();window.scrollTo(0,0);}
+function bind(){
+  document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{if(UI.role==='player')UI.tab=b.dataset.nav;else UI.stab=b.dataset.nav;stack=[];saveUI();render();window.scrollTo(0,0);});
+  document.querySelectorAll('[data-back]').forEach(b=>b.onclick=back);
+  document.querySelectorAll('[data-me]').forEach(b=>b.onclick=()=>{UI.me=b.dataset.me;UI.tab='home';saveUI();render();});
+  document.querySelectorAll('[data-form]').forEach(b=>b.onclick=()=>openForm(b.dataset.form));
+  document.querySelectorAll('[data-player]').forEach(b=>b.onclick=()=>go(()=>sPlayer(b.dataset.player)));
+  document.querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>go(()=>sReport(b.dataset.report)));
+  document.querySelectorAll('[data-injury]').forEach(b=>b.onclick=()=>go(()=>sInjury(b.dataset.injury)));
+  document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{UI.filter=b.dataset.filter;saveUI();render();});
+  document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{UI.stab=b.dataset.goto;stack=[];saveUI();render();window.scrollTo(0,0);});
+  if(window.__bind){const f=window.__bind;window.__bind=null;f();}
+}
+document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{UI.role=b.dataset.role;stack=[];saveUI();render();window.scrollTo(0,0);});
+// ================= PLAYER =================
+function pickMe(){const g={};ROSTER.forEach(p=>(g[p.grade]=g[p.grade]||[]).push(p));
+  return `<h2 style="margin-top:4px">自分の名前を選んでください</h2><p class="note" style="margin:0 0 6px">本番では大学のGoogleアカウントでログインし、最初の1回だけ名前を選んで、スタッフが承認します。</p>
+${Object.keys(g).sort((a,b)=>b-a).map(k=>`<div class="gh">${k>0?k+'年':'学年未設定'}</div><div class="pick">${g[k].map(p=>`<button data-me="${p.id}">${esc(p.name)}</button>`).join('')}</div>`).join('')}`;}
+function pHome(me){
+  const e=ent(T,me.id),inj=activeInj(me.id);const rep=DB.reports.filter(r=>r.pid===me.id&&r.date===T);const ab=DB.absences.find(a=>a.pid===me.id&&a.date===T);
+  const card=(k,t,sub,state,cls)=>`<button data-form="${k}" class="${cls||''}"><b>${t}</b><small>${sub}</small><span class="st">${state}</span></button>`;
+  const yd=ent(ds(addD(TODAY,-1)),me.id);
+  return `<div class="hello"><div class="d">${mdw(T)}</div><div class="n">${esc(me.name)}さん</div><div class="d" style="margin-top:2px">今日の入力</div>${FIELD}</div>
+${inj?`<div class="injbox card"><b style="color:var(--red)">ケガ：${STG[inj.stage]}</b>　${esc(inj.part)}<br><small style="color:var(--sub)">${STGD[inj.stage]}${inj.notes[inj.stage]?'：'+esc(inj.notes[inj.stage]):''}。完全合流の予定は${mdx(plan(inj)[3])}です。</small></div>`:''}
+${(()=>{const a=e.am;const m3=days(3).reduce((s,d)=>s+selfOn(me.id,d).reduce((t,x)=>t+x.min,0),0);return a&&a.fat>=4&&m3>=90?`<div class="card pad nudge"><b>疲れがたまっているようです</b><br><small>ここ3日の自主トレは${m3}分です。今日は休んだり、ケアに切り替えたりするのも大事な取り組みです。</small></div>`:'';})()}
+<div class="todo">
+${card('am','朝のチェック','睡眠・疲労・張り・気分',e.am?`入力済み（${e.am.at}）`:'未入力 ›',e.am?'done':'')}
+${card('pm','練習後のきつさ',yd.pm&&!e.pm?'昨日の分は入力済み':'練習のあとに入力',e.pm?'入力済み':'入力する ›',e.pm?'done':'')}
+${card('pain','痛み・ケガの報告','痛みや違和感があるとき',rep.length?`報告済み（${rep.length}件）`:'報告する ›',rep.length?'alert':'')}
+${card('abs','欠席・遅刻の連絡','練習を休む・遅れるとき',ab?`${ab.kind}で連絡済み`:'連絡する ›',ab?'done':'')}
+${(()=>{const t=selfOn(me.id,T);return card('self','自主トレ・ケア','筋トレ・ランニング・ケアなど',t.length?`今日 ${t.reduce((a,x)=>a+x.min,0)}分（${t.length}件）・追加する ›`:'記録する ›',(t.length?'done ':'')+'wide');})()}
+</div>
+<h2>最近の入力<small>疲労（1〜5）</small></h2><div class="card chart">${line([{v:days(7).map(d=>(ent(d,me.id).am||{}).fat??null),c:'var(--red)'}],{h:100,labels:days(7).map(md)})}</div>
+<p class="note">朝のチェックは毎日、練習後のきつさは練習のある日に入力してください。入力した内容はスタッフ（監督・学生コーチ・トレーナー）だけが見られます。</p>`;}
+function pRecord(me){const D=days(14),lab=D.map((d,i)=>i%2===1?md(d):'');const ams=D.map(d=>ent(d,me.id).am);
+  const filled=ams.filter(Boolean).length;const inj=DB.injuries.filter(j=>j.pid===me.id);
+  return `<h2 style="margin-top:4px">自分の記録<small>直近14日</small></h2>
+<div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><p>入力した日</p><b class="num">${filled}<small>/14</small></b></div><div class="kpi"><p>平均の睡眠</p><b class="num">${filled?(ams.filter(Boolean).reduce((s,x)=>s+x.sleep,0)/filled).toFixed(1):'－'}<small>h</small></b></div><div class="kpi"><p>平均の疲労</p><b class="num">${filled?(ams.filter(Boolean).reduce((s,x)=>s+x.fat,0)/filled).toFixed(1):'－'}</b></div></div>
+<h2>疲労と筋肉の張り</h2><div class="card chart">${line([{v:ams.map(x=>x?x.fat:null),c:'var(--red)'},{v:ams.map(x=>x?x.sore:null),c:'var(--warn)'}],{labels:lab,band:[4,5]})}<div class="legend"><span><i style="background:var(--red)"></i>疲労</span><span><i style="background:var(--warn)"></i>張り</span></div></div>
+<h2>睡眠時間</h2><div class="card chart">${bars(ams.map(x=>x?x.sleep:null),{labels:lab,hi:v=>v<5.5,mark:7})}<p class="note" style="margin:4px 0 0">緑の線は7時間の目安です。</p></div>
+${selfRec(me.id)}
+${inj.length?`<h2>ケガ</h2><div class="card"><ul class="list">${inj.map(j=>`<li><div class="m">${esc(j.part)}・${esc(j.what)}<small>${md(j.date)}〜　完全合流の予定 ${mdx(plan(j)[3])}</small></div><span class="tag ${j.stage<2?'t-red':'t-blue'}">${STG[j.stage]}</span></li>`).join('')}</ul></div>`:''}`;}
+function selfRec(pid,staff){const L=(DB.self||[]).filter(x=>x.pid===pid&&x.date>=days(14)[0]).sort((a,b)=>b.date.localeCompare(a.date));
+  const m7=L.filter(x=>x.date>=days(7)[0]).reduce((a,x)=>a+x.min,0);
+  window.__selfdel=pid;
+  return `<h2>自主トレ・ケア<small>直近7日 ${m7}分・14日 ${L.reduce((a,x)=>a+x.min,0)}分</small></h2><div class="card"><ul class="list">${L.map(x=>`<li><div class="m">${mdw(x.date)}　${x.kinds.map(esc).join('・')}<small>${x.min}分・きつさ${x.rpe}${x.note?'・'+esc(x.note):''}</small></div>${x.shared?'<span class="tag t-blue">共有中</span>':''}${staff?'':`<button class="btn ghost sm" data-sshare="${x.id}">${x.shared?'共有をやめる':'共有する'}</button><button class="btn ghost sm" data-sdel="${x.id}">削除</button>`}</li>`).join('')||'<li class="empty">記録はありません</li>'}</ul></div>`;}
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-sdel]');if(!b)return;if(!await ask('この自主トレの記録を削除しますか？'))return;DB.self=DB.self.filter(x=>x.id!==b.dataset.sdel);save();render();toast('削除しました');});
+const viewer=()=>UI.role==='player'?UI.me:'staff';
+const likerName=id=>id==='staff'?'スタッフ':(byId(id)||{}).name||'？';
+function likerText(x){const v=viewer();const ids=[...x.likes].sort((a,b)=>(a===v?-1:b===v?1:0));const nm=ids.map(id=>id===v&&UI.role==='player'?'あなた':likerName(id).split(/[\s　]+/)[0]);
+  return `${svg('feed')}<span>${nm.slice(0,3).map(esc).join('、')}${nm.length>3?` ほか${nm.length-3}人`:''}がナイスしました</span>`;}
+function postHtml(x){const p=byId(x.pid);if(!p)return'';const v=viewer();const liked=x.likes.includes(v);const sur=String(p.name).split(/[\s　]+/)[0];
+  return `<div class="post"><div class="av">${esc(sur.slice(0,2))}</div><div class="pb"><div class="pt"><b>${esc(p.name)}</b><small>${p.grade?p.grade+'年・':''}${mdw(x.date)}</small></div>
+<div class="tags">${x.kinds.map(k=>`<span class="tag k-${SELFK.indexOf(k)}">${esc(k)}</span>`).join('')}<span class="pmin num">${x.min}<small>分</small></span></div>${x.note?`<p class="pn">${esc(x.note)}</p>`:''}
+${x.likes.length?`<button class="likers" data-likers="${x.id}">${likerText(x)}</button>`:''}<div class="pa"><button class="like${liked?' on':''}" data-like="${x.id}" aria-pressed="${liked}">${svg('feed')}ナイス${x.likes.length?` <span class="num">${x.likes.length}</span>`:''}</button></div></div></div>`;}
+function feed(){const L=DB.self.filter(x=>x.shared).sort((a,b)=>b.date.localeCompare(a.date)||(b.ts||0)-(a.ts||0));const wk=days(7)[0];
+  const thisWk=L.filter(x=>x.date>=wk);const g={};L.slice(0,60).forEach(x=>(g[x.date]=g[x.date]||[]).push(x));
+  return `<h2 style="margin-top:4px">チームの取り組み</h2><p class="note" style="margin:0 0 10px">自主トレやケアを共有して、お互いの取り組みを認め合う場所です。ランキングはありません。休養やケアも大事な取り組みです。</p>
+<div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><p>今週の共有</p><b class="num">${thisWk.length}<small>件</small></b></div><div class="kpi"><p>共有した人</p><b class="num">${new Set(thisWk.map(x=>x.pid)).size}<small>人</small></b></div><div class="kpi"><p>ナイス</p><b class="num">${thisWk.reduce((a,x)=>a+x.likes.length,0)}</b></div></div>
+${UI.role==='player'?'<div class="acts" style="margin-top:14px"><button class="btn block" data-form="self">＋ 自主トレ・ケアを記録して共有</button></div>':''}
+${Object.keys(g).map(d=>`<div class="gh">${d===T?'今日':mdw(d)}</div>${g[d].map(postHtml).join('')}`).join('')||'<div class="empty">まだ共有はありません</div>'}`;}
+document.addEventListener('click',e=>{const l=e.target.closest('[data-like]');if(l){const x=DB.self.find(z=>z.id===l.dataset.like);const v=viewer();const i=x.likes.indexOf(v);if(i>=0)x.likes.splice(i,1);else x.likes.push(v);save();const y=window.scrollY;render();window.scrollTo(0,y);return;}
+  const lk=e.target.closest('[data-likers]');if(lk){const x=DB.self.find(z=>z.id===lk.dataset.likers);const v=viewer();const ids=[...x.likes].sort((a,b)=>(a===v?-1:b===v?1:0));
+    const m=modal(`<div class="shead">ナイスした人（${ids.length}人）<button class="btn ghost sm" data-x>閉じる</button></div><ul class="list">${ids.map(id=>{const p=byId(id);return `<li><div class="av" style="flex-basis:34px;height:34px;font-size:12px">${id==='staff'?'ST':esc(String(p?p.name:'?').split(/[\s　]+/)[0].slice(0,2))}</div><div class="m">${esc(likerName(id))}${id===v&&UI.role==='player'?'（あなた）':''}<small>${id==='staff'?'監督・学生スタッフ':p&&p.grade?p.grade+'年':''}</small></div></li>`;}).join('')}</ul>`);m.querySelector('[data-x]').onclick=()=>m.remove();return;}
+  const sh=e.target.closest('[data-sshare]');if(sh){const x=DB.self.find(z=>z.id===sh.dataset.sshare);x.shared=!x.shared;if(!x.shared){x.likes=[];}save();render();toast(x.shared?'チームに共有しました':'共有をやめました');}});
+// ---------- forms ----------
+let F={};
+function scale(key,n0,n1,lo,hi,cls){const v=F[key];return `<div class="scale ${cls||''}" style="grid-template-columns:repeat(${n1-n0+1},1fr)">${[...Array(n1-n0+1)].map((_,i)=>`<button type="button" data-sc="${key}" data-v="${n0+i}" class="${v===n0+i?'on':''}">${n0+i}</button>`).join('')}</div><div class="ends"><span>${lo}</span><span>${hi}</span></div>`;}
+function choice(key,opts){return `<div class="choice">${opts.map(o=>`<button type="button" data-ch="${key}" data-v="${esc(o)}" class="${F[key]===o?'on':''}">${esc(o)}</button>`).join('')}</div>`;}
+function openForm(kind){const me=byId(UI.me);F={_k:kind};
+  if(kind==='am'){const a=ent(T,me.id).am;Object.assign(F,a||{sleep:7,sq:null,fat:null,sore:null,mood:null,pain:null});}
+  if(kind==='pm'){const p=ent(T,me.id).pm;Object.assign(F,p||{rpe:null,min:120,note:''});}
+  if(kind==='pain')Object.assign(F,{part:null,side:null,level:null,join:null,when:''});
+  if(kind==='self')Object.assign(F,{date:T,kinds:[],min:30,rpe:null,note:'',share:'共有しない'});
+  if(kind==='abs'){const a=DB.absences.find(x=>x.pid===me.id&&x.date===T);Object.assign(F,a||{date:T,kind:null,reason:null,note:''});}
+  go(formView);}
+function formView(){const me=byId(UI.me),k=F._k;let body='',title='';
+  if(k==='am'){title='朝のチェック';body=`<div class="q"><div class="ql">睡眠時間</div><div class="stepper"><button type="button" data-step="-0.5" aria-label="30分減らす">−</button><span class="v num">${F.sleep.toFixed(1)}<small>時間</small></span><button type="button" data-step="0.5" aria-label="30分増やす">＋</button></div></div>
+<div class="q"><div class="ql">睡眠の質</div>${scale('sq',1,5,'とても悪い','とても良い')}</div>
+<div class="q"><div class="ql">疲労感</div>${scale('fat',1,5,'疲れていない','とても疲れている')}</div>
+<div class="q"><div class="ql">筋肉の張り</div>${scale('sore',1,5,'張りなし','強い張り')}</div>
+<div class="q"><div class="ql">気分</div>${scale('mood',1,5,'とても悪い','とても良い')}</div>
+<div class="q"><div class="ql">痛みや違和感はありますか</div>${choice('pain_s',['ない','ある'])}${F.pain_s==='ある'?'<p class="note">送信すると、続けて痛みの報告の画面に進みます。</p>':''}</div>`;
+    if(F.pain_s===undefined&&F.pain!=null)F.pain_s=F.pain?'ある':'ない';}
+  if(k==='pm'){title='練習後のきつさ';body=`<div class="q"><div class="ql">今日の練習は、全体としてどのくらいきつかったですか<small>0〜10</small></div>${scale('rpe',0,10,'まったく楽','限界','rpe')}<div class="rpedesc">${F.rpe!=null?RPED[F.rpe]:''}</div></div>
+<div class="q"><div class="ql">練習時間<small>分</small></div>${choice('min_s',['60','90','100','110','120','150'])}</div>
+<div class="q"><div class="ql">ひと言<small>任意</small></div><textarea class="in" id="f_note" placeholder="気になったことがあれば">${esc(F.note||'')}</textarea></div>`;if(F.min_s===undefined)F.min_s=String(F.min||120);}
+  if(k==='pain'){title='痛み・ケガの報告';body=`<div class="q"><div class="ql">部位</div><div class="parts">${PARTS.map(p=>`<button type="button" data-ch="part" data-v="${p}" class="${F.part===p?'on':''}">${p}</button>`).join('')}</div></div>
+<div class="q"><div class="ql">左右</div>${choice('side',['左','右','両方','なし'])}</div>
+<div class="q"><div class="ql">痛みの程度</div>${scale('level',1,5,'少し気になる','とても痛い')}</div>
+<div class="q"><div class="ql">練習への参加</div>${choice('join',['フル参加できる','一部なら可能','参加できない'])}</div>
+<div class="q"><div class="ql">いつから・どんな状況で</div><textarea class="in" id="f_when" placeholder="例：昨日のゲームの後半から、ダッシュすると痛い">${esc(F.when||'')}</textarea></div>`;}
+  if(k==='abs'){title='欠席・遅刻の連絡';body=`<div class="q"><div class="ql">日付</div><input type="date" class="in" id="f_date" value="${F.date}"></div>
+<div class="q"><div class="ql">欠席か遅刻か</div>${choice('kind',['欠席','遅刻','早退'])}</div>
+<div class="q"><div class="ql">理由</div>${choice('reason',['授業','就活','体調不良','ケガ','その他'])}</div>
+<div class="q"><div class="ql">補足<small>${F.kind==='遅刻'?'到着予定の時刻など':'任意'}</small></div><input class="in" id="f_note" value="${esc(F.note||'')}" placeholder="${F.kind==='遅刻'?'例：19:00着':'例：病院に寄ってから'}"></div>`;}
+  if(k==='self'){title='自主トレ';body=`<div class="q"><div class="ql">日付</div><input type="date" class="in" id="f_date" value="${F.date}" max="${T}"></div>
+<div class="q"><div class="ql">内容<small>複数選べます</small></div><div class="choice">${SELFK.map(o=>`<button type="button" data-mch="kinds" data-v="${o}" class="${F.kinds.includes(o)?'on':''}">${o}</button>`).join('')}</div></div>
+<div class="q"><div class="ql">時間</div><div class="stepper"><button type="button" data-mstep="-10" aria-label="10分減らす">−</button><span class="v num">${F.min}<small>分</small></span><button type="button" data-mstep="10" aria-label="10分増やす">＋</button></div></div>
+<div class="q"><div class="ql">きつさ<small>0〜10</small></div>${scale('rpe',0,10,'まったく楽','限界','rpe')}<div class="rpedesc">${F.rpe!=null?RPED[F.rpe]:''}</div></div>
+<div class="q"><div class="ql">ひと言<small>任意</small></div><textarea class="in" id="f_note" placeholder="例：スクワット3セット、坂ダッシュ10本">${esc(F.note||'')}</textarea></div>
+<div class="q"><div class="ql">チームに共有<small>「チーム」の画面に表示されます</small></div>${choice('share',['共有しない','共有する'])}<p class="note">${F.share==='共有する'?'内容・時間・ひと言がチームに表示されます。きつさは表示されません。':'あなたとスタッフだけが見られます。'}</p></div>`;}
+  window.__bind=bindForm;
+  return `<div class="fhead"><button class="back" data-back>‹ 戻る</button><h2>${title}</h2></div>${body}<div class="submit"><p class="err" id="f_err"></p><button class="btn block" id="f_ok">${(k==='am'&&ent(T,me.id).am)||(k==='pm'&&ent(T,me.id).pm)?'修正して送信':'送信する'}</button></div>`;}
+function keepText(){['f_note','f_when'].forEach(id=>{const el=document.getElementById(id);if(el)F[id==='f_note'?'note':'when']=el.value;});const d=document.getElementById('f_date');if(d)F.date=d.value;}
+function rerender(){keepText();const y=window.scrollY;stack[stack.length-1]=formView;render();window.scrollTo(0,y);}
+function bindForm(){
+  document.querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{F[b.dataset.sc]=+b.dataset.v;rerender();});
+  document.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{F[b.dataset.ch]=b.dataset.v;rerender();});
+  document.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{F.sleep=Math.max(0,Math.min(14,F.sleep+ +b.dataset.step));rerender();});
+  document.querySelectorAll('[data-mstep]').forEach(b=>b.onclick=()=>{F.min=Math.max(10,Math.min(300,F.min+ +b.dataset.mstep));rerender();});
+  document.querySelectorAll('[data-mch]').forEach(b=>b.onclick=()=>{const a=F[b.dataset.mch],v=b.dataset.v;const i=a.indexOf(v);if(i>=0)a.splice(i,1);else a.push(v);rerender();});
+  $('#f_ok').onclick=submitForm;}
+function submitForm(){keepText();const me=byId(UI.me),k=F._k;const err=t=>{$('#f_err').textContent=t;};
+  const now=new Date(),hm=`${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  if(k==='am'){const miss=[['sq','睡眠の質'],['fat','疲労感'],['sore','筋肉の張り'],['mood','気分']].filter(([x])=>F[x]==null).map(x=>x[1]);if(!F.pain_s)miss.push('痛みや違和感');
+    if(miss.length)return err(`${miss.join('・')}を選んでください。`);
+    setEnt(T,me.id,'am',{sleep:F.sleep,sq:F.sq,fat:F.fat,sore:F.sore,mood:F.mood,pain:F.pain_s==='ある',at:hm});save();
+    if(F.pain_s==='ある'){toast('朝のチェックを送信しました');stack=[];F={_k:'pain',part:null,side:null,level:null,join:null,when:''};go(formView);return;}
+    toast('朝のチェックを送信しました');return home();}
+  if(k==='pm'){if(F.rpe==null)return err('きつさを選んでください。');setEnt(T,me.id,'pm',{rpe:F.rpe,min:+F.min_s||120,note:F.note||''});save();toast('送信しました。おつかれさまでした');return home();}
+  if(k==='pain'){const miss=[['part','部位'],['side','左右'],['level','痛みの程度'],['join','練習への参加']].filter(([x])=>!F[x]).map(x=>x[1]);if(miss.length)return err(`${miss.join('・')}を選んでください。`);
+    DB.reports.push({id:'r'+Date.now(),pid:me.id,date:T,at:hm,part:F.part,side:F.side,level:F.level,join:F.join,when:F.when||'',status:'new'});save();toast('トレーナーに報告しました');return home();}
+  if(k==='self'){if(!F.kinds.length)return err('内容を選んでください。');if(F.rpe==null)return err('きつさを選んでください。');if(!F.date)return err('日付を入れてください。');
+    DB.self.push({id:'s'+Date.now(),pid:me.id,date:F.date,ts:Date.now(),kinds:F.kinds.slice(),min:F.min,rpe:F.rpe,note:F.note||'',shared:F.share==='共有する',likes:[]});save();toast(F.share==='共有する'?'記録してチームに共有しました':'自主トレを記録しました');return home();}
+  if(k==='abs'){if(!F.kind)return err('欠席・遅刻・早退のどれかを選んでください。');if(!F.reason)return err('理由を選んでください。');if(!F.date)return err('日付を入れてください。');
+    DB.absences=DB.absences.filter(a=>!(a.pid===me.id&&a.date===F.date));DB.absences.push({id:'a'+Date.now(),pid:me.id,date:F.date,kind:F.kind,reason:F.reason,note:F.note||''});save();toast('連絡しました');return home();}}
+// ================= STAFF =================
+function sToday(){
+  const filled=ROSTER.filter(p=>ent(T,p.id).am).length;const al=allAlerts();const red=new Set(al.filter(a=>a.lv==='red').map(a=>a.pid));const warnP=new Set(al.map(a=>a.pid));
+  const injN=DB.injuries.filter(j=>j.active&&j.stage<3).length;const abs=DB.absences.filter(a=>a.date===T);
+  const absentIds=new Set([...abs.filter(a=>a.kind==='欠席').map(a=>a.pid),...DB.injuries.filter(j=>j.active&&j.stage<2).map(j=>j.pid)]);
+  const un=ROSTER.filter(p=>!ent(T,p.id).am&&!absentIds.has(p.id));
+  const newRep=DB.reports.filter(r=>r.status==='new');
+  return `<div class="ph"><div><h1>${mdw(T)}</h1><p>選手の入力をもとに、自動で判定しています</p></div></div>
+<div class="kpis"><button class="kpi" data-goto="list"><p>今朝の入力</p><b class="num">${filled}<small>/${ROSTER.length}</small></b></button><button class="kpi r" data-goto="list"><p>要注意</p><b class="num">${warnP.size}</b></button><button class="kpi" data-goto="inj"><p>ケガ</p><b class="num">${injN}</b></button><button class="kpi" data-goto="today"><p>欠席・遅刻</p><b class="num">${abs.length}</b></button></div>
+${newRep.length?`<h2>新しい痛みの報告<small>トレーナーが確認</small></h2><div class="card"><ul class="list">${newRep.map(r=>{const p=byId(r.pid);return `<li class="tap" data-report="${r.id}"><span class="al al-red"></span><div class="m">${esc(p?p.name:'?')}<small>${r.side}${r.part}・程度${r.level}・${r.join}・${md(r.date)} ${r.at}</small></div><span class="tag t-red">未確認</span><span class="go">›</span></li>`;}).join('')}</ul></div>`:''}
+<h2>要注意の選手<small>タップで詳細</small></h2><div class="card"><ul class="list">${[...warnP].filter(pid=>!newRep.some(r=>r.pid===pid&&al.filter(a=>a.pid===pid).length===1)).map(pid=>{const p=byId(pid);const a=al.filter(x=>x.pid===pid);return `<li class="tap" data-player="${pid}"><span class="al al-${red.has(pid)?'red':'warn'}"></span><div class="m">${esc(p.name)}<small>${a.map(x=>esc(x.t)).join('／')}・対応：${[...new Set(a.map(x=>x.who))].join('・')}</small></div><span class="go">›</span></li>`;}).join('')||'<li class="empty">いません</li>'}</ul></div>
+<h2>今日の欠席・遅刻</h2><div class="card"><ul class="list">${abs.map(a=>{const p=byId(a.pid);return `<li class="tap" data-player="${a.pid}"><div class="m">${esc(p?p.name:'?')}<small>${a.kind}${a.note?'・'+esc(a.note):''}</small></div><span class="tag ${a.reason==='体調不良'||a.reason==='ケガ'?'t-warn':''}">${a.reason}</span></li>`;}).join('')}${DB.injuries.filter(j=>j.active&&j.stage<3).map(j=>{const p=byId(j.pid);return `<li class="tap" data-injury="${j.id}"><div class="m">${esc(p?p.name:'?')}<small>${esc(j.part)}・${STGD[j.stage]}</small></div><span class="tag ${j.stage<2?'t-red':'t-blue'}">ケガ（${STG[j.stage]}）</span></li>`;}).join('')||''}${abs.length||injN?'':'<li class="empty">いません</li>'}</ul></div>
+<h2>今朝の未入力<small>${un.length}人</small></h2><div class="card pad" style="font-size:14px">${un.length?un.map(p=>esc(p.name)).join('、'):'全員入力しました'}</div>
+<h2>チームの練習負荷<small>きつさ×時間の平均・昨日までの14日</small></h2><div class="card chart">${(()=>{const D=days(15).slice(0,14);const v=D.map(d=>{const xs=ROSTER.map(p=>load(p.id,d)).filter(x=>x>0);return xs.length?Math.round(xs.reduce((s,x)=>s+x,0)/xs.length):0;});const mx=Math.max(...v);return bars(v,{labels:D.map((d,i)=>i%2===1?md(d):''),hi:x=>x>=mx*.95&&x>0});})()}</div>
+<div class="acts"><button class="btn ghost sm" id="resetS">サンプルデータを入れ直す</button><button class="btn red sm" id="clearS">データをすべて消す</button></div>
+<p class="note">試作版のため、データはこの端末の中だけに保存されます。「選手として」で入力した内容は、すぐこの画面に反映されます。サンプルのケガは、メンバー選考には反映しません。</p>`;}
+window.addEventListener('click',async e=>{if(e.target.id==='resetS'){if(!await ask('いまのデータを消して、サンプルデータを入れ直します。よろしいですか？'))return;DB=makeSample();save();render();toast('サンプルデータを入れました');}
+  if(e.target.id==='clearS'){if(!await ask('入力されたデータをすべて消します。よろしいですか？'))return;DB={entries:{},reports:[],injuries:[],absences:[]};save();render();toast('データを消しました');}});
+function sList(){const f=UI.filter||'all';const al=allAlerts();const ap=new Set(al.map(a=>a.pid));
+  let ps=ROSTER.slice();if(f==='A'||f==='B')ps=ps.filter(p=>p.team===f);if(f==='warn')ps=ps.filter(p=>ap.has(p.id));if(f==='none')ps=ps.filter(p=>!ent(T,p.id).am);
+  ps.sort((a,b)=>(ap.has(b.id)?1:0)-(ap.has(a.id)?1:0)||((ent(T,b.id).am?1:0)-(ent(T,a.id).am?1:0))||(((ent(T,b.id).am||{}).fat||0)+((ent(T,b.id).am||{}).sore||0))-(((ent(T,a.id).am||{}).fat||0)+((ent(T,a.id).am||{}).sore||0)));
+  const yd=ds(addD(TODAY,-1));const hasTeam=ROSTER.some(p=>p.team);
+  return `<div class="chips">${[['all','全員'],...(hasTeam?[['A','A'],['B','B']]:[]),['warn','要注意'],['none','未入力']].map(([k,l])=>`<button data-filter="${k}" class="${f===k?'on':''}">${l}</button>`).join('')}</div>
+<div class="card tbl"><table><thead><tr><th>選手</th><th>疲労</th><th>張り</th><th>睡眠</th><th>気分</th><th>前日RPE</th><th>自主トレ<br>7日</th></tr></thead><tbody>${ps.map(p=>{const a=ent(T,p.id).am,pm=ent(yd,p.id).pm,inj=activeInj(p.id);
+    return `<tr data-player="${p.id}"><td>${ap.has(p.id)?'<span class="al al-'+(al.some(x=>x.pid===p.id&&x.lv==='red')?'red':'warn')+'" style="display:inline-block;margin-right:6px"></span>':''}${esc(p.name)}${inj?` <span class="tag ${inj.stage<2?'t-red':'t-blue'}">${STG[inj.stage]}</span>`:''}</td>${a?`<td><span class="dot ${lv(a.fat)}">${a.fat}</span></td><td><span class="dot ${lv(a.sore)}">${a.sore}</span></td><td><span class="dot ${slv(a.sleep)}">${a.sleep}</span></td><td><span class="dot ${lv(a.mood,true)}">${a.mood}</span></td>`:'<td colspan="4" style="color:var(--sub);font-size:12px">未入力</td>'}<td class="num" style="font-size:16px">${pm?pm.rpe:'－'}</td><td class="num" style="font-size:16px">${(()=>{const m=(DB.self||[]).filter(x=>x.pid===p.id&&x.date>=days(7)[0]).reduce((a,x)=>a+x.min,0);return m?m+"'":'－';})()}</td></tr>`;}).join('')||'<tr><td colspan="7" class="empty">該当する選手はいません</td></tr>'}</tbody></table></div>
+<p class="note">疲労・張りは1〜5（大きいほど悪い）、気分は1〜5（大きいほど良い）、睡眠は時間です。色は緑＝良い、黄＝注意、赤＝悪い。</p>`;}
+function sPlayer(pid){const p=byId(pid),D=days(14),lab=D.map((d,i)=>i%2===1?md(d):''),ams=D.map(d=>ent(d,pid).am);const al=alertsFor(pid);
+  const injs=DB.injuries.filter(j=>j.pid===pid),reps=DB.reports.filter(r=>r.pid===pid),abs=DB.absences.filter(a=>a.pid===pid).sort((a,b)=>b.date.localeCompare(a.date));
+  const ldT=D.map(d=>pmLoad(pid,d)),ldS=D.map(d=>selfLoad(pid,d));
+  return `<button class="back" data-back>‹ 戻る</button><div class="ph"><div><h1>${esc(p.name)}</h1><p>${p.grade?p.grade+'年':''}${p.team?'・'+p.team:''}${p.p1?'・'+p.p1:''}</p></div></div>
+${al.length?`<div class="card"><ul class="list">${al.map(a=>`<li><span class="al al-${a.lv}"></span><div class="m">${esc(a.t)}<small>対応：${a.who}</small></div></li>`).join('')}</ul></div>`:''}
+<h2>疲労と筋肉の張り<small>14日</small></h2><div class="card chart">${line([{v:ams.map(x=>x?x.fat:null),c:'var(--red)'},{v:ams.map(x=>x?x.sore:null),c:'var(--warn)'}],{labels:lab,band:[4,5]})}<div class="legend"><span><i style="background:var(--red)"></i>疲労</span><span><i style="background:var(--warn)"></i>張り</span><span>網かけ＝要注意の範囲</span></div></div>
+<h2>睡眠時間</h2><div class="card chart">${bars(ams.map(x=>x?x.sleep:null),{labels:lab,hi:v=>v<5.5,mark:7})}</div>
+<h2>練習負荷<small>きつさ×時間</small></h2><div class="card chart">${sbars(ldT,ldS,{labels:lab})}<div class="legend"><span><i style="background:var(--blue);height:8px;width:8px"></i>チーム練習</span><span><i style="background:var(--ok);height:8px;width:8px"></i>自主トレ</span></div></div>
+${selfRec(pid,true)}
+<h2>ケガ</h2><div class="card"><ul class="list">${injs.map(j=>`<li class="tap" data-injury="${j.id}"><div class="m">${esc(j.part)}・${esc(j.what)}<small>${md(j.date)}〜</small></div><span class="tag ${!j.active?'':j.stage<2?'t-red':'t-blue'}">${j.active?STG[j.stage]:'終了'}</span><span class="go">›</span></li>`).join('')||'<li class="empty">記録はありません</li>'}</ul></div>
+${reps.length?`<h2>痛みの報告</h2><div class="card"><ul class="list">${reps.map(r=>`<li class="tap" data-report="${r.id}"><div class="m">${r.side}${r.part}・程度${r.level}<small>${md(r.date)} ${r.at}・${esc(r.when)}</small></div><span class="tag ${r.status==='new'?'t-red':''}">${r.status==='new'?'未確認':r.status==='watch'?'様子見':'ケガ登録済み'}</span></li>`).join('')}</ul></div>`:''}
+${abs.length?`<h2>欠席・遅刻</h2><div class="card"><ul class="list">${abs.map(a=>`<li><div class="m">${mdw(a.date)} ${a.kind}<small>${a.reason}${a.note?'・'+esc(a.note):''}</small></div></li>`).join('')}</ul></div>`:''}`;}
+function sReport(id){const r=DB.reports.find(x=>x.id===id),p=byId(r.pid);const am=ent(r.date,r.pid).am;
+  window.__bind=()=>{const ok=$('#rp_ok');if(ok)ok.onclick=()=>{const what=$('#rp_what').value.trim()||'痛み（詳細確認中）';const dts=[1,2,3].map(k=>$('#rp_d'+k).value||'');
+      if(dts.some((d,i)=>d&&dts.slice(i+1).some(e=>e&&e<d))){$('#rp_err').textContent='段階の日付が前後しています。';return;}
+      const st=+$('#rp_s').value;const j=fixInj({id:'i'+Date.now(),pid:r.pid,part:r.part,side:r.side,what,date:r.date,dates:dts,stage:st,by:'トレーナー',active:true});for(let k=1;k<=st;k++)j.actual[k]=T;DB.injuries.unshift(j);r.status='injury';save();toast('ケガとして登録しました');stack=[];stack.push(()=>sInjury(j.id));render();window.scrollTo(0,0);};
+    const wt=$('#rp_watch');if(wt)wt.onclick=()=>{r.status='watch';save();toast('様子見にしました');back();};};
+  return `<button class="back" data-back>‹ 戻る</button><h2 style="margin-top:4px">痛みの報告</h2>
+<div class="card pad"><div class="kv"><span>選手</span><span>${esc(p.name)}</span><span>部位</span><span>${r.side}・${r.part}</span><span>程度</span><span>${r.level} / 5</span><span>練習</span><span>${r.join}</span><span>状況</span><span>${esc(r.when)||'－'}</span><span>報告</span><span>${mdw(r.date)} ${r.at}</span>${am?`<span>今朝の体調</span><span>疲労${am.fat}・張り${am.sore}・睡眠${am.sleep}h</span>`:''}</div></div>
+${r.status==='new'?`<h2>トレーナーの確認</h2><div class="card pad" style="display:flex;flex-direction:column;gap:12px">
+<label style="font-size:13px;color:var(--sub)">内容（診断名や症状）<input class="in" id="rp_what" placeholder="例：ふくらはぎの肉ばなれ（軽度）" style="margin-top:4px"></label>
+<div style="font-size:13px;color:var(--sub)">復帰までの予定<small style="display:block">わかる段階の日付だけ入れてください。あとから編集できます。</small></div>
+${[1,2,3].map(k=>`<label class="dl"><span>${STG[k]}</span><input type="date" class="in" id="rp_d${k}"></label>`).join('')}
+<label style="font-size:13px;color:var(--sub)">いまの段階<select class="in" id="rp_s" style="margin-top:4px">${STG.slice(0,3).map((s,i)=>`<option value="${i}">${s}（${STGD[i]}）</option>`).join('')}</select></label>
+<p class="err" id="rp_err"></p><div class="acts" style="margin:0"><button class="btn" id="rp_ok">ケガとして登録</button><button class="btn ghost" id="rp_watch">様子見にする</button></div></div>`:`<p class="note">この報告は「${r.status==='watch'?'様子見':'ケガ登録済み'}」です。</p>`}`;}
+function sInj(){const nr=DB.reports.filter(r=>r.status==='new');const act=DB.injuries.filter(j=>j.active&&j.stage<3);const done=DB.injuries.filter(j=>!j.active||j.stage>=3);
+  const due=act.map(j=>({j,pl:plan(j)})).filter(x=>x.pl[x.j.stage+1]&&x.pl[x.j.stage+1]<=ds(addD(TODAY,7)));
+  const evs=act.flatMap(j=>j.events.filter(e=>e.date>=T&&e.date<=ds(addD(TODAY,7))).map(e=>({j,e}))).sort((a,b)=>a.e.date.localeCompare(b.e.date));
+  return `${nr.length?`<h2 style="margin-top:4px">未確認の痛みの報告</h2><div class="card"><ul class="list">${nr.map(r=>`<li class="tap" data-report="${r.id}"><span class="al al-red"></span><div class="m">${esc(byId(r.pid).name)}<small>${r.side}${r.part}・程度${r.level}・${r.join}</small></div><span class="go">›</span></li>`).join('')}</ul></div>`:''}
+<h2${nr.length?'':' style="margin-top:4px"'}>今週、段階が変わる予定</h2><div class="card"><ul class="list">${due.map(({j,pl})=>{const late=pl[j.stage+1]<T;return `<li class="tap" data-injury="${j.id}"><div class="m">${esc(byId(j.pid).name)}<small>${STG[j.stage]} → ${STG[j.stage+1]}（${md(pl[j.stage+1])}）</small></div><span class="tag ${late?'t-red':'t-blue'}">${late?'予定超過':'予定'}</span><span class="go">›</span></li>`;}).join('')}${evs.map(({j,e})=>`<li class="tap" data-injury="${j.id}"><div class="m">${esc(byId(j.pid).name)}<small>${mdw(e.date)} ${esc(e.text)}</small></div><span class="tag">予定</span><span class="go">›</span></li>`).join('')}${due.length||evs.length?'':'<li class="empty">ありません</li>'}</ul></div>
+<h2>調整中<small>${act.length}人</small></h2><div class="card"><ul class="list">${act.map(j=>`<li class="tap" data-injury="${j.id}"><div class="m">${esc(byId(j.pid).name)}<small>${esc(j.part)}・${esc(j.what)}・完全合流 ${mdx(plan(j)[3])}${plan(j)[3]?'予定':''}</small></div><span class="tag ${j.stage<2?'t-red':'t-blue'}">${STG[j.stage]}</span><span class="go">›</span></li>`).join('')||'<li class="empty">いません</li>'}</ul></div>
+${done.length?`<h2>復帰した選手</h2><div class="card"><ul class="list">${done.map(j=>`<li class="tap" data-injury="${j.id}"><div class="m">${esc(byId(j.pid).name)}<small>${esc(j.part)}・${md(j.date)}〜${j.endDate?md(j.endDate):''}</small></div><span class="tag t-ok">完全合流</span></li>`).join('')}</ul></div>`:''}
+<p class="note">ケガで「離脱」「リハビリ」「部分合流」の選手は、同じ端末のポジション整理・メンバー選考で自動的に「ケガ中」になり、候補から外れます。</p>`;}
+function sInjury(id){const j=fixInj(DB.injuries.find(x=>x.id===id)),p=byId(j.pid),pl=plan(j);
+  const known=pl.every(Boolean);const w=[0,1,2,3].map(k=>{if(!known)return 1;const a=(pd(pl[k])-pd(pl[0]))/864e5,b=k<3?(pd(pl[k+1])-pd(pl[0]))/864e5:((pd(pl[3])-pd(pl[0]))/864e5)*1.12+1;return Math.max(1,b-a);});const sw=w.reduce((s,x)=>s+x,0);
+  const D=days(14).filter(d=>d>=ds(addD(pd(j.date),-7)));const ams=D.map(d=>ent(d,j.pid).am);
+  window.__bind=()=>{const a=$('#ij_adv');if(a)a.onclick=()=>{j.stage++;j.actual[j.stage]=T;if(j.stage>=3){j.endDate=T;}save();toast(`「${STG[j.stage]}」に進めました`);render();};
+    const e=$('#ij_edit');if(e)e.onclick=()=>go(()=>sInjEdit(j.id));
+    const bk=$('#ij_back');if(bk)bk.onclick=()=>{if(j.stage>0){j.actual[j.stage]='';j.stage--;j.endDate=null;save();render();}};};
+  const evs=j.events.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  return `<button class="back" data-back>‹ 戻る</button><div class="ph"><div><h1>${esc(p.name)}</h1><p>${esc(j.side?j.side+'・':'')}${esc(j.part)}・${esc(j.what)}</p></div></div>
+<div class="card pad"><div class="kv"><span>受傷日</span><span>${mdw(j.date)}</span><span>いまの段階</span><span><b>${STG[j.stage]}</b>（${STGD[j.stage]}）</span>${j.notes[j.stage]?`<span>いまの内容</span><span>${esc(j.notes[j.stage])}</span>`:''}</div></div>
+<h2>復帰までの予定<small>トレーナーが入力</small></h2><div class="card pad"><div class="stages">${[0,1,2,3].map(k=>`<span class="s${k} ${k<j.stage?'done':k===j.stage?'now':''}" style="width:${w[k]/sw*100}%">${STG[k]}</span>`).join('')}</div><div class="stlab">${pl.map(d=>`<span>${mdx(d)}</span>`).join('')}</div>
+<ul class="list" style="margin-top:8px">${[0,1,2,3].map(k=>`<li style="padding-left:0;padding-right:0;align-items:flex-start"><div class="m">${STG[k]}<small>${esc(j.notes[k])||STGD[k]}</small></div><span class="num" style="font-size:17px">${k===0?md(j.date):mdx(pl[k])}</span>${k===0?'':`<span class="tag ${k<=j.stage?'t-ok':pl[k]&&pl[k]<T?'t-red':pl[k]?'t-blue':''}">${k<=j.stage?'済'+(j.actual[k]&&j.actual[k]!==pl[k]?'（'+md(j.actual[k])+'）':''):pl[k]&&pl[k]<T?'予定超過':pl[k]?'予定':'未定'}</span>`}</li>`).join('')}</ul>
+${evs.length?`<div class="gh">通院・再評価など</div><ul class="list">${evs.map(e=>`<li style="padding-left:0;padding-right:0"><div class="m">${esc(e.text)}</div><span class="num" style="font-size:17px">${md(e.date)}</span><span class="tag ${e.date<T?'':'t-blue'}">${e.date<T?'済':'予定'}</span></li>`).join('')}</ul>`:''}
+<div class="acts">${j.stage<3?`<button class="btn" id="ij_adv">「${STG[j.stage+1]}」に進める</button>`:''}<button class="btn ghost" id="ij_edit">予定を編集</button>${j.stage>0?'<button class="btn ghost sm" id="ij_back">1つ前の段階に戻す</button>':''}</div></div>
+<h2>受傷前後の体調<small>疲労・張り</small></h2><div class="card chart">${D.length>1?line([{v:ams.map(x=>x?x.fat:null),c:'var(--red)'},{v:ams.map(x=>x?x.sore:null),c:'var(--warn)'}],{labels:D.map((d,i)=>d===j.date?'受傷':i%2===1?md(d):''),band:[4,5]}):'<div class="empty">データがありません</div>'}<div class="legend"><span><i style="background:var(--red)"></i>疲労</span><span><i style="background:var(--warn)"></i>張り</span></div></div>
+${selfRec(j.pid,true)}
+<p class="note">実際の復帰は、医師やトレーナーの判断で決めてください。</p>`;}
+function sInjEdit(id){const j=fixInj(DB.injuries.find(x=>x.id===id)),p=byId(j.pid);
+  let evs=j.events.map(e=>({...e}));
+  const evHtml=()=>evs.map((e,i)=>`<div class="evrow"><input type="date" class="in" data-evd="${i}" value="${e.date}"><input class="in" data-evt="${i}" value="${esc(e.text)}" placeholder="例：整形外科で再評価"><button class="btn ghost sm" data-evx="${i}" aria-label="この予定を外す">外す</button></div>`).join('');
+  window.__bind=()=>{
+    const sync=()=>{document.querySelectorAll('[data-evd]').forEach(x=>evs[+x.dataset.evd].date=x.value);document.querySelectorAll('[data-evt]').forEach(x=>evs[+x.dataset.evt].text=x.value);};
+    const redraw=()=>{$('#evs').innerHTML=evHtml();bindEv();};
+    const bindEv=()=>{document.querySelectorAll('[data-evx]').forEach(b=>b.onclick=()=>{sync();evs.splice(+b.dataset.evx,1);redraw();});};
+    bindEv();
+    $('#ev_add').onclick=()=>{sync();evs.push({id:'e'+Date.now(),date:T,text:''});redraw();};
+    $('#ie_ok').onclick=()=>{sync();const date=$('#ie_date').value;const dts=[1,2,3].map(k=>$('#ie_d'+k).value||'');
+      if(!date)return $('#ie_err').textContent='受傷日を入れてください。';
+      const all=[date,...dts];if(all.some((d,i)=>d&&all.slice(i+1).some(e=>e&&e<d)))return $('#ie_err').textContent='段階の日付が前後しています。';
+      j.date=date;j.dates=dts;j.what=$('#ie_what').value.trim()||j.what;j.notes=[0,1,2,3].map(k=>$('#ie_n'+k).value.trim());j.events=evs.filter(e=>e.date&&e.text.trim());save();toast('予定を保存しました');back();};};
+  return `<button class="back" data-back>‹ やめる</button><h2 style="margin-top:4px">${esc(p.name)}　復帰までの予定</h2>
+<div class="card pad" style="display:flex;flex-direction:column;gap:12px">
+<label style="font-size:13px;color:var(--sub)">内容（診断名や症状）<input class="in" id="ie_what" value="${esc(j.what)}" style="margin-top:4px"></label>
+<label class="dl"><span>受傷日</span><input type="date" class="in" id="ie_date" value="${j.date}"></label></div>
+${[0,1,2,3].map(k=>`<h2>${STG[k]}<small>${STGD[k]}</small></h2><div class="card pad" style="display:flex;flex-direction:column;gap:10px">${k>0?`<label class="dl"><span>開始の予定日</span><input type="date" class="in" id="ie_d${k}" value="${j.dates[k-1]||''}"></label>`:''}<label style="font-size:13px;color:var(--sub)">内容・メニュー<textarea class="in" id="ie_n${k}" style="margin-top:4px" placeholder="${['例：安静・アイシング','例：チューブで可動域と筋力、バイク20分','例：ジョグ→パス→対人なしのメニュー','例：フル参加。最初の1週間は練習試合30分まで'][k]}">${esc(j.notes[k]||'')}</textarea></label></div>`).join('')}
+<h2>通院・再評価など</h2><div class="card pad"><div id="evs" style="display:flex;flex-direction:column;gap:8px">${evHtml()}</div><button class="btn ghost sm" id="ev_add" style="margin-top:10px">＋予定を追加</button></div>
+<div class="submit"><p class="err" id="ie_err"></p><button class="btn block" id="ie_ok">保存する</button></div>`;}
+render();
+})();
+</script></body></html>

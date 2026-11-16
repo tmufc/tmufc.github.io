@@ -1,0 +1,1253 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#13294B"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="TMU FC App"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-192.png"><title>TMU FC App｜都立大サッカー部</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+<style id="css">
+:root{--red:#C9302C;--bg:#EEF2F7;--surface:#FFFFFF;--ink:#14202E;--sub:#5B6B7E;--line:#D5DDE7;--navy:#13294B;--blue:#1F5FBF;--pitch:#14305A;--pitch-line:rgba(255,255,255,.22);--ok:#23885C;--warn:#B98510;--short:#C93C34;--chip:#E3EAF3;--sel:#DCE8FA;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D1520;--surface:#162130;--ink:#E5ECF4;--sub:#93A3B6;--line:#273548;--navy:#0B1A30;--blue:#6FA2EE;--pitch:#102746;--ok:#45B985;--warn:#E0B13E;--short:#EE6A61;--red:#E8574F;--chip:#203047;--sel:#1E3354;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0D1520;--surface:#162130;--ink:#E5ECF4;--sub:#93A3B6;--line:#273548;--navy:#0B1A30;--blue:#6FA2EE;--pitch:#102746;--ok:#45B985;--warn:#E0B13E;--short:#EE6A61;--red:#E8574F;--chip:#203047;--sel:#1E3354;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.55;padding-bottom:84px}
+.num{font-family:"Barlow Condensed","Zen Kaku Gothic New",system-ui,sans-serif;font-weight:700;font-variant-numeric:tabular-nums}
+.wrap{max-width:760px;margin:0 auto;padding:0 14px}
+header{background:var(--navy);color:#fff;padding:18px 0 16px}
+header h1{margin:0;font-size:21px;letter-spacing:.02em}
+header p{margin:2px 0 12px;color:rgba(255,255,255,.72);font-size:13px}
+.sys{display:inline-flex;background:rgba(255,255,255,.1);border-radius:999px;padding:3px}
+.sys .systab{color:rgba(255,255,255,.8);font-size:15px;padding:6px 12px;border-radius:999px;text-decoration:none;white-space:nowrap}
+.sys button{border:0;background:transparent;color:rgba(255,255,255,.8);font:inherit;font-size:15px;padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.sys button.on{background:#fff;color:var(--navy)}
+.pitch{position:relative;background:var(--pitch);aspect-ratio:68/72;max-height:520px;margin:14px auto 0;border-radius:6px;overflow:hidden;width:100%}
+.pitch svg{position:absolute;inset:0;width:100%;height:100%}
+.slot{position:absolute;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;border:2.5px solid var(--st);background:rgba(8,18,34,.72);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font:inherit;padding:0}
+.slot b{font-size:14px;line-height:1}
+.slot span{font-size:12px;opacity:.85;line-height:1.2;margin-top:2px}
+.slot.sel{box-shadow:0 0 0 4px rgba(255,255,255,.55)}
+.st-ok{--st:var(--ok)}.st-warn{--st:var(--warn)}.st-short{--st:var(--short)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--sub);margin:8px 2px 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+section{margin-top:22px}
+h2{font-size:16px;margin:0 0 8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.depth{padding:12px 14px}
+.depth h3{margin:0 0 6px;font-size:15px}
+.depth .row{display:flex;gap:8px;margin-top:4px;font-size:14px}
+.depth .row em{font-style:normal;color:var(--sub);flex:0 0 34px}
+.depth .names{flex:1}
+.depth .names span{display:inline-block;margin:0 10px 2px 0}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:330px}
+th,td{padding:7px 6px;text-align:center;border-bottom:1px solid var(--line)}
+th{font-weight:400;color:var(--sub);font-size:12px}
+td:first-child,th:first-child{text-align:left;padding-left:12px}
+tr:last-child td{border-bottom:0}
+tbody tr{cursor:pointer}
+tbody tr.sel{background:var(--sel)}
+.bar{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--st);margin-right:6px;vertical-align:2px}
+.tot small{color:var(--sub);font-size:11px}
+.meta{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--sub);margin-bottom:10px}
+.meta b{color:var(--ink);font-size:17px;margin-left:3px}
+.filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:8px}
+.filters button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;font:inherit;font-size:13px;padding:4px 12px;cursor:pointer}
+.filters button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.plist{list-style:none;margin:0;padding:0}
+.plist li{display:grid;grid-template-columns:1fr;gap:4px 10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.plist li:last-child{border-bottom:0}
+.plist li.out{opacity:.5}
+.no{font-size:26px;line-height:1;color:var(--blue);text-align:right;padding-top:2px}
+.who{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.who strong{font-size:16px}
+.who small{color:var(--sub);font-size:12px}
+.tag{font-size:11px;border-radius:4px;padding:0 5px;background:var(--chip);color:var(--sub)}
+.pick{grid-column:1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pick label{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--sub)}
+select{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 6px;min-width:70px}
+select.empty{color:var(--sub)}
+select.bad{border-color:var(--short)}
+.outbtn{margin-left:auto;font-size:12px;color:var(--sub);background:none;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-family:inherit;cursor:pointer}
+.outbtn.on{color:var(--short);border-color:var(--short)}
+.savebar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}
+.savebar .wrap{display:flex;align-items:center;gap:12px;padding:0}
+.savebar p{margin:0;flex:1;font-size:13px;color:var(--sub)}
+.savebar button{border:0;background:var(--blue);color:#fff;font:inherit;font-weight:700;padding:9px 22px;border-radius:8px;cursor:pointer}
+.savebar button:disabled{opacity:.4;cursor:default}
+.scope{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:13px;color:var(--sub)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;color:var(--ink);font:inherit;font-size:14px;padding:5px 14px;cursor:pointer;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button.on{background:var(--blue);color:#fff}
+.teamseg button{padding:3px 11px;font-size:14px;font-family:"Barlow Condensed",sans-serif;font-weight:700}
+.teamseg button.on.tA{background:var(--blue)}
+.teamseg button.on.tB{background:var(--sub)}
+.tb{display:inline-block;font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:12px;line-height:16px;width:16px;text-align:center;border-radius:3px;color:#fff;margin-right:3px;vertical-align:1px}
+.tb.A{background:var(--blue)}.tb.B{background:var(--sub)}.tb.N{background:var(--line);color:var(--sub)}
+.delbtn{font-size:12px;color:var(--short);background:none;border:0;font-family:inherit;cursor:pointer;padding:4px}
+.addbox{padding:12px 14px;border-top:1px solid var(--line)}
+.addbox .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.addbox label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--sub)}
+.addbox input{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%}
+.addbox .wide{grid-column:1/-1}
+.addbox .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+.btn{border:1px solid var(--blue);background:var(--blue);color:#fff;font:inherit;font-size:14px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--blue)}
+.err{color:var(--short);font-size:12px;margin:6px 0 0}
+.mact{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.btn.sm{font-size:12px;padding:4px 10px;font-weight:400}
+.scope .btn.sm{margin-left:auto}
+.mtabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.mtabs button{border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 10px;text-align:left;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.mtabs button b{font-size:17px}
+.mtabs button span{font-size:12px;color:var(--sub)}
+.mtabs button.side-R b{color:var(--red)}
+.mtabs button.on.side-R{border-color:var(--red)}
+.mtabs button.on.side-W{border-color:var(--ink)}
+.mpitch.side-R{box-shadow:inset 0 4px 0 var(--red)}
+.mpitch.side-W{box-shadow:inset 0 4px 0 #fff}
+.mslot{position:absolute;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;border:3px solid rgba(255,255,255,.35);border-style:dashed;background:rgba(8,18,34,.75);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font:inherit;padding:0 2px;cursor:pointer}
+.mslot em{font-style:normal;font-size:10px;opacity:.75;line-height:1.1}
+.mslot b{font-size:13px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px}
+.mslot.f1{border:3px solid var(--ok)}.mslot.f2{border:3px solid var(--warn)}.mslot.f0{border:3px solid var(--short)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.mchip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;font:inherit;font-size:14px;padding:5px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.mchip small{color:var(--sub);font-size:11px;margin-left:4px}
+.mtext{width:100%;font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:10px}
+.modal{position:fixed;inset:0;background:rgba(5,12,24,.5);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);color:var(--ink);width:100%;max-width:560px;max-height:80vh;border-radius:14px 14px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column}
+.shead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:17px}
+.slist{overflow-y:auto;flex:1;margin:0 -14px;padding:0 14px}
+.slist h4{margin:10px 0 4px;font-size:12px;color:var(--sub);font-weight:400}
+.prow{display:flex;width:100%;align-items:center;justify-content:space-between;gap:8px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:15px;padding:9px 2px;text-align:left;cursor:pointer}
+.prow small{color:var(--sub);font-size:12px}
+.prow em{font-style:normal;font-size:12px;color:var(--sub);flex:0 0 auto}
+.prow em.free{color:var(--ok)}
+.prow.cur{background:var(--sel)}
+.prow input{width:20px;height:20px;flex:0 0 auto}
+.sfoot,.sacts{display:flex;gap:8px;flex-wrap:wrap;padding-top:10px}
+.sys button[data-tab]{font-size:14px;padding:6px 16px}
+.ginfo{padding:12px 14px;margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ginfo label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--sub)}
+.ginfo input,.pmin input,.subform select{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+.gnum{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub)}
+.gnum b{color:var(--ink);font-size:18px}
+.gnum .gsub{margin-left:auto}
+.gnum .btn.sm{margin:0;min-width:34px}
+.ptabs{display:flex;gap:6px;overflow-x:auto;margin-top:14px;padding-bottom:4px}
+.ptabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;font:inherit;font-size:14px;padding:6px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.3}
+.ptabs button small{font-size:11px;color:var(--sub)}
+.ptabs button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.ptabs button.on small{color:rgba(255,255,255,.8)}
+.pset{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.pset .scope{margin:0}
+.pmin{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--sub)}
+.pmin input{width:64px}
+.subin{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-style:normal;font-size:10px;background:var(--warn);color:#111;border-radius:3px;padding:0 4px;white-space:nowrap;font-family:"Barlow Condensed",sans-serif;font-weight:700}
+.shead2{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.shead2 h2{margin:0}
+.btn:disabled{opacity:.4;cursor:default}
+.sublist{list-style:none;margin:0;padding:0}
+.sublist li{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:14px}
+.sublist li:last-child{border-bottom:0}
+.sublist li b{font-size:18px;min-width:34px;color:var(--blue)}
+.sublist li span{flex:1}
+.sublist li span i{font-style:normal;color:var(--sub);margin:0 6px}
+.sublist li span small{color:var(--sub);font-size:11px;margin-left:6px}
+.sublist li.bad{background:color-mix(in srgb,var(--short) 12%,transparent)}
+.sublist li.bad b{color:var(--short)}
+.subform{display:flex;flex-direction:column;gap:12px}
+.subform label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--sub)}
+.ttbl td:first-child{min-width:130px}
+.ttbl td{font-size:14px}
+.ttbl .tn{display:flex;align-items:baseline;gap:6px}
+.ttbl .tn small{color:var(--sub);font-size:11px}
+.tbar{position:relative;height:5px;background:var(--chip);border-radius:3px;margin-top:4px}
+.tbar span{position:absolute;left:0;top:0;bottom:0;background:var(--blue);border-radius:3px}
+.tbar i{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--warn)}
+.ttbl tr.zero td:first-child .tn{color:var(--short)}
+.ttbl td.dim{color:var(--sub)}
+.plist li.inj .who strong{color:var(--short)}
+.injbtn.on{background:var(--short);border-color:var(--short);color:#fff}
+.injtag{font-style:normal;font-size:10px;background:var(--short);color:#fff;border-radius:3px;padding:0 4px;margin-left:4px;line-height:16px}
+.mslot.inj{border-color:var(--short);border-style:dotted;opacity:.85}
+.mslot.inj::after{content:"ケガ";position:absolute;top:-8px;right:-4px;font-size:10px;background:var(--short);color:#fff;border-radius:3px;padding:0 4px}
+.prow.inj{color:var(--sub);cursor:default}
+.injbtn+.outbtn{margin-left:0}
+.bkrow{display:flex;align-items:center;gap:8px;padding:6px 0}
+.bkrow input{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:70px}
+.bkrow span{font-size:14px;color:var(--sub)}
+.gnum .btn.sm#g_bulk{margin-left:auto}
+.prevbox{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:0 12px}
+.prevbox summary{cursor:pointer;padding:10px 0;font-weight:700;font-size:15px}
+.prevp{padding:4px 0 8px;border-top:1px solid var(--line)}
+.prevp h4{margin:6px 0;font-size:12px;color:var(--sub);font-weight:400}
+.pchips{display:flex;flex-wrap:wrap;gap:5px}
+.pchip{display:inline-flex;align-items:baseline;gap:4px;font-size:13px;border:1px solid var(--line);border-radius:6px;padding:2px 7px;background:var(--bg)}
+.pchip em{font-style:normal;font-size:10px;color:var(--sub)}
+.pchip small{font-size:11px;color:var(--warn)}
+.pchip.now{border:2px solid var(--blue);padding:1px 6px}
+.tl{margin:4px 0 10px}
+.tbarw{position:relative;height:34px;background:var(--chip);border-radius:6px;overflow:hidden}
+.tseg{position:absolute;top:0;bottom:0;border:0;border-right:2px solid var(--surface);background:color-mix(in srgb,var(--blue) 35%,var(--chip));color:var(--ink);font:inherit;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:14px}
+.tseg.alt{background:color-mix(in srgb,var(--blue) 20%,var(--chip))}
+.tseg.on{background:var(--blue);color:#fff}
+.tline{position:absolute;top:-2px;bottom:-2px;width:0;border-left:2px dashed var(--ink);opacity:.55;pointer-events:none}
+.tlabels{position:relative;height:30px}
+.tlabels span{position:absolute;top:2px;text-align:center;font-size:11px;color:var(--sub);line-height:1.2;display:flex;flex-direction:column}
+.tlabels small{font-size:10px}
+.seglist{display:flex;flex-direction:column;gap:6px}
+.seglist button{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;font:inherit;font-size:14px;padding:8px 12px;cursor:pointer;text-align:left}
+.seglist button b{font-size:18px;color:var(--blue);min-width:18px;text-align:center}
+.seglist button span{flex:1}
+.seglist button small{color:var(--sub);font-size:13px}
+.seglist button.on{border:2px solid var(--blue);background:var(--sel);padding:7px 11px}
+.segedit{border-top:3px solid var(--blue);padding-top:12px}
+.seghead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.seghead b{font-size:18px;margin-right:8px}
+.seghead span{font-size:14px}
+.diffc{padding:10px 14px;margin-top:10px}
+.diffc h3{margin:0 0 6px;font-size:14px}
+.diffc p{margin:4px 0;font-size:14px}
+.diffc small{color:var(--sub);font-size:11px;margin:0 4px 0 2px}
+.diffc b{display:inline-block;font-size:11px;color:#fff;border-radius:3px;padding:0 5px;margin-right:8px;font-weight:700}
+.din{background:var(--ok)}.dout{background:var(--short)}.dmv{background:var(--sub)}
+.alertbox{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:0 12px}
+.alertbox summary{cursor:pointer;padding:10px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;list-style:none}
+.alertbox summary::-webkit-details-marker{display:none}
+.alertbox summary b{font-size:15px;margin-right:4px}
+.ab{font-size:12px;border-radius:999px;padding:1px 9px;color:#fff;font-weight:700}
+.ab.red{background:var(--short)}.ab.warn{background:var(--warn);color:#111}.ab.info{background:var(--sub)}.ab.ok{background:var(--ok)}
+.alim{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub);padding:2px 0 10px;border-top:1px solid var(--line);padding-top:10px}
+.alim input{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 8px;width:70px}
+.alist{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:6px}
+.alist li{min-width:0}
+.alist li>button,.alist li>div{box-sizing:border-box;max-width:100%;display:flex;gap:8px;align-items:flex-start;width:100%;text-align:left;border:0;border-radius:6px;padding:8px 10px;font:inherit;font-size:13px;color:var(--ink);background:var(--bg);cursor:pointer}
+.alist li>div{cursor:default}
+.alist i{flex:0 0 8px;height:8px;border-radius:50%;margin-top:6px}
+.alist li.red i{background:var(--short)}.alist li.warn i{background:var(--warn)}.alist li.info i{background:var(--sub)}
+.alist li.red>button{background:color-mix(in srgb,var(--short) 10%,var(--bg))}
+.seglist button.al-red{border-left:5px solid var(--short)}
+.seglist button.al-warn{border-left:5px solid var(--warn)}
+.ttbl td.over b{color:var(--short)}
+.owarn{color:var(--short);font-weight:700;margin-left:6px;font-size:11px}
+.askm{z-index:30;align-items:center}
+.askbox{border-radius:14px;max-width:420px;margin:0 16px}
+.askbox p{margin:4px 0 6px;font-size:15px;line-height:1.6}
+.sgopt{display:flex;flex-direction:column;gap:10px;margin-bottom:8px}
+.sgopt label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--sub)}
+.sgopt .seg{flex-wrap:wrap}
+.sgopt .seg button{font-size:13px;padding:5px 10px}
+.sgrow{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sub);flex-wrap:wrap}
+.sgrow input{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 6px;width:64px}
+.sgsegs{display:flex;flex-direction:column;gap:2px;margin:8px 0;font-size:13px}
+.sgsegs div{display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line)}
+.sgsegs b{color:var(--blue);min-width:16px}
+.sgsegs span{flex:1}
+.sgsegs small{color:var(--sub);font-size:11px}
+.sgt td.off b{color:var(--warn)}
+.sgopt textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px;width:100%;resize:vertical}
+.helpbtn{position:absolute;right:14px;top:0;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font:inherit;font-size:12px;border-radius:999px;padding:4px 10px;cursor:pointer}
+.helpbox details{border-bottom:1px solid var(--line);padding:2px 0}
+.helpbox summary{cursor:pointer;font-weight:700;font-size:15px;padding:10px 0}
+.helpbox .hb{font-size:14px;line-height:1.7;padding:0 0 10px}
+.helpbox .hb p{margin:0 0 6px}
+.helpbox .hb ul,.helpbox .hb ol{margin:0;padding-left:20px}
+.helpbox .hb li{margin-bottom:4px}
+.sptable{padding:4px 12px}
+.sph small{font-size:12px;font-weight:400;color:var(--sub);margin-left:8px}
+.sprow{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+.sprow:last-child{border-bottom:0}
+.spl{flex:0 0 92px;font-size:13px;color:var(--sub);padding-top:6px}
+.sps{flex:1;display:flex;flex-wrap:wrap;gap:6px}
+.spb{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;font:inherit;font-size:14px;padding:4px 10px;min-height:32px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.spb i{font-style:normal;font-size:11px;color:var(--sub)}
+.spb.empty{color:var(--sub);border-style:dashed}
+.spb.diff{border:2px solid var(--warn);padding:3px 9px}
+.spvars{flex-wrap:wrap;margin-bottom:8px}
+.spvars button{font-size:13px;padding:5px 10px}
+.spvars small{font-size:10px;opacity:.7}
+.imglist figure{margin:0 0 16px}
+.imglist figcaption{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;color:var(--sub);margin-bottom:6px}
+.imglist img{width:100%;border-radius:8px;display:block;border:1px solid var(--line)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:13px;padding:9px 16px;border-radius:8px;z-index:40;max-width:90%;text-align:center}
+.otype button{font-size:13px;padding:4px 12px}
+.offi h2 small{font-size:12px;font-weight:400;color:var(--sub);margin-left:8px}
+.offi{border-top:3px solid var(--blue);margin-top:16px;padding-top:4px}
+.ocount{font-size:18px;color:var(--blue)}.ocount.over,.over{color:var(--short)}
+.opad{padding:12px}
+.orow{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.orow .num{font-size:20px}
+.ochips{display:flex;flex-wrap:wrap;gap:6px}
+.ochip{display:inline-flex;align-items:baseline;gap:5px;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:4px 9px;font-size:14px}
+.ochip small{font-size:11px;color:var(--sub)}
+.otbl{padding:4px 10px}
+.otr{display:grid;grid-template-columns:40px 1fr 1fr 1fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.otr:last-child{border-bottom:0}
+.oth{font-size:11px;color:var(--sub)}
+.opos{font-family:"Barlow Condensed",sans-serif;font-weight:700;color:var(--blue);font-size:16px}
+.ost{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ost em{color:var(--sub);font-style:normal}
+.ocand{border:2px solid var(--line);background:var(--bg);border-radius:8px;padding:5px 6px;font:inherit;font-size:13px;min-height:36px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;position:relative}
+.ocand.f1{border-color:var(--ok)}.ocand.f2{border-color:var(--warn)}.ocand.f0{border-color:var(--short)}
+.ocand.empty{border-style:dashed;color:var(--sub)}
+.odup{font-style:normal;font-size:10px;background:var(--warn);color:#111;border-radius:3px;padding:0 3px;margin-left:4px}
+.oplan{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.oph{display:flex;align-items:center;gap:8px}
+.osit{font-size:12px;border-radius:4px;padding:1px 8px;color:#fff;background:var(--sub)}
+.osit.s-1{background:var(--ok)}.osit.s-2{background:var(--blue)}.osit.s-3{background:var(--short)}
+.oswaps{list-style:none;margin:8px 0 0;padding:0}
+.oswaps li{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:14px}
+.oarr{color:var(--ok);font-weight:700}
+.onote{margin:6px 0 0;font-size:13px;color:var(--sub)}
+.osits{display:flex;gap:6px;flex-wrap:wrap}
+.osits button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;color:var(--ink)}
+.osits button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.pswap{display:grid;grid-template-columns:1fr auto 1fr auto;gap:6px;align-items:center;margin-bottom:6px}
+.fin,.fsel{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+.prow:disabled{opacity:.45;cursor:default}
+.note{font-size:12px;color:var(--sub);margin:8px 2px 0}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+</style></head><body>
+<div id="root"></div>
+<script id="app">
+(function(){
+const HEAD='<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>TMU FC App｜都立大サッカー部</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">';
+const POS=['GK','CB','HV','WB','CM','AM','CF'];
+const SYS={
+  '3421':{label:'3-4-2-1',slots:{GK:1,CB:1,HV:2,WB:2,CM:2,AM:2,CF:1},xy:[['CF',50,13],['AM',32,30],['AM',68,30],['WB',11,50],['CM',37,53],['CM',63,53],['WB',89,50],['HV',22,73],['CB',50,76],['HV',78,73],['GK',50,92]]},
+  '3412':{label:'3-4-1-2',slots:{GK:1,CB:1,HV:2,WB:2,CM:2,AM:1,CF:2},xy:[['CF',35,13],['CF',65,13],['AM',50,31],['WB',11,50],['CM',37,53],['CM',63,53],['WB',89,50],['HV',22,73],['CB',50,76],['HV',78,73],['GK',50,92]]}
+};
+const KEY='tmu-pos-draft';
+const DATA_KEY='tmu-pos-data';
+const EMPTY={"rev": 1, "system": "3421", "players": [{"id": "n7", "no": null, "name": "程塚 駿太", "grade": 3, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n9", "no": null, "name": "中崎 琉斗", "grade": 3, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n11", "no": null, "name": "杉崎 志信", "grade": 3, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n12", "no": null, "name": "中田 幹登", "grade": 3, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n15", "no": null, "name": "上坂 緩大", "grade": 3, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n18", "no": null, "name": "後藤 志郎", "grade": 3, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n22", "no": null, "name": "若山 璃皇", "grade": 3, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n44", "no": null, "name": "深津 啓一郎", "grade": 3, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n54", "no": null, "name": "寳理 永翔", "grade": 3, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n71", "no": null, "name": "西川 大翔", "grade": 3, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "a00", "no": null, "name": "末次 憲太郎", "grade": 3, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false, "added": true}, {"id": "n21", "no": null, "name": "森山 太稀", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n23", "no": null, "name": "須藤 星空", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n24", "no": null, "name": "坂井 玲仁", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n25", "no": null, "name": "橋本 岳空", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n26", "no": null, "name": "五島 凛也", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n27", "no": null, "name": "西田 有之介", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n30", "no": null, "name": "加賀 獅音", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n47", "no": null, "name": "渡辺 康太", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n84", "no": null, "name": "林 陸斗", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n92", "no": null, "name": "山田 琉空", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n99", "no": null, "name": "中田 涼介", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "a01", "no": null, "name": "金山 範諏", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false, "added": true}, {"id": "a02", "no": null, "name": "大汐 徹平", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false, "added": true}, {"id": "a03", "no": null, "name": "小林 巧実", "grade": 2, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false, "added": true}, {"id": "n2", "no": null, "name": "竹谷 晄希", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n17", "no": null, "name": "飯塚 惇", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n19", "no": null, "name": "堤崎 陽琉", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n20", "no": null, "name": "小柳 走", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n29", "no": null, "name": "太田 金治", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n31", "no": null, "name": "勝野 幹太", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n33", "no": null, "name": "朝見 元太", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n61", "no": null, "name": "荒瀬 智文", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "n97", "no": null, "name": "高澤 陽介", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false}, {"id": "a04", "no": null, "name": "秋山 奏翔", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false, "added": true}, {"id": "a05", "no": null, "name": "石黒 琥珀", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false, "added": true}, {"id": "a06", "no": null, "name": "佐々木 蒼太", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false, "added": true}, {"id": "a07", "no": null, "name": "柴田 尊", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false, "added": true}, {"id": "a08", "no": null, "name": "佐藤 和樹", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false, "added": true}, {"id": "a09", "no": null, "name": "織田 唯楽", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false, "added": true}, {"id": "a10", "no": null, "name": "新田 桜生", "grade": 1, "reg": "", "h": 0, "p1": "", "p2": "", "out": false, "team": "", "inj": false, "added": true}], "games": []};
+let saved=null;try{saved=JSON.parse(localStorage.getItem(DATA_KEY)||'null')}catch(e){saved=null}
+if(!saved||!Array.isArray(saved.players))saved=JSON.parse(JSON.stringify(EMPTY));
+(saved.players||[]).forEach(p=>{if(p.p1==='HB')p.p1='HV';if(p.p2==='HB')p.p2='HV';});
+let lastSaved=null;
+let state=JSON.parse(JSON.stringify(saved));
+let dirty=false, sel=null, filter='all', scope='all', canSave=null, adding=false;
+let tab='pos';try{tab=sessionStorage.getItem('tmu-tab')||'pos'}catch(e){}
+if(location.hash==='#game'||location.hash==='#pos'){tab=location.hash.slice(1);try{history.replaceState(null,'',location.pathname)}catch(e){}}
+
+function migrate(st){st.players.forEach(p=>{if(!p.id)p.id=p.no!=null&&p.no!==''?'n'+p.no:'p'+Math.random().toString(36).slice(2,9);if(p.team===undefined)p.team='';delete p.staff;});}
+migrate(state);
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hasNo=p=>p.no!==null&&p.no!==''&&p.no!==undefined;
+function inScope(p){return !p.out&&!p.inj&&(scope==='all'||p.team===scope)}
+function pool(){return state.players.filter(inScope)}
+function stats(){
+  const sys=SYS[state.system],r={},team=scope!=='all';
+  POS.forEach(k=>{const s=sys.slots[k];const f=pool().filter(p=>p.p1===k);const sc=pool().filter(p=>p.p2===k);
+    const g=[0,0,0,0,0];f.forEach(p=>g[p.grade]=(g[p.grade]||0)+1);
+    const tot=f.length+sc.length;let st='ok',target;
+    if(team){target=s*2;if(tot<s)st='short';else if(f.length<s||tot<s*2)st='warn';}
+    else{target=s*3;if(f.length<s||tot<s*2)st='short';else if(f.length<s*2||tot<s*3)st='warn';}
+    r[k]={slots:s,first:f,second:sc,tot,g,st,target};});
+  return r;
+}
+function shell(){
+  $('#root').innerHTML=`
+<header><div class="wrap" style="position:relative"><button class="helpbtn" id="helpbtn" aria-label="使い方">？ 使い方</button><h1>TMU FC App</h1><p>東京都立大学サッカー部</p>
+<div class="sys" role="tablist">${[['pos','ポジション'],['game','メンバー選考']].map(([k,l])=>`<button role="tab" data-tab="${k}">${l}</button>`).join('')}<a class="systab" href="condition.html">コンディション</a></div></div></header>
+<div class="wrap" id="posview">
+<div class="scope"><span>システム</span><div class="seg">${['3421','3412'].map(k=>`<button class="num" data-sys="${k}">${SYS[k].label}</button>`).join('')}</div></div>
+<div class="scope"><span>集計対象</span><div class="seg" id="scope">${[['all','全体'],['A','Aチーム'],['B','Bチーム']].map(([k,l])=>`<button data-scope="${k}">${l}</button>`).join('')}</div></div>
+<div class="pitch" id="pitch"><svg viewBox="0 0 68 72" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="var(--pitch-line)" stroke-width=".35"><rect x="2" y="2" width="64" height="68"/><line x1="2" y1="2" x2="66" y2="2"/><circle cx="34" cy="2" r="9.15"/><rect x="13.85" y="53.5" width="40.3" height="16.5"/><rect x="24.85" y="64.5" width="18.3" height="5.5"/><path d="M26.7 53.5 A9.15 9.15 0 0 1 41.3 53.5"/></g></svg><div id="slots"></div></div>
+<div class="legend"><span><i style="background:var(--ok)"></i>十分</span><span><i style="background:var(--warn)"></i>やや不足</span><span><i style="background:var(--short)"></i>不足</span><span>数字＝1st人数／1st＋2nd合計</span></div>
+<div id="depth"></div>
+<section><h2 id="baltitle">人数バランス</h2><div class="card tbl"><table><thead><tr><th>ポジ</th><th>枠</th><th>1st</th><th>2nd</th><th>計／目安</th><th>1年</th><th>2年</th><th>3年</th><th>4年</th></tr></thead><tbody id="tbody"></tbody></table></div>
+<p class="note" id="balnote"></p><div class="mact"><button class="btn ghost" id="pos_img">ポジション別メンバーを画像で出力</button></div></section>
+<section><h2>選手</h2><div class="meta" id="meta"></div><div class="filters" id="filters"></div><div class="card"><ul class="plist" id="plist"></ul><div id="addarea"></div></div></section>
+</div>
+<div class="wrap" id="gameview" hidden></div>
+<div class="savebar"><div class="wrap"><p id="savemsg"></p><button id="savebtn">データ</button></div></div>`;
+  document.querySelectorAll('[data-sys]').forEach(b=>b.onclick=()=>{state.system=b.dataset.sys;touch();renderTop();});
+  document.querySelectorAll('[data-scope]').forEach(b=>b.onclick=()=>{scope=b.dataset.scope;renderTop();renderList();});
+  $('#savebtn').onclick=save;
+  $('#helpbtn').onclick=openHelp;
+  $('#pos_img').onclick=()=>showImage(posImage,'ポジション別メンバー.png');
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+}
+function setTab(t){tab=t;try{sessionStorage.setItem('tmu-tab',t)}catch(e){}document.querySelectorAll('[data-tab]').forEach(b=>{b.classList.toggle('on',b.dataset.tab===t);b.setAttribute('aria-selected',b.dataset.tab===t);});$('#posview').hidden=t!=='pos';$('#gameview').hidden=t!=='game';if(t==='game')renderGame();else{renderTop();renderList();}window.scrollTo(0,0);}
+function renderTop(){
+  const st=stats(),sys=SYS[state.system];
+  document.querySelectorAll('[data-sys]').forEach(b=>b.classList.toggle('on',b.dataset.sys===state.system));
+  document.querySelectorAll('[data-scope]').forEach(b=>b.classList.toggle('on',b.dataset.scope===scope));
+  $('#slots').innerHTML=sys.xy.map(([k,x,y])=>{const s=st[k];return `<button class="slot st-${s.st}${sel===k?' sel':''}" style="left:${x}%;top:${y}%" data-pos="${k}" aria-label="${k} 1st ${s.first.length}人 合計${s.tot}人"><b>${k}</b><span class="num">${s.first.length}／${s.tot}</span></button>`}).join('');
+  document.querySelectorAll('.slot').forEach(b=>b.onclick=()=>pick(b.dataset.pos));
+  $('#baltitle').textContent='人数バランス（'+(scope==='all'?'全体':scope+'チーム')+'）';
+  $('#tbody').innerHTML=POS.map(k=>{const s=st[k];return `<tr data-pos="${k}" class="${sel===k?'sel':''} st-${s.st}"><td><span class="bar"></span>${k}</td><td class="num">${s.slots}</td><td class="num">${s.first.length}</td><td class="num">${s.second.length}</td><td class="tot"><span class="num">${s.tot}</span> <small>／${s.target}</small></td>${[1,2,3,4].map(g=>`<td class="num">${s.g[g]||0}</td>`).join('')}</tr>`}).join('');
+  document.querySelectorAll('#tbody tr').forEach(r=>r.onclick=()=>pick(r.dataset.pos));
+  $('#balnote').textContent=scope==='all'
+    ?'目安（全体）：1st は枠×2人、1st＋2nd は枠×3人。学年は 1st の内訳です。「対象外」の選手は数えません。'
+    :'目安（チーム単位）：1st は枠と同数、1st＋2nd は枠×2人。学年は 1st の内訳です。';
+  const d=$('#depth');
+  if(sel){const s=st[sel];const nm=a=>a.length?a.map(p=>`<span>${scope==='all'?`<i class="tb ${p.team||'N'}">${p.team||'－'}</i>`:''}${esc(p.name)}<small class="num" style="color:var(--sub)"> ${p.grade}年</small></span>`).join(''):'<span style="color:var(--sub)">なし</span>';
+    d.innerHTML=`<div class="card depth" style="margin-top:12px"><h3>${sel}（枠 ${s.slots}）${scope==='all'?'':'　'+scope+'チーム'}</h3><div class="row"><em>1st</em><div class="names">${nm(s.first)}</div></div><div class="row"><em>2nd</em><div class="names">${nm(s.second)}</div></div></div>`;}
+  else d.innerHTML='<p class="note">ポジションをタップすると、その位置の選手一覧が出ます。</p>';
+  const a=state.players.filter(p=>!p.out&&!p.inj);
+  const c=t=>a.filter(p=>p.team===t).length;
+  $('#meta').innerHTML=`<span>対象<b class="num">${a.length}</b>人</span><span>A<b class="num">${c('A')}</b>人</span><span>B<b class="num">${c('B')}</b>人</span><span>チーム未分類<b class="num">${c('')}</b>人</span><span>1st未入力<b class="num">${a.filter(p=>!p.p1).length}</b>人</span><span>ケガ<b class="num" style="color:var(--short)">${state.players.filter(p=>!p.out&&p.inj).length}</b>人</span><span>対象外<b class="num">${state.players.filter(p=>p.out).length}</b>人</span>`;
+  renderFilters();
+  renderSave();
+}
+function pick(k){sel=sel===k?null:k;filter=sel||'all';renderTop();renderList();}
+function renderFilters(){
+  const opts=[['all','全員'],['todo','未入力あり'],['noteam','チーム未分類'],['inj','ケガ'],...POS.map(k=>[k,k])];
+  $('#filters').innerHTML=opts.map(([k,l])=>`<button data-f="${k}" class="${filter===k?'on':''}">${l}</button>`).join('');
+  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filter=b.dataset.f;sel=POS.includes(filter)?filter:null;renderTop();renderList();});
+}
+function opt(cur,ph){return `<option value="">${ph}</option>`+POS.map(k=>`<option value="${k}"${k===cur?' selected':''}>${k}</option>`).join('')}
+function sortP(a,b){return (b.grade||0)-(a.grade||0)||String(a.name).localeCompare(String(b.name),'ja')}
+function renderList(){
+  let ps=state.players.slice().sort(sortP);
+  if(scope!=='all')ps=ps.filter(p=>p.team===scope);
+  if(filter==='todo')ps=ps.filter(p=>!p.out&&(!p.p1||!p.p2||!p.team));
+  else if(filter==='noteam')ps=ps.filter(p=>!p.out&&!p.team);
+  else if(filter==='inj')ps=ps.filter(p=>p.inj);
+  else if(POS.includes(filter))ps=ps.filter(p=>p.p1===filter||p.p2===filter).sort((a,b)=>(a.p1===filter?0:1)-(b.p1===filter?0:1)||sortP(a,b));
+  if(!ps.length){$('#plist').innerHTML=state.players.length?'<li style="display:block;color:var(--sub)">該当する選手はいません。</li>':'<li style="display:block;color:var(--sub)">まだ選手がいません。下の「データ」からデータを読み込むか、「選手を追加」から登録してください。</li>';}
+  else $('#plist').innerHTML=ps.map(p=>{
+    const info=[p.grade?p.grade+'年':'',p.h?p.h+'cm':''].filter(Boolean).join('　');
+    return `<li data-id="${esc(p.id)}" class="${p.out?'out':''}${p.inj?' inj':''}"><div><div class="who"><strong>${esc(p.name)}</strong><small>${esc(info)}</small></div></div>
+<div class="pick"><div class="seg teamseg" aria-label="チーム"><button data-team="A" class="tA${p.team==='A'?' on':''}">A</button><button data-team="B" class="tB${p.team==='B'?' on':''}">B</button></div><label>1st<select data-k="p1" class="${p.p1?'':'empty'}">${opt(p.p1,'未定')}</select></label><label>2nd<select data-k="p2" class="${p.p2?'':'empty'}${p.p2&&p.p2===p.p1?' bad':''}">${opt(p.p2,'なし')}</select></label><button class="outbtn injbtn${p.inj?' on':''}" data-inj>${p.inj?'ケガ中':'ケガ'}</button><button class="outbtn${p.out?' on':''}" data-out>${p.out?'対象外':'対象'}</button></div></li>`}).join('');
+  document.querySelectorAll('#plist li[data-id]').forEach(li=>{
+    const p=state.players.find(x=>x.id===li.dataset.id);
+    li.querySelectorAll('select').forEach(s=>s.onchange=()=>{p[s.dataset.k]=s.value;touch();
+      const [s1,s2]=li.querySelectorAll('select');s1.classList.toggle('empty',!p.p1);s2.classList.toggle('empty',!p.p2);s2.classList.toggle('bad',!!p.p2&&p.p2===p.p1);renderTop();});
+    li.querySelectorAll('[data-team]').forEach(b=>b.onclick=()=>{p.team=p.team===b.dataset.team?'':b.dataset.team;touch();
+      li.querySelectorAll('[data-team]').forEach(x=>x.classList.toggle('on',x.dataset.team===p.team));renderTop();});
+    li.querySelector('[data-out]').onclick=e=>{p.out=!p.out;touch();li.classList.toggle('out',p.out);e.target.classList.toggle('on',p.out);e.target.textContent=p.out?'対象外':'対象';renderTop();};
+    li.querySelector('[data-inj]').onclick=e=>{p.inj=!p.inj;touch();li.classList.toggle('inj',p.inj);e.target.classList.toggle('on',p.inj);e.target.textContent=p.inj?'ケガ中':'ケガ';renderTop();};
+    const del=li.querySelector('[data-del]');
+    if(del)del.onclick=async()=>{if(!await ask(p.name+' を一覧から削除しますか？'))return;state.players=state.players.filter(x=>x.id!==p.id);touch();renderTop();renderList();};
+  });
+  renderAdd();
+}
+function renderAdd(){
+  const a=$('#addarea');
+  if(!adding){a.innerHTML='<div class="addbox" style="text-align:center"><button class="btn ghost" id="openadd">＋ 選手を追加</button></div>';$('#openadd').onclick=()=>{adding=true;renderAdd();$('#f_name').focus();};return;}
+  a.innerHTML=`<div class="addbox"><div class="grid">
+<label class="wide">氏名（必須）<input id="f_name" autocomplete="off" placeholder="例：伊藤 優汰"></label>
+<label>学年<select id="f_grade"><option value="">－</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+<label>身長（cm）<input id="f_h" inputmode="numeric" autocomplete="off"></label>
+<label>チーム<select id="f_team"><option value="">未分類</option><option>A</option><option>B</option></select></label>
+<label>1st<select id="f_p1">${opt('','未定')}</select></label>
+</div><p class="err" id="f_err"></p><div class="acts"><button class="btn ghost" id="f_cancel">やめる</button><button class="btn" id="f_ok">追加する</button></div></div>`;
+  $('#f_cancel').onclick=()=>{adding=false;renderAdd();};
+  $('#f_ok').onclick=()=>{
+    const name=$('#f_name').value.trim(),h=$('#f_h').value.trim().replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248));
+    if(!name){$('#f_err').textContent='氏名を入力してください。';return;}
+    state.players.push({id:'p'+Date.now().toString(36),no:null,name,reg:'',grade:+$('#f_grade').value||0,h:/^\d+$/.test(h)?+h:0,p1:$('#f_p1').value,p2:'',out:false,team:$('#f_team').value,added:true});
+    touch();adding=false;renderTop();renderList();
+  };
+}
+function touch(){try{localStorage.setItem(DATA_KEY,JSON.stringify(state));lastSaved=new Date();dirty=false;}catch(e){dirty=true;}const m=document.getElementById('savemsg');if(m)renderSave();}
+function renderSave(){
+  const b=$('#savebtn'),m=$('#savemsg');if(!b||!m)return;b.disabled=false;
+  m.textContent=dirty?'この端末に保存できませんでした（容量やプライベートブラウズを確認）':lastSaved?`この端末に自動保存しました（${lastSaved.getHours()}:${String(lastSaved.getMinutes()).padStart(2,'0')}）`:'入力はこの端末に自動で保存されます';
+}
+function stamp(){const d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');}
+function save(){
+  const d=modal(`<div class="shead"><b>データ</b><button class="btn ghost sm" data-x>閉じる</button></div>
+<div class="slist" style="display:flex;flex-direction:column;gap:10px;padding-bottom:6px">
+<p class="note" style="margin:0">データはこの端末の中だけに保存されます。ほかの人や別の端末と同じデータを使うときは、書き出したファイルを送り、相手が読み込みます。</p>
+<button class="btn" id="d_exp">データを書き出す（共有）</button>
+<label class="btn ghost" style="text-align:center;cursor:pointer">データを読み込む<input type="file" id="d_imp" accept=".json,application/json" style="display:none"></label>
+<p class="note" id="d_msg" style="margin:0"></p>
+<button class="btn ghost sm" id="d_clear" style="border-color:var(--short);color:var(--short);align-self:flex-start">この端末のデータを消す</button></div>`);
+  d.querySelector('[data-x]').onclick=closeModal;
+  $('#d_exp').onclick=async()=>{const blob=new Blob([JSON.stringify(state)],{type:'application/json'});try{const dl=await getDl();await dl.save({filename:`tmu-position-data-${stamp()}.json`,data:blob});$('#d_msg').textContent='書き出しました。LINEなどで送った相手は「データを読み込む」から取り込めます。';}catch(e){$('#d_msg').textContent=e&&e.code==='declined'?'書き出しをやめました。':'書き出せませんでした。';}};
+  $('#d_imp').onchange=async e=>{const f=e.target.files[0];if(!f)return;let obj;try{obj=JSON.parse(await f.text());}catch(er){$('#d_msg').textContent='ファイルを読み取れませんでした。';return;}
+    if(!obj||!Array.isArray(obj.players)){$('#d_msg').textContent='このツールのデータではないようです。';return;}
+    if(state.players.length&&!await ask(`いまのデータ（選手${state.players.length}人）を、読み込むデータ（選手${obj.players.length}人）で置き換えます。よろしいですか？`))return;
+    try{localStorage.setItem(DATA_KEY,JSON.stringify(obj));}catch(er){$('#d_msg').textContent='この端末に保存できませんでした。';return;}location.reload();};
+  const _dc=$('#d_clear');if(_dc)_dc.onclick=async()=>{if(!await ask('この端末のデータをすべて消します。先に「データを書き出す」で控えをとっておくことをおすすめします。消しますか？'))return;try{localStorage.removeItem(DATA_KEY);localStorage.removeItem(KEY);}catch(er){}location.reload();};
+}
+// ---- 紅白戦 ----
+const byId=id=>state.players.find(p=>p.id===id);
+function fit(p,pos){return !p?'fe':p.p1===pos?'f1':p.p2===pos?'f2':'f0'}
+function ask(msg){return new Promise(res=>{const d=document.createElement('div');d.className='modal askm';d.innerHTML=`<div class="sheet askbox" role="alertdialog"><p></p><div class="sfoot" style="justify-content:flex-end"><button class="btn ghost" data-no>やめる</button><button class="btn" data-yes>OK</button></div></div>`;d.querySelector('p').textContent=msg;const done=v=>{d.remove();res(v);};d.querySelector('[data-no]').onclick=()=>done(false);d.querySelector('[data-yes]').onclick=()=>done(true);d.onclick=e=>{if(e.target===d)done(false);};document.body.appendChild(d);d.querySelector('[data-yes]').focus();});}
+function modal(html){closeModal();const d=document.createElement('div');d.className='modal';d.innerHTML=`<div class="sheet" role="dialog">${html}</div>`;d.onclick=e=>{if(e.target===d)closeModal();};document.body.appendChild(d);return d;}
+function closeModal(){document.querySelectorAll('.modal:not(.askm)').forEach(x=>x.remove());}
+let pt=0, prevOpen=true;
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function emptyLineup(sys){return SYS[sys].xy.map(()=>'');}
+function newGame(){return{id:'g'+Date.now().toString(36),opp:'',date:today(),att:state.players.filter(p=>!p.out&&!p.inj&&p.team==='A').map(p=>p.id),periods:[{min:45},{min:45}],segs:[{p:0,t:0,sys:state.system,lineup:emptyLineup(state.system)}]};}
+function migrateGame(g){
+  if(g.segs)return;
+  const segs=[];
+  (g.periods||[]).forEach((pd,k)=>{
+    if(!pd.lineup)return;
+    const sys=pd.sys||state.system;let cur=pd.lineup.slice();segs.push({p:k,t:0,sys,lineup:cur.slice()});
+    (pd.subs||[]).slice().sort((a,b)=>a.t-b.t).forEach(s=>{if(!(s.t>0&&s.t<pd.min))return;const i=cur.indexOf(s.out);if(i<0||cur.includes(s.in))return;cur=cur.slice();cur[i]=s.in;
+      const last=segs[segs.length-1];if(last.p===k&&last.t===s.t)last.lineup=cur.slice();else segs.push({p:k,t:s.t,sys,lineup:cur.slice()});});
+  });
+  g.periods=(g.periods&&g.periods.length?g.periods:[{min:45}]).map(p=>({min:p.min||45}));
+  if(!segs.length)segs.push({p:0,t:0,sys:state.system,lineup:emptyLineup(state.system)});
+  g.segs=segs;
+}
+function G(){
+  if(!state.games)state.games=[];
+  state.games.forEach(migrateGame);
+  if(!state.games.length){state.games.push(newGame());state.curGame=state.games[0].id;}
+  let g=state.games.find(x=>x.id===state.curGame);if(!g){g=state.games[state.games.length-1];state.curGame=g.id;}
+  const ids=new Set(state.players.map(p=>p.id));g.att=g.att.filter(id=>ids.has(id));const at=new Set(g.att);
+  const n=g.periods.length;
+  g.segs=g.segs.filter(s=>s.p<n);
+  g.segs.forEach(s=>{if(!SYS[s.sys])s.sys=state.system;const len=SYS[s.sys].xy.length;while(s.lineup.length<len)s.lineup.push('');s.lineup.length=len;s.lineup=s.lineup.map(id=>at.has(id)?id:'');s.t=Math.max(0,Math.min(s.t,g.periods[s.p].min-1));});
+  g.segs.sort((a,b)=>a.p-b.p||a.t-b.t);
+  g.segs=g.segs.filter((s,i,a)=>i===0||!(s.p===a[i-1].p&&s.t===a[i-1].t));
+  if(!g.segs.length)g.segs.push({p:0,t:0,sys:state.system,lineup:emptyLineup(state.system)});
+  g.segs[0].p=0;g.segs[0].t=0;
+  if(pt!=='time'&&(pt>=g.segs.length||pt<0))pt=0;
+  return g;
+}
+function gAll(){return G().att.map(byId).filter(Boolean);}
+function gParts(){return gAll().filter(p=>!p.inj);}
+function snFor(ps){const sur={},out={};ps.forEach(p=>{const s=String(p.name).split(/[\s　]+/)[0];sur[s]=(sur[s]||0)+1;});ps.forEach(p=>{const a=String(p.name).split(/[\s　]+/);out[p.id]=sur[a[0]]>1&&a[1]?a[0]+a[1][0]:a[0];});return out;}
+function offs(g){const o=[];let a=0;g.periods.forEach(p=>{o.push(a);a+=p.min;});return{o,total:a};}
+function absT(g,s){return offs(g).o[s.p]+s.t;}
+function segRange(g,i){const{total}=offs(g);const a=absT(g,g.segs[i]);const b=i+1<g.segs.length?absT(g,g.segs[i+1]):total;return[a,b];}
+function startLabel(s){return s.t===0?`${s.p+1}本目 開始`:`${s.p+1}本目 ${s.t}'`;}
+function endLabel(g,i){const nx=g.segs[i+1];if(!nx)return'終了';return nx.t===0?`${nx.p}本目 終了`:`${nx.p+1}本目 ${nx.t}'`;}
+function segLabel(g,i){return startLabel(g.segs[i])+'〜'+endLabel(g,i);}
+function minutesBy(g,except,upto){
+  const{o}=offs(g),r={};
+  g.segs.forEach((s,i)=>{if(i===except||(upto!=null&&i>=upto))return;const[a,b]=segRange(g,i);
+    g.periods.forEach((pd,k)=>{const ov=Math.min(b,o[k]+pd.min)-Math.max(a,o[k]);if(ov<=0)return;
+      s.lineup.forEach(id=>{if(!id)return;const x=r[id]||(r[id]={per:g.periods.map(()=>0),tot:0});x.per[k]+=ov;x.tot+=ov;});});});
+  return r;
+}
+function minutesBefore(g,i){const r={};for(let j=0;j<i;j++){const[a,b]=segRange(g,j);g.segs[j].lineup.forEach(id=>{if(id)r[id]=(r[id]||0)+(b-a);});}return r;}
+function activeAt(g,p,t){const a=offs(g).o[p]+t;let idx=0;g.segs.forEach((s,i)=>{if(absT(g,s)<=a)idx=i;});return idx;}
+function diff(g,i){
+  if(i===0)return null;const pv=g.segs[i-1],cu=g.segs[i];
+  const pm={},cm={};pv.lineup.forEach((id,k)=>{if(id)pm[id]=SYS[pv.sys].xy[k][0];});cu.lineup.forEach((id,k)=>{if(id)cm[id]=SYS[cu.sys].xy[k][0];});
+  return{ins:Object.keys(cm).filter(id=>!(id in pm)).map(id=>[id,cm[id]]),outs:Object.keys(pm).filter(id=>!(id in cm)).map(id=>[id,pm[id]]),moves:Object.keys(cm).filter(id=>id in pm&&pm[id]!==cm[id]).map(id=>[id,pm[id],cm[id]]),sys:pv.sys!==cu.sys};
+}
+function fmtDate(d){if(!d)return'';const a=String(d).split('-');return a.length===3?(+a[1])+'/'+(+a[2]):d;}
+function perSummary(g){const gr=[];g.periods.forEach(p=>{const l=gr[gr.length-1];if(l&&l[0]===p.min)l[1]++;else gr.push([p.min,1]);});return gr.map(([m,c])=>m+'分×'+c+'本').join('＋');}
+const PITCH_SVG='<svg viewBox="0 0 68 72" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="var(--pitch-line)" stroke-width=".35"><rect x="2" y="2" width="64" height="68"/><line x1="2" y1="2" x2="66" y2="2"/><circle cx="34" cy="2" r="9.15"/><rect x="13.85" y="53.5" width="40.3" height="16.5"/><rect x="24.85" y="64.5" width="18.3" height="5.5"/><path d="M26.7 53.5 A9.15 9.15 0 0 1 41.3 53.5"/></g></svg>';
+function timelineHtml(g){
+  const{o,total}=offs(g);if(!total)return'';
+  const segs=g.segs.map((s,i)=>{const[a,b]=segRange(g,i);return `<button class="tseg${pt===i?' on':''}${i%2?' alt':''}" data-pt="${i}" style="left:${a/total*100}%;width:${(b-a)/total*100}%" aria-label="区間${i+1} ${segLabel(g,i)}"><span>${i+1}</span></button>`;}).join('');
+  const lines=o.slice(1).map(x=>`<i class="tline" style="left:${x/total*100}%"></i>`).join('');
+  const labels=g.periods.map((p,k)=>`<span style="left:${o[k]/total*100}%;width:${p.min/total*100}%">${k+1}本目<small>${p.min}分</small></span>`).join('');
+  return `<div class="tl"><div class="tbarw">${segs}${lines}</div><div class="tlabels">${labels}</div></div>`;
+}
+function gameAlerts(g){
+  const out=[],lim=g.maxMin||90,mins=minutesBy(g,-1),ps=gParts(),all=gAll();
+  const {total}=offs(g);const fair=ps.length?total*11/ps.length:0;
+  const nm=p=>p.name;
+  all.forEach(p=>{const t=(mins[p.id]||{}).tot||0;if(t>lim)out.push({lv:'red',msg:`${nm(p)}が上限${lim}分を超えています（${t}分）`,time:1});});
+  g.segs.forEach((s,i)=>{const xy=SYS[s.sys].xy;const[a,b]=segRange(g,i);const L=`区間${i+1}（${segLabel(g,i)}）`;
+    const empty=s.lineup.filter(x=>!x).length;if(empty)out.push({lv:'red',msg:empty===s.lineup.length?`${L}：メンバーが未入力です`:`${L}：空きが${empty}枠あります`,seg:i});
+    const inj=s.lineup.map(byId).filter(p=>p&&p.inj);if(inj.length)out.push({lv:'red',msg:`${L}：ケガ中の選手が入っています（${inj.map(nm).join('、')}）`,seg:i});
+    const gi=xy.findIndex(z=>z[0]==='GK');const gk=byId(s.lineup[gi]);if(gk&&gk.p1!=='GK'&&gk.p2!=='GK')out.push({lv:'warn',msg:`${L}：GKが本職ではありません（${nm(gk)}）`,seg:i});
+    const f0=s.lineup.map((id,k)=>[byId(id),xy[k][0]]).filter(([p,q])=>p&&q!=='GK'&&fit(p,q)==='f0');if(f0.length)out.push({lv:'info',msg:`${L}：本職外の配置 ${f0.map(([p,q])=>nm(p)+'→'+q).join('、')}`,seg:i});
+    if(b-a<5&&g.segs.length>1)out.push({lv:'info',msg:`${L}は${b-a}分だけです。入力ミスでないか確認してください`,seg:i});});
+  const none=ps.filter(p=>!(mins[p.id]&&mins[p.id].tot));if(none.length&&!isOff(g))out.push({lv:'warn',msg:`出場なし（${none.length}人）：${none.map(nm).join('、')}`,time:1});
+  const few=ps.filter(p=>{const t=(mins[p.id]||{}).tot||0;return t>0&&fair&&t<fair*0.5;});if(few.length&&!isOff(g))out.push({lv:'info',msg:`出場が目安（約${Math.round(fair)}分）の半分未満：${few.map(p=>nm(p)+' '+mins[p.id].tot+'分').join('、')}`,time:1});
+  out.push(...offAlerts(g));
+  const rk={red:0,warn:1,info:2};return out.sort((x,y)=>rk[x.lv]-rk[y.lv]);
+}
+let alertOpen=null;
+function alertHtml(g){
+  const al=gameAlerts(g),c=l=>al.filter(x=>x.lv===l).length,lim=g.maxMin||90;
+  const open=alertOpen===null?c('red')>0:alertOpen;
+  const sum=al.length?[['red','要対応'],['warn','注意'],['info','参考']].filter(([l])=>c(l)).map(([l,t])=>`<span class="ab ${l}">${t} ${c(l)}</span>`).join(''):'<span class="ab ok">問題なし</span>';
+  const go=x=>x.seg!=null?String(x.seg):x.time?'time':null;
+  return `<details class="alertbox"${open?' open':''}><summary><b>アラート</b>${sum}</summary>
+<div class="alim"><span>出場時間の上限</span><input id="a_lim" type="number" inputmode="numeric" min="1" max="300" value="${lim}"><span>分（この試合）</span></div>
+${al.length?`<ul class="alist">${al.map(x=>{const t=go(x);return `<li class="${x.lv}">${t!==null?`<button data-ago="${t}">`:'<div>'}<i></i><span>${esc(x.msg)}</span>${t!==null?'</button>':'</div>'}</li>`;}).join('')}</ul>`:'<p class="note" style="margin:0 0 10px">いまのところ問題はありません。</p>'}
+</details>`;
+}
+
+
+// ---- サジェスト ----
+let sgOpt={policy:'eq',aMin:60,bMin:'',timing:'half',seed:0};
+function sgTargets(ps,cap,lim){
+  const t={},A=ps.filter(p=>p.team==='A'),B=ps.filter(p=>p.team!=='A'),o=sgOpt;
+  if(!ps.length)return t;
+  if(o.policy==='eq'||!A.length||(!B.length&&o.policy==='a')){ps.forEach(p=>t[p.id]=Math.min(lim,cap/ps.length));return t;}
+  let a;
+  if(o.policy==='a')a=Math.min(lim,cap/A.length);else a=Math.min(lim,Math.max(0,+o.aMin||0),cap/A.length);
+  A.forEach(p=>t[p.id]=a);
+  const rest=Math.max(0,cap-a*A.length);
+  B.forEach(p=>t[p.id]=Math.min(lim,o.policy==='set'&&o.bMin!==''?Math.max(0,+o.bMin):(B.length?rest/B.length:0)));
+  return t;
+}
+function sgChunks(g){
+  const ch=[];g.periods.forEach((pd,k)=>{let pts=[0];
+    if(sgOpt.timing==='half')pts=[0,Math.floor(pd.min/2)];
+    else if(sgOpt.timing==='15'){pts=[];for(let x=0;x<pd.min;x+=15)pts.push(x);}
+    else if(sgOpt.timing==='third'){pts=[0,Math.round(pd.min/3),Math.round(pd.min*2/3)];}
+    pts=[...new Set(pts)].filter(x=>x<pd.min).sort((a,b)=>a-b);
+    pts.forEach((x,i)=>ch.push({p:k,t:x,d:(i+1<pts.length?pts[i+1]:pd.min)-x}));});
+  return ch;
+}
+function sgPlan(g){
+  const ps=gParts(),lim=g.maxMin||90,sys=(g.segs[0]&&g.segs[0].sys)||state.system,xy=SYS[sys].xy;
+  const total=g.periods.reduce((a,p)=>a+p.min,0);
+  const gks=ps.filter(p=>p.p1==='GK'),field=ps.filter(p=>p.p1!=='GK');
+  const tgt={...sgTargets(gks,total,lim),...sgTargets(field,total*(xy.length-1),lim)};
+  let r=sgOpt.seed*9301+49297;const rnd=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const got={};ps.forEach(p=>got[p.id]=0);
+  const order=xy.map((z,k)=>k).sort((a,b)=>{const qa=xy[a][0],qb=xy[b][0];if(qa==='GK')return -1;if(qb==='GK')return 1;return ps.filter(p=>p.p1===qa).length-ps.filter(p=>p.p1===qb).length;});
+  let prev=null;const segs=[];
+  sgChunks(g).forEach(c=>{
+    const lineup=xy.map(()=>''),used=new Set();
+    order.forEach(k=>{const q=xy[k][0];
+      let cands=ps.filter(p=>!used.has(p.id));
+      if(q==='GK'){const gg=cands.filter(p=>p.p1==='GK'||p.p2==='GK');if(gg.length)cands=gg;}
+      else{const ff=cands.filter(p=>p.p1!=='GK');if(ff.length)cands=ff;}
+      if(!cands.length)return;
+      const sc=p=>{const need=(tgt[p.id]||0)-got[p.id];const f=fit(p,q);let s=need-(f==='f1'?0:f==='f2'?12:40);
+        if(prev&&prev[k]===p.id&&need>=c.d*0.5)s+=25;if(got[p.id]+c.d>lim)s-=1000;return s+rnd()*4;};
+      cands.sort((a,b)=>sc(b)-sc(a));lineup[k]=cands[0].id;used.add(cands[0].id);});
+    lineup.forEach(id=>{if(id)got[id]+=c.d;});
+    const last=segs[segs.length-1];
+    if(!last||last.lineup.join()!==lineup.join())segs.push({p:c.p,t:c.t,sys,lineup});
+    prev=lineup;});
+  return{segs,got,tgt};
+}
+function openSuggest(g){
+  const d=modal(`<div class="shead"><b>サジェスト</b><button class="btn ghost sm" data-x>閉じる</button></div><div class="slist" id="sg_body"></div>
+<div class="sfoot" style="justify-content:flex-end"><button class="btn ghost" id="sg_again">別の案を出す</button><button class="btn" id="sg_apply">この案を反映する</button></div>`);
+  let plan;
+  const draw=()=>{const o=sgOpt,ps=gParts(),lim=g.maxMin||90,isAI=false;
+    plan=sgPlan(g);
+    let tg=null,got={};if(plan){tg={...g,segs:plan.segs};const m=minutesBy(tg,-1);ps.forEach(p=>got[p.id]=(m[p.id]||{}).tot||0);}
+    const A=ps.filter(p=>p.team==='A'),B=ps.filter(p=>p.team!=='A');const avg=a=>a.length?Math.round(a.reduce((s,p)=>s+(got[p.id]||0),0)/a.length):0;
+    const rows=ps.slice().sort((a,b)=>(a.team==='A'?0:1)-(b.team==='A'?0:1)||((got[b.id]||0)-(got[a.id]||0))||sortP(a,b));
+    $('#sg_body').innerHTML=`<div class="sgopt">
+<label>方針<div class="seg">${[['eq','出場機会を均等'],['a','A優先'],['set','時間を指定']].map(([k,l])=>`<button data-pol="${k}" class="${o.policy===k?'on':''}">${l}</button>`).join('')}</div></label>
+${o.policy==='set'?`<div class="sgrow"><span>Aの選手</span><input id="sg_a" type="number" inputmode="numeric" value="${o.aMin}"><span>分</span><span>Bの選手</span><input id="sg_b" type="number" inputmode="numeric" value="${o.bMin}" placeholder="残り"><span>分</span></div><p class="note" style="margin:0">Bを空欄にすると、残りの時間をBで均等に分けます。</p>`:''}
+${o.policy==='a'?'<p class="note" style="margin:0">Aの選手を上限（'+lim+'分）まで優先して出し、残りの時間をBで分けます。</p>':''}
+${`<label>交代のタイミング<div class="seg">${[['start','本の頭だけ'],['half','本の頭と半分'],['third','3分割'],['15','15分ごと']].map(([k,l])=>`<button data-tim="${k}" class="${o.timing===k?'on':''}">${l}</button>`).join('')}</div></label>`}
+</div>
+${plan?`<p class="note">参加${ps.length}人（ケガ中を除く）、上限${lim}分。A平均 <b>${avg(A)}分</b>${B.length?`・B平均 <b>${avg(B)}分</b>`:''}・区間 ${plan.segs.length}つ</p>
+<div class="sgsegs">${plan.segs.map((s,i)=>{const df=diff(tg,i);return `<div><b class="num">${i+1}</b><span>${segLabel(tg,i)}${s.sys!==plan.segs[0].sys||i===0?' '+SYS[s.sys].label:''}</span><small>${df?`IN ${df.ins.length}・OUT ${df.outs.length}${df.moves.length?'・位置 '+df.moves.length:''}`:'先発'}</small></div>`}).join('')}</div>
+<table class="ttbl sgt"><thead><tr><th>選手</th>${isAI?'':'<th>目安</th>'}<th>案</th></tr></thead><tbody>${rows.map(p=>{const t=isAI?null:Math.round(plan.tgt[p.id]||0),m=got[p.id]||0;return `<tr><td><div class="tn">${p.team?`<i class="tb ${p.team}">${p.team}</i>`:''}${esc(p.name)}<small>${p.p1||''}</small></div></td>${isAI?'':`<td class="num dim">${t}</td>`}<td class="num${m>lim?' over':''}${t!==null&&Math.abs(m-t)>=15?' off':''}${m===0?' dim':''}"><b>${m}</b></td></tr>`;}).join('')}</tbody></table>
+<p class="note">${isAI?'AIの案は必ず中身を確認してください。反映したあと、区間ごとに手で調整できます。':'ポジションは1st→2ndを優先し、出場時間の足りない選手から入れます。同じ選手が続けて出る場合は、なるべく同じ枠に残します。反映したあと、区間ごとに手で調整できます。'}</p>`:''}`;
+    $('#sg_again').hidden=isAI;$('#sg_apply').disabled=!plan;
+    d.querySelectorAll('[data-pol]').forEach(b=>b.onclick=()=>{sgOpt.policy=b.dataset.pol;draw();});
+    d.querySelectorAll('[data-tim]').forEach(b=>b.onclick=()=>{sgOpt.timing=b.dataset.tim;draw();});
+    const ia=$('#sg_a');if(ia)ia.onchange=e=>{sgOpt.aMin=parseInt(e.target.value)||0;draw();};
+    const ib=$('#sg_b');if(ib)ib.onchange=e=>{sgOpt.bMin=e.target.value===''?'':(parseInt(e.target.value)||0);draw();};
+  };
+  draw();
+  d.querySelector('[data-x]').onclick=closeModal;
+  $('#sg_again').onclick=()=>{sgOpt.seed++;draw();};
+  $('#sg_apply').onclick=async()=>{if(!plan)return;const has=g.segs.some(s=>s.lineup.some(Boolean));if(has&&!await ask('いまの区間とメンバーをすべて置き換えます。よろしいですか？'))return;g.segs=plan.segs.map(s=>({p:s.p,t:s.t,sys:s.sys,lineup:s.lineup.slice()}));pt=0;touch();closeModal();renderGame();};
+}
+
+
+// ---- 画像で出力 ----
+let dlP=null;
+function getDl(){return Promise.resolve({save:async({filename,data})=>{
+  const file=new File([data],filename,{type:data.type||'application/octet-stream'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return{status:'saved'};}catch(e){if(e&&e.name==='AbortError'){const er=new Error('declined');er.code='declined';throw er;}}}
+  const url=URL.createObjectURL(data);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);return{status:'saved'};}});}
+const IMG={navy:'#13294B',pitch:'#17345F',line:'rgba(255,255,255,.28)',white:'#FFFFFF',sub:'rgba(255,255,255,.72)',blue:'#4F8EF0',ok:'#3FB57E',warn:'#E0B13E',red:'#EE6A61',font:'"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif',num:'"Barlow Condensed","Zen Kaku Gothic New",sans-serif'};
+function cv(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
+function ft(ctx,size,w,fam){ctx.font=`${w||400} ${size}px ${fam||IMG.font}`;}
+function fitText(ctx,t,maxW,size,w,fam){let s=size;ft(ctx,s,w,fam);while(s>10&&ctx.measureText(t).width>maxW){s-=1;ft(ctx,s,w,fam);}return s;}
+function wrapLines(ctx,text,maxW){const out=[];let cur='';for(const ch of String(text)){if(ctx.measureText(cur+ch).width>maxW&&cur){out.push(cur);cur=ch;}else cur+=ch;}if(cur)out.push(cur);return out;}
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawPitch(ctx,x,y,w,h){
+  ctx.fillStyle=IMG.pitch;rr(ctx,x,y,w,h,16);ctx.fill();
+  ctx.strokeStyle=IMG.line;ctx.lineWidth=Math.max(2,w/320);
+  const m=w*0.03;ctx.strokeRect(x+m,y+m,w-2*m,h-2*m);
+  ctx.beginPath();ctx.arc(x+w/2,y+m,w*0.135,0,Math.PI);ctx.stroke();
+  const bw=w*0.59,bh=h*0.23;ctx.strokeRect(x+(w-bw)/2,y+h-m-bh,bw,bh);
+  const sw=w*0.27,sh=h*0.077;ctx.strokeRect(x+(w-sw)/2,y+h-m-sh,sw,sh);
+  ctx.beginPath();ctx.arc(x+w/2,y+h-m-bh,w*0.105,Math.PI,0);ctx.stroke();
+}
+function drawLineup(ctx,seg,x,y,w,h,inSet,sn){
+  drawPitch(ctx,x,y,w,h);
+  const xy=SYS[seg.sys].xy;const r=Math.max(15,w*0.046);
+  xy.forEach(([q,px,py],k)=>{const p=byId(seg.lineup[k]);const py2=py*0.9+(py>85?6:0);const cx=x+w*(0.05+0.9*px/100),cy=y+h*(0.05+0.9*py2/100);
+    ctx.fillStyle=p?IMG.white:'rgba(255,255,255,.18)';ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+    if(p&&inSet&&inSet.has(p.id)){ctx.lineWidth=Math.max(3,r*0.16);ctx.strokeStyle=IMG.warn;ctx.stroke();}
+    ctx.fillStyle=IMG.navy;ft(ctx,Math.round(r*0.62),700,IMG.num);ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(q,cx,cy+1);
+    const name=p?(sn[p.id]||p.name):'未定';const fs=fitText(ctx,name,w*0.2,Math.round(r*0.78),700);
+    const tw=ctx.measureText(name).width+fs*0.8;ctx.fillStyle='rgba(8,18,34,.78)';rr(ctx,cx-tw/2,cy+r+4,tw,fs*1.45,fs*0.35);ctx.fill();
+    ctx.fillStyle=p?IMG.white:IMG.sub;ctx.textBaseline='middle';ctx.fillText(name,cx,cy+r+4+fs*0.75);
+  });
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+}
+function changeLines(g,i){const d=diff(g,i);if(!d)return[];const nm=id=>{const p=byId(id);return p?p.name:'?';};const L=[];
+  if(d.sys)L.push(['システム',`${SYS[g.segs[i-1].sys].label} → ${SYS[g.segs[i].sys].label}`,IMG.sub]);
+  if(d.ins.length)L.push(['IN',d.ins.map(([id,q])=>`${nm(id)}（${q}）`).join('、'),IMG.ok]);
+  if(d.outs.length)L.push(['OUT',d.outs.map(([id])=>nm(id)).join('、'),IMG.red]);
+  if(d.moves.length)L.push(['位置変更',d.moves.map(([id,f,t])=>`${nm(id)} ${f}→${t}`).join('、'),IMG.sub]);
+  if(!L.length)L.push(['変更','なし',IMG.sub]);return L;}
+function header(ctx,W,title,sub1,sub2){
+  ctx.fillStyle=IMG.navy;ctx.fillRect(0,0,W,ctx.canvas.height);
+  ctx.fillStyle=IMG.sub;ft(ctx,28,700);ctx.fillText('東京都立大学サッカー部　TMU FC App',60,74);
+  ctx.fillStyle=IMG.white;fitText(ctx,title,W-120,58,700);ctx.fillText(title,60,148);
+  ctx.fillStyle=IMG.sub;ft(ctx,30,400);if(sub1)ctx.fillText(sub1,60,198);if(sub2)ctx.fillText(sub2,60,240);
+}
+function drawLabelRows(ctx,rows,x,y,maxW,size){let yy=y;rows.forEach(([lab,text,col])=>{ft(ctx,size,700);const lw=ctx.measureText(lab).width+size*0.8;
+  ctx.fillStyle=col;rr(ctx,x,yy-size*1.05,lw,size*1.45,size*0.3);ctx.fill();ctx.fillStyle=col===IMG.sub?IMG.navy:'#0B1A30';ctx.fillText(lab,x+size*0.4,yy);
+  ft(ctx,size,400);ctx.fillStyle=IMG.white;const ls=wrapLines(ctx,text,maxW-lw-size*0.6);ls.forEach((l,k)=>{ctx.fillText(l,x+lw+size*0.6,yy+k*size*1.5);});yy+=Math.max(1,ls.length)*size*1.5+size*0.5;});return yy;}
+function measureRows(ctx,rows,maxW,size){let h=0;rows.forEach(([lab,text])=>{ft(ctx,size,700);const lw=ctx.measureText(lab).width+size*0.8;ft(ctx,size,400);h+=Math.max(1,wrapLines(ctx,text,maxW-lw-size*0.6).length)*size*1.5+size*0.5;});return h;}
+function segImage(g,i){
+  const s=g.segs[i],W=1080,[a,b]=segRange(g,i),sn=snFor(gAll());const d=diff(g,i);const inSet=new Set(d?d.ins.map(x=>x[0]):[]);
+  const playing=new Set(s.lineup.filter(Boolean));const bench=gParts().filter(p=>!playing.has(p.id)).map(p=>p.name);
+  const rows=changeLines(g,i);if(bench.length)rows.push(['控え',bench.join('、'),IMG.sub]);
+  const tmp=cv(10,10).getContext('2d');const rowsH=measureRows(tmp,rows,W-120,30);
+  const pitchY=290,pitchH=980;const H=Math.round(pitchY+pitchH+40+rowsH+90);
+  const c=cv(W,H),ctx=c.getContext('2d');
+  header(ctx,W,`${g.opp?'vs '+g.opp:'メンバー選考'}`,`${fmtDate(g.date)}　${perSummary(g)}`,`${segLabel(g,i)}（${b-a}分）　${SYS[s.sys].label}`);
+  drawLineup(ctx,s,60,pitchY,W-120,pitchH,inSet,sn);
+  drawLabelRows(ctx,rows,60,pitchY+pitchH+70,W-120,30);
+  ctx.fillStyle=IMG.sub;ft(ctx,22,400);ctx.fillText('黄色の枠＝この区間から入った選手',60,H-36);
+  return c;
+}
+function gameImage(g){
+  const W=1080,colW=470,gap=40,x0=60,sn=snFor(gAll());const tmp=cv(10,10).getContext('2d');
+  const blocks=g.segs.map((s,i)=>{const rows=i===0?[]:changeLines(g,i);return{s,i,rows,rh:measureRows(tmp,rows,colW,22)};});
+  const pitchH=500,labelH=74;const rowsY=[];let y=300;
+  for(let k=0;k<blocks.length;k+=2){rowsY.push(y);const h=Math.max(...blocks.slice(k,k+2).map(b=>labelH+pitchH+24+b.rh));y+=h+40;}
+  const mins=minutesBy(g,-1);const pl=gAll().map(p=>({p,m:(mins[p.id]||{tot:0}).tot})).sort((a,b)=>b.m-a.m);
+  const colsN=3,lineH=44;const minH=90+Math.ceil(pl.length/colsN)*lineH;const H=Math.round(y+minH+60);
+  const c=cv(W,H),ctx=c.getContext('2d');
+  const {total}=offs(g);header(ctx,W,`${g.opp?'vs '+g.opp:'メンバー選考'}`,`${fmtDate(g.date)}`,`${perSummary(g)}（合計${total}分）`);
+  blocks.forEach((bk,k)=>{const x=x0+(k%2)*(colW+gap),yy=rowsY[Math.floor(k/2)];const[a,b]=segRange(g,bk.i);const d=diff(g,bk.i);
+    ctx.fillStyle=IMG.blue;ft(ctx,40,700,IMG.num);ctx.fillText(String(bk.i+1),x,yy+40);
+    ctx.fillStyle=IMG.white;fitText(ctx,`${segLabel(g,bk.i)}（${b-a}分）`,colW-50,26,700);ctx.fillText(`${segLabel(g,bk.i)}（${b-a}分）`,x+40,yy+30);
+    ctx.fillStyle=IMG.sub;ft(ctx,22,400);ctx.fillText(SYS[bk.s.sys].label,x+40,yy+60);
+    drawLineup(ctx,bk.s,x,yy+labelH,colW,pitchH,new Set(d?d.ins.map(z=>z[0]):[]),sn);
+    drawLabelRows(ctx,bk.rows,x,yy+labelH+pitchH+44,colW,22);});
+  let yy=y+10;ctx.fillStyle=IMG.white;ft(ctx,32,700);ctx.fillText('出場時間',60,yy+30);yy+=80;
+  pl.forEach((r,k)=>{const cx=60+(k%colsN)*((W-120)/colsN),cy=yy+Math.floor(k/colsN)*lineH;ctx.fillStyle=r.m?IMG.white:IMG.sub;ft(ctx,26,400);const nm=r.p.name;fitText(ctx,nm,200,26,400);ctx.fillText(nm,cx,cy);ft(ctx,30,700,IMG.num);ctx.fillStyle=r.m?IMG.white:IMG.sub;ctx.textAlign='right';ctx.fillText(r.m+"'",cx+(W-120)/colsN-30,cy);ctx.textAlign='left';});
+  return c;
+}
+function posImage(){
+  const W=1080,ps=state.players.filter(p=>!p.out&&!p.inj&&(scope==='all'||p.team===scope)).sort((a,b)=>(a.team||'Z').localeCompare(b.team||'Z')||(b.grade||0)-(a.grade||0)||sortP(a,b));const tmp=cv(10,10).getContext('2d');
+  const rows=POS.map(q=>{const f=ps.filter(p=>p.p1===q),s=ps.filter(p=>p.p2===q);const nm=p=>`${scope==='all'&&p.team?p.team+' ':''}${p.name}（${p.grade}年）`;return{q,f,s,ft:f.map(nm).join('、')||'なし',st:s.map(nm).join('、')||'なし'};});
+  const inner=W-120-140;ft(tmp,28,400);const rh=rows.map(r=>{ft(tmp,28,700);const a=wrapLines(tmp,r.ft,inner-120).length;ft(tmp,26,400);const b=wrapLines(tmp,r.st,inner-120).length;return 30+a*42+b*38+30;});
+  const H=Math.round(290+rh.reduce((a,b)=>a+b,0)+80);const c=cv(W,H),ctx=c.getContext('2d');
+  header(ctx,W,'ポジション別メンバー',`${scope==='all'?'全体':scope+'チーム'}　${SYS[state.system].label}`,`${ps.length}人（ケガ・対象外を除く）`);
+  let y=290;rows.forEach((r,k)=>{ctx.fillStyle='rgba(255,255,255,.06)';rr(ctx,60,y,W-120,rh[k]-14,14);ctx.fill();
+    ctx.fillStyle=IMG.white;ft(ctx,46,700,IMG.num);ctx.fillText(r.q,84,y+62);ctx.fillStyle=IMG.sub;ft(ctx,22,400);ctx.fillText(`1st ${r.f.length}・2nd ${r.s.length}`,84,y+94);
+    let yy=y+48;const x=60+140+20;ctx.fillStyle=IMG.blue;ft(ctx,22,700);ctx.fillText('1st',x,yy);ft(ctx,28,700);ctx.fillStyle=IMG.white;wrapLines(ctx,r.ft,inner-120).forEach(l=>{ctx.fillText(l,x+60,yy);yy+=42;});
+    ctx.fillStyle=IMG.sub;ft(ctx,22,700);ctx.fillText('2nd',x,yy);ft(ctx,26,400);ctx.fillStyle=IMG.sub;wrapLines(ctx,r.st,inner-120).forEach(l=>{ctx.fillText(l,x+60,yy);yy+=38;});
+    y+=rh[k];});
+  return c;
+}
+
+// ---- 複数枚の画像出力 ----
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}
+async function showImages(list,title){
+  try{await document.fonts.ready;}catch(e){}
+  const items=[];for(const it of list){const c=it.make();const blob=await new Promise(r=>c.toBlob(r,'image/png'));items.push({...it,blob,url:URL.createObjectURL(blob)});}
+  const n=items.length;
+  const d=modal(`<div class="shead"><b>${esc(title||'画像で出力')}（${n}枚）</b><button class="btn ghost sm" data-x>閉じる</button></div>
+<div class="slist imglist">${items.map((it,k)=>`<figure><figcaption><span>${k+1}/${n}　${esc(it.label||'')}</span><button class="btn ghost sm" data-one="${k}">この1枚を保存</button></figcaption><img src="${it.url}" alt="${esc(it.label||'画像')}"></figure>`).join('')}</div>
+<p class="note" id="im_msg">「まとめて保存」でまとめて共有メニューを開きます。LINEなどにそのまま送れます。画像を長押ししても保存できます。</p>
+<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="im_all">${n>1?'まとめて保存（'+n+'枚）':'保存する'}</button></div>`);
+  const msg=t=>{const m=d.querySelector('#im_msg');if(m)m.textContent=t;};
+  d.querySelector('[data-x]').onclick=()=>{items.forEach(it=>URL.revokeObjectURL(it.url));closeModal();};
+  const dl=await getDl();
+  const saveOne=async it=>{try{await dl.save({filename:it.filename,data:it.blob});msg('保存しました。');}catch(e){msg(e&&e.code==='declined'?'保存をやめました。':'保存できませんでした。画像を長押しして保存してください。');}};
+  d.querySelectorAll('[data-one]').forEach(b=>b.onclick=()=>saveOne(items[+b.dataset.one]));
+  d.querySelector('#im_all').onclick=async()=>{
+    if(n===1)return saveOne(items[0]);
+    const files=items.map(it=>new File([it.blob],it.filename,{type:'image/png'}));
+    if(navigator.canShare&&navigator.canShare({files})){try{await navigator.share({files});msg('共有しました。');return;}catch(e){if(e&&e.name==='AbortError'){msg('保存をやめました。');return;}}}
+    for(const it of items){const a=document.createElement('a');a.href=it.url;a.download=it.filename;document.body.appendChild(a);a.click();a.remove();await new Promise(r=>setTimeout(r,300));}
+    msg(n+'枚を保存しました。');};
+}
+async function showImage(make,filename){return showImages([{make,filename,label:''}]);}
+// 出場時間（1ページ最大18人）
+function minutesImages(g,base){
+  const mins=minutesBy(g,-1);const pl=gAll().map(p=>({p,m:(mins[p.id]||{tot:0}).tot,per:(mins[p.id]||{per:g.periods.map(()=>0)}).per})).sort((a,b)=>b.m-a.m||sortP(a.p,b.p));
+  const per=18,pages=Math.max(1,Math.ceil(pl.length/per));const{total}=offs(g);const lim=g.maxMin||90;
+  return [...Array(pages)].map((_,pg)=>({label:'出場時間'+(pages>1?`（${pg+1}/${pages}）`:''),filename:`${base}_出場時間${pages>1?'_'+(pg+1):''}.png`,make:()=>{
+    const rows=pl.slice(pg*per,(pg+1)*per);const W=1080,top=290,rh=62,H=top+80+rows.length*rh+70;const c=cv(W,H),ctx=c.getContext('2d');
+    header(ctx,W,`${g.opp?'vs '+g.opp:'メンバー選考'}`,`${fmtDate(g.date)}　出場時間${pages>1?`（${pg+1}/${pages}）`:''}`,`${perSummary(g)}（合計${total}分）`);
+    const colX=[60,520],perW=Math.min(110,(W-120-460-130)/Math.max(1,g.periods.length));
+    ctx.fillStyle=IMG.sub;ft(ctx,24,700);ctx.fillText('選手',60,top+40);g.periods.forEach((_,k)=>{ctx.textAlign='right';ctx.fillText(`${k+1}本`,520+perW*(k+1),top+40);});ctx.fillText('合計',W-60,top+40);ctx.textAlign='left';
+    rows.forEach((r,k)=>{const y=top+80+k*rh+40;if(k%2===0){ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(40,y-42,W-80,rh);}
+      ctx.fillStyle=r.m?IMG.white:IMG.sub;fitText(ctx,r.p.name,300,34,700);ctx.fillText(r.p.name,60,y);
+      ft(ctx,24,400);ctx.fillStyle=IMG.sub;ctx.fillText(r.p.p1||'',380,y);
+      ft(ctx,32,700,IMG.num);ctx.textAlign='right';r.per.forEach((m,j)=>{ctx.fillStyle=m?IMG.white:IMG.sub;ctx.fillText(m?String(m):'－',520+perW*(j+1),y);});
+      ctx.fillStyle=r.m>lim?IMG.red:r.m?IMG.white:IMG.sub;ft(ctx,40,700,IMG.num);ctx.fillText(r.m+"'",W-60,y);ctx.textAlign='left';});
+    return c;}}));
+}
+// セットプレー：場面ごとに表（役割｜左｜右）
+const SPPAGES=[['fkd',['L','R'],'FK守備'],['ckd',['C'],'CK守備'],['fka',['L','R'],'FK攻撃'],['cka',['L1','R1'],'CK攻撃 ①ニア'],['cka',['L2','R2'],'CK攻撃 ②ファー']];
+function spPageImages(g,i,base){
+  const s=g.segs[i];spClean(s);const[a,b]=segRange(g,i);
+  return SPPAGES.filter(([sc,vs])=>vs.some(v=>spHas(s,sc,v))).map(([sc,vs,title])=>({label:title,filename:`${base}_区間${i+1}_${title.replace(/\s/g,'')}.png`,make:()=>{
+    const W=1080,top=300,lw=230,cw=(W-120-lw)/vs.length,line=46;const roles=SPDEF[sc].roles(vs[0]);
+    const data=vs.map(v=>spGet(s,sc,v));const bv=vs.map(v=>(SPBASE[sc]||{})[v]);
+    const rowsH=roles.map(([r,,n])=>n*line+26);const H=Math.round(top+70+rowsH.reduce((x,y)=>x+y,0)+90);
+    const c=cv(W,H),ctx=c.getContext('2d');
+    header(ctx,W,title,`${g.opp?'vs '+g.opp+'　':''}${fmtDate(g.date)}`,`区間${i+1}：${segLabel(g,i)}（${b-a}分）`);
+    if(vs.length>1){ctx.fillStyle=IMG.blue;ft(ctx,30,700);vs.forEach((v,k)=>ctx.fillText(varLabel(sc,v).replace(/\s?[①②].*/,''),60+lw+cw*k+10,top+40));}
+    let y=top+70;
+    roles.forEach(([r,rl,n],ri)=>{if(ri%2===0){ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(40,y,W-80,rowsH[ri]);}
+      ctx.fillStyle=IMG.sub;ft(ctx,28,700);ctx.fillText(rl.replace(/（.*）/,''),60,y+46);if(rl.includes('順')){ft(ctx,20,400);ctx.fillText('ニアから順',60,y+76);}
+      vs.forEach((v,k)=>{const d=data[k],bd=bv[k]&&spHas(s,sc,bv[k])?spGet(s,sc,bv[k]):null;
+        d[r].forEach((id,j)=>{const p=byId(id);const df=bd&&(bd[r][j]||'')!==(id||'');const ord=rl.includes('順')?'①②③④⑤⑥'[j]+' ':'';
+          ctx.fillStyle=!p?IMG.sub:df?IMG.warn:IMG.white;const t=ord+(p?p.name:'未定');fitText(ctx,t,cw-20,34,p?700:400);ctx.fillText(t,60+lw+cw*k+10,y+46+j*line);});});
+      y+=rowsH[ri];});
+    if(vs.length>1){ctx.fillStyle=IMG.sub;ft(ctx,22,400);ctx.fillText(`黄色＝${varLabel(sc,vs[0]).replace(/\s?[①②].*/,'')}と違う役割`,60,H-36);}
+    return c;}}));
+}
+
+function openImgMenu(g){
+  const cur=pt==='time'?0:pt;
+  const d=modal(`<div class="shead"><b>画像で出力</b><button class="btn ghost sm" data-x>閉じる</button></div><div class="slist" style="display:flex;flex-direction:column;gap:8px;padding-bottom:4px">
+<button class="btn" data-img="seg">区間${cur+1}のメンバー（${esc(segLabel(g,cur))}）</button>
+<button class="btn ghost" data-img="all">試合全体（区間ごと${g.segs.length}枚＋出場時間）</button>
+<button class="btn ghost" data-img="sp">区間${cur+1}のセットプレーの役割（場面ごと）</button>${isOff(g)?'<button class="btn ghost" data-img="off">公式戦シート（スタメン・ベンチ／交代候補／交代プラン）</button>':''}</div>`);
+  d.querySelector('[data-x]').onclick=closeModal;
+  const base=`${(g.date||'').replace(/-/g,'')}_${g.opp||'メンバー選考'}`.replace(/[\\/:*?"<>|\s]/g,'');
+  d.querySelector('[data-img="seg"]').onclick=()=>showImage(()=>segImage(g,cur),`${base}_区間${cur+1}.png`);
+  d.querySelector('[data-img="sp"]').onclick=()=>{const l=spPageImages(g,cur,base);if(!l.length){toast('この区間にはまだセットプレーの役割が入っていません');return;}showImages(l,'セットプレーの役割');};
+  const oi=d.querySelector('[data-img="off"]');if(oi)oi.onclick=()=>showImages(offImages(g,base),'公式戦シート');
+  d.querySelector('[data-img="all"]').onclick=()=>showImages([...g.segs.map((x,k)=>({label:`区間${k+1}　${segLabel(g,k)}`,filename:`${base}_区間${k+1}.png`,make:()=>segImage(g,k)})),...minutesImages(g,base)],'試合全体');
+}
+
+// ---- 使い方 ----
+const HELP=[
+['はじめに',`<p>このアプリは、選手のポジション（1st／2nd）とA／Bの整理、試合のメンバー選考と出場時間の管理をするためのものです。</p>
+<ul><li><b>ホーム画面に追加</b>：Safariで開き、共有ボタン→「ホーム画面に追加」を選ぶと、アプリのように使えます。</li>
+<li><b>保存</b>：入力はこの端末に自動で保存されます。保存ボタンはありません。</li>
+<li><b>画面の切り替え</b>：上の「ポジション」「メンバー選考」で切り替えます。</li>
+<li><b>コンディション（試作版）</b>：上の「コンディション」から、選手の体調・痛みの報告・欠席連絡・自主トレの入力と、スタッフの確認画面（ケガと回復計画を含む）を試せます。データはこの端末の中だけに保存されます。ここでケガとして登録した選手は、メンバー選考で自動的に「ケガ中」になります。</li></ul>`],
+['ポジション：選手を整理する',`<ul><li><b>A／B</b>：選手ごとのボタンで分けます。もう一度押すと未分類に戻ります。</li>
+<li><b>1st／2nd</b>：プルダウンで選びます（GK・CB・HV・WB・CM・AM・CF）。2ndが1stと同じだと赤枠になります。</li>
+<li><b>ケガ</b>：押すと「ケガ中」になり、集計やメンバー選考の候補から外れます。治ったらもう一度押します。</li>
+<li><b>対象／対象外</b>：今季のメンバーから長く外す選手は「対象外」にします。</li>
+<li><b>選手を追加</b>：一覧の下のボタンから、名前・学年などを入れて追加します。</li>
+<li><b>絞り込み</b>：一覧の上のボタンで「未入力あり」「チーム未分類」「ケガ」やポジションごとに絞れます。</li></ul>`],
+['ポジション：人数バランスを見る',`<ul><li><b>システム</b>：3-4-2-1／3-4-1-2を切り替えると、枠の数が変わります。</li>
+<li><b>集計対象</b>：全体／Aチーム／Bチームで切り替えます。</li>
+<li><b>ピッチ図</b>：各ポジションに「1stの人数／1st＋2ndの合計」が出ます。緑＝十分、黄＝やや不足、赤＝不足。タップするとその位置の選手が出ます。</li>
+<li><b>目安</b>：全体では1stは枠×2人、1st＋2ndは枠×3人。チーム単位では1stは枠と同数、1st＋2ndは枠×2人。</li>
+<li><b>画像で出力</b>：表の下のボタンで、ポジション別メンバーの画像を作れます。</li></ul>`],
+['メンバー選考：試合を準備する',`<ol><li>「＋新しい試合」で試合を作り、対戦相手と日付を入れます。</li>
+<li>「時間と本数を設定」で、「45分×2本」「30分×1本」のように行を並べて決めます。</li>
+<li>「メンバーを選ぶ」で参加する選手を選びます。ケガ中の選手は選べません。</li></ol>`],
+['メンバー選考：メンバーを組む（区間）',`<p>メンバーが変わる時点ごとに「区間」を作ります。区間は次の変更まで、本をまたいで続きます。</p>
+<ul><li><b>枠をタップ</b>すると選手を選べます。そのポジションが1st→2nd→その他、出場時間が少ない順に並びます。ほかの枠にいる選手を選ぶと入れ替わります。</li>
+<li><b>＋メンバー変更を追加</b>：「何本目の何分から」を指定します。0分＝その本の開始です。その時点のメンバーを引き継いだ区間ができるので、変える選手だけ入れ替えます。</li>
+<li><b>前の区間をコピー</b>：ひとつ前の区間のメンバーとシステムをそのまま入れます。</li>
+<li><b>出場時間が少ない順に組む</b>：ほかの区間での出場時間が少ない選手から自動で入れます。</li>
+<li><b>開始時点を変更／区間を削除</b>：区間の上のボタンから行います。削除すると前の区間が続きます。</li>
+<li>枠の縁の色：緑＝1st、黄＝2nd、赤＝本職外。「IN」はその区間から入った選手です。</li></ul>`],
+['メンバー選考：サジェストとアラート',`<ul><li><b>サジェスト</b>：「出場機会を均等」「A優先」「時間を指定」と交代のタイミングを選ぶと、試合全体の案を作ります。「この案を反映する」で区間として取り込み、あとから手で直せます。</li>
+<li><b>アラート</b>：出場時間の上限超え（初期値90分）、空き枠、ケガ中の選手、GKが本職でない、出場なしの選手などを知らせます。項目をタップすると該当する区間に移動します。</li>
+<li><b>出場時間を見る</b>：区間一覧の一番下から、本ごとの出場時間と合計を確認できます。</li></ul>`],
+['メンバー選考：セットプレーの役割',`<ul><li>区間の画面の「セットプレー」で、FK守備・CK守備・FK攻撃・CK攻撃を切り替えます。</li>
+<li>左／右や戦術①②は上のボタンで切り替えます。「左と同じにする」で基準のパターンをコピーし、違う役割だけ入れ替えます。違う役割は黄色の枠になります。</li>
+<li>役割の枠をタップして選手を選びます。別の役割にいる選手を選ぶと入れ替わります。GKは対象外です。</li>
+<li>選手を交代させると、出ていく選手の役割は入ってくる選手に引き継がれます。新しい区間も前の区間の役割を引き継ぎます。</li>
+<li>「画像で出力」から、区間ごとのセットプレーの役割を画像にできます。</li></ul>`],
+['メンバー選考：公式戦',`<ul><li>試合の「種類」で「公式戦」を選ぶと、「公式戦の準備」の欄が出ます。</li>
+<li><b>ベンチ入り</b>：「ベンチを選ぶ」でスタメン以外から選びます（上限9人。「上限の設定」で変えられます）。</li>
+<li><b>交代候補</b>：スタメン（区間1のメンバー）の各ポジションに、ベンチから第1候補・第2候補を入れます。緑＝1st、黄＝2nd、赤＝本職外。「複」は複数の枠で第1候補になっている選手です。</li>
+<li><b>交代プラン</b>：状況（いつでも／リード／同点／ビハインド）と目安の時間ごとに、OUTとINの組み合わせを登録します。OUTを選ぶと第1候補が自動で入ります。</li>
+<li>試合中の交代は、これまでどおり区間で記録します。交代人数（上限5人）とベンチ外の選手の出場はアラートで知らせます。</li>
+<li>「画像で出力」の「公式戦シート」で、スタメン・ベンチ、交代候補、交代プランの画像を作れます。</li></ul>`],
+['画像とテキストで共有する',`<ul><li><b>画像で出力</b>：メンバー選考の画面の下のボタンから、「区間のメンバー」「試合全体（区間ごとの画像と出場時間）」「セットプレーの役割（場面ごと）」を選びます。複数枚の場合は「まとめて保存」で一度に送れます。「保存する」を押すと共有メニューが開くので、LINEなどに送れます。</li>
+<li><b>テキストで書き出す</b>：区間ごとのメンバーと交代、出場時間を文字でまとめます。</li></ul>`],
+['データを共有する・控えをとる',`<p>データは端末ごとに別々です。ほかの人や別の端末と同じデータを使うときは、ファイルでやりとりします。</p>
+<ol><li>画面下の「データ」→「データを書き出す」で、ファイルを作って送ります。</li>
+<li>受け取った人は「データ」→「データを読み込む」でそのファイルを選びます。いまのデータは置き換わります。</li></ol>
+<ul><li>複数の人が別々に入力すると、自動ではまとまりません。入力する人を決めておくと確実です。</li>
+<li>アプリを消すとデータも消えるので、週1回くらい書き出して控えをとってください。</li>
+<li>データのファイルには選手の情報が入っています。部の関係者以外には送らないでください。</li></ul>`]];
+function openHelp(){
+  const d=modal(`<div class="shead"><b>使い方</b><button class="btn ghost sm" data-x>閉じる</button></div><div class="slist helpbox">${HELP.map(([t,b],i)=>`<details${i===0?' open':''}><summary>${t}</summary><div class="hb">${b}</div></details>`).join('')}</div>`);
+  d.querySelector('[data-x]').onclick=closeModal;
+  try{localStorage.setItem('tmu-help-seen','1')}catch(e){}
+}
+
+
+// ---- セットプレーの役割 ----
+const CKA1=[['kick','キッカー',1],['kobore','こぼれ',2],['rest','残り',1],['stf','ストーン前',2],['stb','ストーン後',2],['gk','GK前',1],['far','ファー',1]];
+const CKA2=[['kick','キッカー',1],['kobore','こぼれ',2],['rest','残り',1],['in','中',4],['gk','GK前',1],['block','ブロック',1]];
+const SPDEF={
+ fkd:{label:'FK守備',vars:[['L','左'],['R','右']],roles:()=>[['wall','壁',1],['kobore','こぼれ',2],['down','ダウン',1],['other','その他（ニアから順）',6]]},
+ ckd:{label:'CK守備',vars:[['C','']],roles:()=>[['np','ニアポスト',1],['nf','ニアフリー',1],['ff','ファーフリー',1],['gk','GK前',1],['kobore','こぼれ',1],['mark','マーク',5]]},
+ fka:{label:'FK攻撃',vars:[['L','左'],['R','右']],roles:()=>[['kick','キッカー',1],['kobore','こぼれ',2],['rest','残り',1],['in','中（ニアから順）',6]]},
+ cka:{label:'CK攻撃',vars:[['L1','左 ①ニア'],['R1','右 ①ニア'],['L2','左 ②ファー'],['R2','右 ②ファー']],roles:v=>v.endsWith('1')?CKA1:CKA2}};
+const SPBASE={fkd:{R:'L'},fka:{R:'L'},cka:{R1:'L1',L2:'L1',R2:'L2'}};
+let spScene='fkd';const spVar={fkd:'L',ckd:'C',fka:'L',cka:'L1'};
+const varLabel=(sc,v)=>{const x=SPDEF[sc].vars.find(z=>z[0]===v);return x?x[1]:'';};
+function fieldIds(s){const gi=SYS[s.sys].xy.findIndex(z=>z[0]==='GK');return s.lineup.filter((id,k)=>id&&k!==gi);}
+function spGet(s,sc,v){s.sp=s.sp||{};s.sp[sc]=s.sp[sc]||{};s.sp[sc][v]=s.sp[sc][v]||{};const d=s.sp[sc][v];SPDEF[sc].roles(v).forEach(([r,,n])=>{d[r]=d[r]||[];while(d[r].length<n)d[r].push('');d[r].length=n;});return d;}
+function spHas(s,sc,v){const d=s.sp&&s.sp[sc]&&s.sp[sc][v];return !!d&&Object.values(d).some(a=>a.some(Boolean));}
+function spClean(s){if(!s.sp)return;const ok=new Set(fieldIds(s));Object.values(s.sp).forEach(sc=>Object.values(sc).forEach(d=>Object.keys(d).forEach(r=>{d[r]=d[r].map(id=>ok.has(id)?id:'');})));}
+function spReplace(s,from,to){if(!s.sp||!from)return;Object.values(s.sp).forEach(sc=>Object.values(sc).forEach(d=>Object.keys(d).forEach(r=>{d[r]=d[r].map(id=>id===from?to:id);})));}
+function spRoleOf(d,id){for(const [r,a] of Object.entries(d)){const k=a.indexOf(id);if(k>=0)return[r,k];}return null;}
+function spHtml(g,i){
+  const s=g.segs[i];spClean(s);const sn=snFor(gAll());const sc=spScene,v=spVar[sc],def=SPDEF[sc];const d=spGet(s,sc,v);
+  const bv=(SPBASE[sc]||{})[v];const bd=bv&&spHas(s,sc,bv)?spGet(s,sc,bv):null;
+  const fld=fieldIds(s);const assigned=new Set(Object.values(d).flat().filter(Boolean));const un=fld.filter(id=>!assigned.has(id));
+  const rows=def.roles(v).map(([r,l,n])=>`<div class="sprow"><span class="spl">${l}</span><div class="sps">${d[r].map((id,k)=>{const p=byId(id);const df=bd&&bd[r]&&(bd[r][k]||'')!==(id||'');return `<button class="spb${p?'':' empty'}${df?' diff':''}" data-sp="${r}:${k}">${n>1&&(r==='other'||r==='in')?`<i>${k+1}</i>`:''}${p?esc(sn[p.id]||p.name):'＋'}</button>`;}).join('')}</div></div>`).join('');
+  return `<section><h2 class="sph">セットプレー<small>この区間の役割</small></h2>
+<div class="filters">${Object.entries(SPDEF).map(([k,x])=>`<button data-spsc="${k}" class="${k===sc?'on':''}">${x.label}</button>`).join('')}</div>
+${def.vars.length>1?`<div class="seg spvars">${def.vars.map(([k,l])=>`<button data-spv="${k}" class="${k===v?'on':''}">${l}${spHas(s,sc,k)?'':' <small>未</small>'}</button>`).join('')}</div>`:''}
+<div class="card sptable">${rows}</div>
+${un.length?`<p class="note">未割当（${un.length}人）：${un.map(id=>esc(byId(id).name)).join('、')}</p>`:fld.length?'<p class="note">フィールドの10人全員に役割があります。</p>':''}
+<div class="mact">${bv?`<button class="btn ghost sm" id="sp_copy">${varLabel(sc,bv)}と同じにする</button>`:''}${spHas(s,sc,v)?'<button class="btn ghost sm" id="sp_clear">この役割をクリア</button>':''}</div>
+<p class="note">${bd?`黄色の枠は「${varLabel(sc,bv)}」と違う役割です。`:''}選手を交代させると、出ていく選手の役割は入ってくる選手に自動で引き継がれます。</p></section>`;
+}
+function bindSp(g,i){
+  const s=g.segs[i];
+  document.querySelectorAll('[data-spsc]').forEach(b=>b.onclick=()=>{spScene=b.dataset.spsc;renderGame();});
+  document.querySelectorAll('[data-spv]').forEach(b=>b.onclick=()=>{spVar[spScene]=b.dataset.spv;renderGame();});
+  document.querySelectorAll('[data-sp]').forEach(b=>b.onclick=()=>{const [r,k]=b.dataset.sp.split(':');openSpSlot(g,i,r,+k);});
+  const cp=$('#sp_copy');if(cp)cp.onclick=async()=>{const sc=spScene,v=spVar[sc],bv=SPBASE[sc][v];if(spHas(s,sc,v)&&!await ask(`いまの「${SPDEF[sc].label} ${varLabel(sc,v)}」を「${varLabel(sc,bv)}」と同じにします。よろしいですか？`))return;
+    const src=spGet(s,sc,bv),dst=spGet(s,sc,v);SPDEF[sc].roles(v).forEach(([r,,n])=>{dst[r]=Array.from({length:n},(_,k)=>(src[r]||[])[k]||'');});
+    const used=new Set();SPDEF[sc].roles(v).forEach(([r])=>{dst[r]=dst[r].map(id=>{if(!id||used.has(id))return'';used.add(id);return id;});});touch();renderGame();};
+  const cl=$('#sp_clear');if(cl)cl.onclick=async()=>{if(!await ask(`「${SPDEF[spScene].label} ${varLabel(spScene,spVar[spScene])}」の役割をすべて空にします。よろしいですか？`))return;s.sp[spScene][spVar[spScene]]={};touch();renderGame();};
+}
+function openSpSlot(g,i,r,k){
+  const s=g.segs[i],sc=spScene,v=spVar[sc],d=spGet(s,sc,v),cur=d[r][k];const roles=SPDEF[sc].roles(v);const rl=roles.find(x=>x[0]===r)[1];
+  const lab=(id)=>{const x=spRoleOf(d,id);if(!x)return'<em class="free">未割当</em>';const rr=roles.find(z=>z[0]===x[0]);return `<em>${rr[1]}${rr[2]>1?' '+(x[1]+1):''}</em>`;};
+  const pos=id=>{const j=s.lineup.indexOf(id);return j>=0?SYS[s.sys].xy[j][0]:'';};
+  const ps=fieldIds(s).map(byId).sort((a,b)=>(spRoleOf(d,a.id)?1:0)-(spRoleOf(d,b.id)?1:0));
+  const m=modal(`<div class="shead"><b>${SPDEF[sc].label}${varLabel(sc,v)?' '+varLabel(sc,v):''}　${rl}</b><button class="btn ghost sm" data-x>閉じる</button></div>
+<div class="slist">${ps.map(p=>`<button class="prow${p.id===cur?' cur':''}" data-pid="${esc(p.id)}"><span>${esc(p.name)} <small>${pos(p.id)}</small></span>${lab(p.id)}</button>`).join('')||'<p class="note">この区間のメンバーがまだいません。</p>'}</div>
+${cur?'<div class="sfoot"><button class="btn ghost" data-clear>この役割から外す</button></div>':''}`);
+  m.querySelector('[data-x]').onclick=closeModal;
+  m.querySelectorAll('[data-pid]').forEach(b=>b.onclick=()=>{const id=b.dataset.pid,x=spRoleOf(d,id);if(x)d[x[0]][x[1]]=cur||'';d[r][k]=id;touch();closeModal();renderGame();});
+  const c=m.querySelector('[data-clear]');if(c)c.onclick=()=>{d[r][k]='';touch();closeModal();renderGame();};
+}
+function spBlocks(s){const out=[];Object.entries(SPDEF).forEach(([sc,def])=>def.vars.forEach(([v,l])=>{if(!spHas(s,sc,v))return;const d=spGet(s,sc,v);const bv=(SPBASE[sc]||{})[v];const bd=bv&&spHas(s,sc,bv)?spGet(s,sc,bv):null;
+  out.push({title:def.label+(l?'（'+l+'）':''),rows:def.roles(v).map(([r,rl])=>{const ord=rl.includes('順');return [rl.replace(/（.*）/,''),d[r].map((id,k)=>({n:(ord?'①②③④⑤⑥'[k]:'')+(id?byId(id).name:'未定'),df:!!(bd&&(bd[r][k]||'')!==(id||''))}))];})});}));return out;}
+function spText(s){return spBlocks(s).map(b=>`［${b.title}］`+b.rows.map(([l,a])=>`${l}：${a.map(x=>x.n).join('、')}`).join('／')).join('\n');}
+function spLines(ctx,arr,maxW){ft(ctx,24,400);const lines=[];let cur=[],line='';arr.forEach((it,j)=>{const t=it.n+(j<arr.length-1?'、':'');if(ctx.measureText(line+t).width>maxW&&line){lines.push(cur);cur=[];line='';}cur.push([t,it.df]);line+=t;});if(cur.length)lines.push(cur);return lines;}
+function spImage(g,i){
+  spClean(g.segs[i]);const s=g.segs[i],W=1080,colW=470,gap=40,[a,b]=segRange(g,i);const blocks=spBlocks(s);const tmp=cv(10,10).getContext('2d');
+  const bh=blocks.map(bk=>60+bk.rows.reduce((h,[l,arr])=>h+Math.max(1,spLines(tmp,arr,colW-170).length)*36+10,0)+20);
+  const ys=[];let y=290;for(let k=0;k<blocks.length;k+=2){ys.push(y);y+=Math.max(...bh.slice(k,k+2))+30;}
+  const H=Math.round(Math.max(y,420)+70);const c=cv(W,H),ctx=c.getContext('2d');
+  header(ctx,W,`${g.opp?'vs '+g.opp:'セットプレー'}`,`${fmtDate(g.date)}　セットプレーの役割`,`${segLabel(g,i)}（${b-a}分）`);
+  if(!blocks.length){ctx.fillStyle=IMG.sub;ft(ctx,30,400);ctx.fillText('まだ役割が入力されていません。',60,340);}
+  blocks.forEach((bk,k)=>{const x=60+(k%2)*(colW+gap),yy=ys[Math.floor(k/2)];ctx.fillStyle='rgba(255,255,255,.06)';rr(ctx,x,yy,colW,bh[k],14);ctx.fill();
+    ctx.fillStyle=IMG.white;ft(ctx,30,700);ctx.fillText(bk.title,x+20,yy+44);let ly=yy+92;
+    bk.rows.forEach(([l,arr])=>{ctx.fillStyle=IMG.blue;ft(ctx,22,700);ctx.fillText(l,x+20,ly);ft(ctx,24,400);
+      const lx=x+150,lines=spLines(ctx,arr,colW-170);ft(ctx,24,400);
+      lines.forEach((ln,q)=>{let px=lx;ln.forEach(([t,df])=>{ctx.fillStyle=df?IMG.warn:IMG.white;ctx.fillText(t,px,ly+q*36);px+=ctx.measureText(t).width;});});ly+=Math.max(1,lines.length)*36+10;});});
+  ctx.fillStyle=IMG.sub;ft(ctx,22,400);ctx.fillText('黄色＝基準のパターン（左／①）と違う役割',60,H-36);
+  return c;
+}
+
+
+// ---- 公式戦 ----
+const SITS=['いつでも','リード','同点','ビハインド'];
+function isOff(g){return g.type==='official';}
+function offInit(g){if(!g.bench)g.bench=[];if(!g.cands)g.cands={};if(!g.plans)g.plans=[];if(!g.benchMax)g.benchMax=9;if(!g.subMax)g.subMax=5;
+  const st=new Set(g.segs[0].lineup.filter(Boolean));g.bench=g.bench.filter(id=>!st.has(id)&&byId(id));}
+function starters(g){return g.segs[0].lineup;}
+function slotLabel(g,k){const q=SYS[g.segs[0].sys].xy[k][0];const p=byId(starters(g)[k]);return `${q}　${p?p.name:'（未定）'}`;}
+function subsUsed(g){let n=0;for(let i=1;i<g.segs.length;i++){const d=diff(g,i);if(d)n+=d.ins.length;}return n;}
+function offAlerts(g){const out=[];if(!isOff(g))return out;offInit(g);
+  if(g.bench.length>g.benchMax)out.push({lv:'red',msg:`ベンチ入りが${g.bench.length}人です（上限${g.benchMax}人）`});
+  const used=subsUsed(g);if(used>g.subMax)out.push({lv:'red',msg:`交代が${used}人です（上限${g.subMax}人）`});
+  const bench=new Set(g.bench),st=new Set(starters(g).filter(Boolean));
+  for(let i=1;i<g.segs.length;i++){const d=diff(g,i);if(d)d.ins.forEach(([id])=>{if(!bench.has(id))out.push({lv:'red',msg:`区間${i+1}：ベンチ外の${(byId(id)||{}).name||'?'}が入っています`,seg:i});});}
+  Object.entries(g.cands).forEach(([k,a])=>a.forEach(id=>{if(id&&!bench.has(id))out.push({lv:'warn',msg:`交代候補の${(byId(id)||{}).name||'?'}がベンチに入っていません`});}));
+  g.plans.forEach((pl,i)=>{if(pl.swaps.length>g.subMax)out.push({lv:'warn',msg:`交代プラン${i+1}の交代が${pl.swaps.length}人です（上限${g.subMax}人）`});pl.swaps.forEach(sw=>{if(sw.in&&!bench.has(sw.in))out.push({lv:'warn',msg:`交代プラン${i+1}：${(byId(sw.in)||{}).name||'?'}がベンチに入っていません`});});});
+  return out;}
+function offHtml(g){if(!isOff(g))return'';offInit(g);
+  const xy=SYS[g.segs[0].sys].xy,st=starters(g);const firsts={};Object.values(g.cands).forEach(a=>{if(a[0])firsts[a[0]]=(firsts[a[0]]||0)+1;});
+  const used=subsUsed(g);
+  const benchHtml=g.bench.length?`<div class="ochips">${g.bench.map(id=>{const p=byId(id);return `<span class="ochip">${esc(p.name)}<small>${p.p1||'－'}${p.p2?'/'+p.p2:''}</small></span>`;}).join('')}</div>`:'<p class="note" style="margin:0">まだ選んでいません。</p>';
+  const cand=(k,j)=>{const id=(g.cands[k]||[])[j];const p=byId(id);const q=xy[k][0];const f=p?fit(p,q):'';
+    return `<button class="ocand ${p?f:'empty'}" data-cand="${k}:${j}">${p?`${esc(p.name)}${firsts[id]>1&&j===0?'<i class="odup" title="複数の枠で第1候補">複</i>':''}`:'＋'}</button>`;};
+  const plans=g.plans.map((pl,i)=>`<div class="oplan"><div class="oph"><span class="osit s-${SITS.indexOf(pl.sit)}">${esc(pl.sit)}</span><b>${pl.min?esc(pl.min)+'分ごろ':'時間は状況次第'}</b><span style="flex:1"></span><button class="btn ghost sm" data-pedit="${i}">編集</button></div>
+<ul class="oswaps">${pl.swaps.map(sw=>{const op=byId(st[sw.slot]),ip=byId(sw.in);return `<li><span class="opos">${xy[sw.slot]?xy[sw.slot][0]:'?'}</span>${esc(op?op.name:'?')}<span class="oarr">→</span><b>${esc(ip?ip.name:'?')}</b></li>`;}).join('')}</ul>${pl.note?`<p class="onote">${esc(pl.note)}</p>`:''}</div>`).join('');
+  return `<section class="offi"><div class="shead2"><h2>公式戦の準備</h2><span class="num ocount ${used>g.subMax?'over':''}">交代 ${used}/${g.subMax}</span></div>
+<div class="card opad"><div class="orow"><b>ベンチ入り</b><span class="num ${g.bench.length>g.benchMax?'over':''}">${g.bench.length}/${g.benchMax}人</span><span style="flex:1"></span><button class="btn ghost sm" id="o_bench">ベンチを選ぶ</button></div>${benchHtml}</div>
+<h2>ポジションごとの交代候補<small>スタメンは区間1のメンバー</small></h2>
+<div class="card otbl"><div class="otr oth"><span>ポジ</span><span>スタメン</span><span>第1候補</span><span>第2候補</span></div>${xy.map(([q],k)=>{const p=byId(st[k]);return `<div class="otr"><span class="opos">${q}</span><span class="ost">${p?esc(p.name):'<em>未定</em>'}</span>${cand(k,0)}${cand(k,1)}</div>`;}).join('')}</div>
+<p class="note">候補は枠の色が緑＝そのポジションが1st、黄＝2nd、赤＝本職外です。「複」は、複数の枠で第1候補になっている選手です。</p>
+<h2>交代プラン<small>状況ごとの交代の段取り</small></h2>${plans||'<div class="card opad"><p class="note" style="margin:0">まだプランはありません。</p></div>'}
+<div class="mact"><button class="btn ghost" id="o_addplan">＋交代プランを追加</button><button class="btn ghost sm" id="o_set">上限の設定</button></div></section>`;}
+function bindOff(g){if(!isOff(g))return;
+  const b=$('#o_bench');if(b)b.onclick=()=>{const st=new Set(starters(g).filter(Boolean));openPick(g.bench,ids=>{g.bench=ids.filter(id=>!st.has(id));ids.forEach(id=>{if(!g.att.includes(id))g.att.push(id);});},`ベンチ入り（上限${g.benchMax}人・スタメン以外）`,()=>{offInit(g);touch();renderGame();});};
+  document.querySelectorAll('[data-cand]').forEach(x=>x.onclick=()=>{const [k,j]=x.dataset.cand.split(':').map(Number);openCandPick(g,k,j);});
+  document.querySelectorAll('[data-pedit]').forEach(x=>x.onclick=()=>openPlan(g,+x.dataset.pedit));
+  const ap=$('#o_addplan');if(ap)ap.onclick=()=>openPlan(g,-1);
+  const os=$('#o_set');if(os)os.onclick=()=>{const d=modal(`<div class="shead"><b>上限の設定</b><button class="btn ghost sm" data-x>閉じる</button></div><div class="subform"><label>ベンチ入りの上限（人）<input class="fin" id="os_b" type="number" inputmode="numeric" value="${g.benchMax}"></label><label>交代の上限（人）<input class="fin" id="os_s" type="number" inputmode="numeric" value="${g.subMax}"></label><div class="sfoot" style="justify-content:flex-end"><button class="btn" id="os_ok">保存する</button></div></div>`);
+    d.querySelector('[data-x]').onclick=closeModal;$('#os_ok').onclick=()=>{g.benchMax=Math.max(1,parseInt($('#os_b').value)||9);g.subMax=Math.max(1,parseInt($('#os_s').value)||5);touch();closeModal();renderGame();};};
+}
+function openCandPick(g,k,j){
+  const q=SYS[g.segs[0].sys].xy[k][0];const cur=(g.cands[k]||[])[j];const other=(g.cands[k]||[])[1-j];
+  const rk={f1:0,f2:1,f0:2,fe:3};const L=g.bench.map(byId).filter(p=>p&&!p.inj).sort((a,b)=>rk[fit(a,q)]-rk[fit(b,q)]||sortP(a,b));
+  const usedAs=id=>Object.entries(g.cands).filter(([kk,a])=>a.includes(id)&&+kk!==k).map(([kk,a])=>`${SYS[g.segs[0].sys].xy[+kk][0]}の第${a.indexOf(id)+1}`).join('・');
+  const d=modal(`<div class="shead"><b>${q}の第${j+1}候補</b><button class="btn ghost sm" data-x>閉じる</button></div><p class="note" style="margin:0 0 6px">スタメン：${esc((byId(starters(g)[k])||{}).name||'未定')}</p><div class="slist">${L.map(p=>{const f=fit(p,q);return `<button class="prow${p.id===cur?' cur':''}" data-cid="${p.id}" ${p.id===other?'disabled':''}><span>${esc(p.name)} <small>${p.p1||'－'}${p.p2?'/'+p.p2:''}${usedAs(p.id)?'・'+usedAs(p.id)+'候補':''}</small></span><em class="${f==='f1'?'free':''}">${p.id===other?'第'+(2-j)+'候補':f==='f1'?'1st':f==='f2'?'2nd':'本職外'}</em></button>`;}).join('')||'<p class="note">先に「ベンチを選ぶ」でベンチ入りの選手を選んでください。</p>'}</div>${cur?'<div class="sfoot"><button class="btn ghost" data-clear>この候補を外す</button></div>':''}`);
+  d.querySelector('[data-x]').onclick=closeModal;
+  d.querySelectorAll('[data-cid]').forEach(b=>b.onclick=()=>{g.cands[k]=g.cands[k]||['',''];g.cands[k][j]=b.dataset.cid;touch();closeModal();renderGame();});
+  const c=d.querySelector('[data-clear]');if(c)c.onclick=()=>{g.cands[k][j]='';touch();closeModal();renderGame();};
+}
+function openPlan(g,idx){
+  const xy=SYS[g.segs[0].sys].xy,st=starters(g);const src=idx>=0?g.plans[idx]:null;
+  let P=src?JSON.parse(JSON.stringify(src)):{id:'pl'+Date.now(),sit:'いつでも',min:'',swaps:[{slot:-1,in:''}],note:''};
+  const d=modal(`<div class="shead"><b>交代プラン${idx>=0?idx+1:''}</b><button class="btn ghost sm" data-x>閉じる</button></div><div class="slist" id="pl_body"></div><p class="err" id="pl_err"></p><div class="sfoot" style="justify-content:space-between">${idx>=0?'<button class="btn ghost" id="pl_del" style="border-color:var(--short);color:var(--short)">削除</button>':'<span></span>'}<button class="btn" id="pl_ok">保存する</button></div>`);
+  const draw=()=>{const usedIn=new Set(P.swaps.map(s=>s.in).filter(Boolean)),usedOut=new Set(P.swaps.map(s=>s.slot).filter(s=>s>=0));
+    $('#pl_body').innerHTML=`<div class="subform"><label>状況<span class="osits">${SITS.map(s=>`<button type="button" class="${P.sit===s?'on':''}" data-psit="${s}">${s}</button>`).join('')}</span></label>
+<label>目安の時間（分）<input class="fin" id="pl_min" inputmode="numeric" value="${esc(P.min)}" placeholder="例：60（空欄なら状況次第）"></label>
+<div><div style="font-size:12px;color:var(--sub);margin-bottom:6px">交代（OUT → IN）</div>${P.swaps.map((sw,i)=>`<div class="pswap"><select class="fsel" data-sout="${i}"><option value="-1">OUT</option>${xy.map(([q],k)=>`<option value="${k}" ${sw.slot===k?'selected':''} ${usedOut.has(k)&&sw.slot!==k?'disabled':''}>${esc(slotLabel(g,k))}</option>`).join('')}</select><span class="oarr">→</span><select class="fsel" data-sin="${i}"><option value="">IN</option>${g.bench.map(id=>{const p=byId(id);const q=sw.slot>=0?xy[sw.slot][0]:'';const f=q?fit(p,q):'';const c=(g.cands[sw.slot]||[]).indexOf(id);return `<option value="${id}" ${sw.in===id?'selected':''} ${usedIn.has(id)&&sw.in!==id?'disabled':''}>${c>=0?'第'+(c+1)+'候補 ':''}${esc(p.name)}${f==='f1'?'（1st）':f==='f2'?'（2nd）':''}</option>`;}).join('')}</select><button class="btn ghost sm" data-sx="${i}" aria-label="この交代を外す">外す</button></div>`).join('')}
+<button type="button" class="btn ghost sm" id="pl_add" ${P.swaps.length>=g.subMax?'disabled':''}>＋交代を追加（${P.swaps.length}/${g.subMax}）</button></div>
+<label>メモ<textarea class="fin" id="pl_note" rows="2" placeholder="例：前からのプレスを強めたいとき">${esc(P.note)}</textarea></label></div>`;
+    const keep=()=>{P.min=$('#pl_min').value.trim();P.note=$('#pl_note').value;};
+    d.querySelectorAll('[data-psit]').forEach(b=>b.onclick=()=>{keep();P.sit=b.dataset.psit;draw();});
+    d.querySelectorAll('[data-sout]').forEach(s=>s.onchange=()=>{keep();const sw=P.swaps[+s.dataset.sout];sw.slot=+s.value;const c=g.cands[sw.slot]||[];if(!sw.in){const f=c.find(id=>id&&g.bench.includes(id)&&!P.swaps.some(x=>x.in===id));if(f)sw.in=f;}draw();});
+    d.querySelectorAll('[data-sin]').forEach(s=>s.onchange=()=>{keep();P.swaps[+s.dataset.sin].in=s.value;draw();});
+    d.querySelectorAll('[data-sx]').forEach(b=>b.onclick=()=>{keep();P.swaps.splice(+b.dataset.sx,1);if(!P.swaps.length)P.swaps.push({slot:-1,in:''});draw();});
+    const ad=$('#pl_add');if(ad)ad.onclick=()=>{keep();if(P.swaps.length<g.subMax)P.swaps.push({slot:-1,in:''});draw();};};
+  draw();
+  d.querySelector('[data-x]').onclick=closeModal;
+  $('#pl_ok').onclick=()=>{P.min=$('#pl_min').value.trim();P.note=$('#pl_note').value.trim();const sw=P.swaps.filter(s=>s.slot>=0||s.in);
+    if(!sw.length)return $('#pl_err').textContent='交代を1つ以上入れてください。';if(sw.some(s=>s.slot<0||!s.in))return $('#pl_err').textContent='OUTとINの両方を選んでください。';
+    if(P.min&&!/^\d+$/.test(P.min))return $('#pl_err').textContent='時間は数字で入れてください。';
+    P.swaps=sw;if(idx>=0)g.plans[idx]=P;else g.plans.push(P);touch();closeModal();renderGame();toast('交代プランを保存しました');};
+  const dl=$('#pl_del');if(dl)dl.onclick=async()=>{if(!await ask('この交代プランを削除しますか？'))return;g.plans.splice(idx,1);touch();closeModal();renderGame();};
+}
+function offText(g){if(!isOff(g))return'';offInit(g);const xy=SYS[g.segs[0].sys].xy,st=starters(g);const nm=id=>{const p=byId(id);return p?p.name:'';};
+  let t=`\n■ベンチ（${g.bench.length}人）\n${g.bench.map(nm).join('、')||'未定'}\n\n■交代候補\n`;
+  xy.forEach(([q],k)=>{const c=(g.cands[k]||[]).filter(Boolean);t+=`${q} ${nm(st[k])||'未定'}：${c.length?c.map((id,j)=>`${j+1}.${nm(id)}`).join(' '):'－'}\n`;});
+  if(g.plans.length){t+='\n■交代プラン\n';g.plans.forEach((pl,i)=>{t+=`${i+1}.［${pl.sit}］${pl.min?pl.min+'分ごろ':''} ${pl.swaps.map(s=>`${xy[s.slot]?xy[s.slot][0]:''} ${nm(st[s.slot])}→${nm(s.in)}`).join('／')}${pl.note?'（'+pl.note+'）':''}\n`;});}
+  return t;}
+function offImages(g,base){offInit(g);const xy=SYS[g.segs[0].sys].xy,st=starters(g);const sn=snFor(gAll());const nm=id=>{const p=byId(id);return p?p.name:'';};
+  const title=`${g.opp?'vs '+g.opp:'公式戦'}`;
+  const one={label:'スタメンとベンチ',filename:`${base}_スタメンとベンチ.png`,make:()=>{const W=1080,pitchY=290,pitchH=980;const rows=Math.ceil(g.bench.length/2);const H=pitchY+pitchH+110+Math.max(1,rows)*60+60;const c=cv(W,H),ctx=c.getContext('2d');
+    header(ctx,W,title,`${fmtDate(g.date)}　公式戦`,`スタメン　${SYS[g.segs[0].sys].label}`);drawLineup(ctx,g.segs[0],60,pitchY,W-120,pitchH,new Set(),sn);
+    let y=pitchY+pitchH+70;ctx.fillStyle=IMG.white;ft(ctx,34,700);ctx.fillText(`ベンチ（${g.bench.length}人）`,60,y);y+=60;
+    g.bench.forEach((id,i)=>{const p=byId(id);const x=60+(i%2)*480,yy=y+Math.floor(i/2)*60;ctx.fillStyle=IMG.white;fitText(ctx,p.name,300,32,700);ctx.fillText(p.name,x,yy);ft(ctx,24,400);ctx.fillStyle=IMG.sub;ctx.fillText(`${p.p1||''}${p.p2?'/'+p.p2:''}`,x+310,yy);});
+    return c;}};
+  const two={label:'ポジションごとの交代候補',filename:`${base}_交代候補.png`,make:()=>{const W=1080,top=300,rh=78;const H=top+70+xy.length*rh+90;const c=cv(W,H),ctx=c.getContext('2d');
+    header(ctx,W,title,`${fmtDate(g.date)}　公式戦`,'ポジションごとの交代候補');const cx=[60,180,480,780];
+    ctx.fillStyle=IMG.sub;ft(ctx,24,700);['ポジ','スタメン','第1候補','第2候補'].forEach((h,i)=>ctx.fillText(h,cx[i],top+40));
+    xy.forEach(([q],k)=>{const y=top+70+k*rh+50;if(k%2===0){ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(40,y-48,W-80,rh);}
+      ctx.fillStyle=IMG.blue;ft(ctx,36,700,IMG.num);ctx.fillText(q,cx[0],y);ctx.fillStyle=IMG.white;const s1=nm(st[k])||'未定';fitText(ctx,s1,280,32,700);ctx.fillText(s1,cx[1],y);
+      (g.cands[k]||[]).slice(0,2).forEach((id,j)=>{const p=byId(id);if(!p)return;const f=fit(p,q);ctx.fillStyle=f==='f1'?IMG.white:f==='f2'?IMG.warn:IMG.red;fitText(ctx,p.name,280,32,j===0?700:400);ctx.fillText(p.name,cx[2+j],y);});});
+    ctx.fillStyle=IMG.sub;ft(ctx,22,400);ctx.fillText('白＝1st、黄＝2nd、赤＝本職外',60,H-30);return c;}};
+  const L=[one,two];
+  if(g.plans.length)L.push({label:'交代プラン',filename:`${base}_交代プラン.png`,make:()=>{const W=1080,top=290;const bh=g.plans.map(pl=>100+pl.swaps.length*56+(pl.note?60:0)+20);const H=top+bh.reduce((a,b)=>a+b+24,0)+40;const c=cv(W,H),ctx=c.getContext('2d');
+    header(ctx,W,title,`${fmtDate(g.date)}　公式戦`,`交代プラン（交代は${g.subMax}人まで）`);let y=top;
+    g.plans.forEach((pl,i)=>{ctx.fillStyle='rgba(255,255,255,.06)';rr(ctx,60,y,W-120,bh[i],16);ctx.fill();
+      ctx.fillStyle=IMG.blue;ft(ctx,40,700,IMG.num);ctx.fillText(String(i+1),88,y+60);ctx.fillStyle=IMG.white;ft(ctx,34,700);ctx.fillText(`${pl.sit}${pl.min?'　'+pl.min+'分ごろ':''}`,140,y+60);
+      let yy=y+120;pl.swaps.forEach(sw=>{ctx.fillStyle=IMG.blue;ft(ctx,30,700,IMG.num);ctx.fillText(xy[sw.slot]?xy[sw.slot][0]:'',140,yy);ctx.fillStyle=IMG.sub;ft(ctx,30,400);const o=nm(st[sw.slot]);fitText(ctx,o,300,30,400);ctx.fillText(o,240,yy);ctx.fillStyle=IMG.ok;ft(ctx,30,700);ctx.fillText('→',560,yy);ctx.fillStyle=IMG.white;const n=nm(sw.in);fitText(ctx,n,340,32,700);ctx.fillText(n,620,yy);yy+=56;});
+      if(pl.note){ctx.fillStyle=IMG.sub;ft(ctx,26,400);const ln=wrapLines(ctx,pl.note,W-260)[0];ctx.fillText(ln,140,yy+10);}
+      y+=bh[i]+24;});return c;}});
+  return L;}
+
+function renderGame(){
+  const g=G(),v=$('#gameview'),ps=gParts(),segAl=gameAlerts(g);
+  const{total}=offs(g);const fair=ps.length?Math.round(total*11/ps.length):0;
+  const gl=state.games.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const body=pt==='time'?timeHtml(g,gAll(),fair):segHtml(g,pt);
+  v.innerHTML=`<div class="scope"><span>試合</span><select id="g_sel" style="flex:1;min-width:0">${gl.map(x=>`<option value="${esc(x.id)}"${x.id===g.id?' selected':''}>${esc(fmtDate(x.date))} ${x.opp?'vs '+esc(x.opp):'（相手未入力）'}</option>`).join('')}</select><button class="btn ghost sm" id="g_new">＋新しい試合</button></div>
+<div class="card ginfo"><label>対戦相手<input id="g_opp" value="${esc(g.opp)}" placeholder="例：〇〇大学" autocomplete="off"></label><label>日付<input id="g_date" type="date" value="${esc(g.date)}"></label>
+<div class="gnum"><span>種類</span><div class="seg otype"><button data-gtype="pm" class="${isOff(g)?'':'on'}">練習試合</button><button data-gtype="official" class="${isOff(g)?'on':''}">公式戦</button></div></div>
+<div class="gnum"><span class="num" style="color:var(--ink);font-size:15px">${perSummary(g)}</span><span class="gsub">合計 <b class="num">${total}</b>分</span></div>
+<div class="gnum"><button class="btn ghost sm" id="g_bulk" style="margin-left:0">時間と本数を設定</button></div>
+<div class="gnum"><span>参加 <b class="num">${ps.length}</b>人</span><button class="btn ghost sm" id="g_att">メンバーを選ぶ</button><span class="gsub">均等なら1人約<b class="num">${fair}</b>分</span></div></div>
+${offHtml(g)}
+${alertHtml(g)}
+<section><div class="shead2"><h2>メンバーの区間</h2><div class="sacts" style="padding:0"><button class="btn ghost sm" id="g_sug" style="margin:0">サジェスト</button><button class="btn sm" id="g_addseg">＋メンバー変更を追加</button></div></div>
+<p class="note" style="margin:0 0 8px">「2本目 22分から」「2本目30分〜3本目30分」のように、メンバーが変わる時点ごとに区間を作ります。区間は次の変更まで、本をまたいで続きます。</p>
+${timelineHtml(g)}
+<div class="seglist">${g.segs.map((s,i)=>{const[a,b]=segRange(g,i);const lv=segAl.find(x=>x.seg===i&&x.lv!=='info');return `<button data-pt="${i}" class="${pt===i?'on':''}${lv?' al-'+lv.lv:''}"><b class="num">${i+1}</b><span>${segLabel(g,i)}</span><small class="num">${b-a}分</small></button>`;}).join('')}<button data-pt="time" class="${pt==='time'?'on':''}"><b>⏱</b><span>出場時間を見る</span></button></div></section>
+${body}
+<section style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="g_img">画像で出力</button><button class="btn ghost" id="g_text">テキストで書き出す</button><button class="btn ghost" id="g_del" style="border-color:var(--short);color:var(--short)">この試合を削除</button></section><div id="g_out"></div>`;
+  $('#g_sel').onchange=e=>{state.curGame=e.target.value;pt=0;touch();renderGame();};
+  $('#g_new').onclick=()=>{const n=newGame();state.games.push(n);state.curGame=n.id;pt=0;touch();renderGame();};
+  $('#g_opp').oninput=e=>{g.opp=e.target.value;touch();};$('#g_opp').onchange=()=>renderGame();
+  $('#g_date').onchange=e=>{g.date=e.target.value;touch();renderGame();};
+  $('#g_bulk').onclick=()=>openBulk(g);
+  $('#g_att').onclick=()=>openPick(g.att,ids=>{g.att=ids;},'参加メンバー',()=>renderGame());
+  $('#g_sug').onclick=()=>openSuggest(g);
+  bindOff(g);
+  v.querySelectorAll('[data-gtype]').forEach(b=>b.onclick=async()=>{const t=b.dataset.gtype;if((t==='official')===isOff(g))return;if(t==='official'){g.type='official';offInit(g);if(!(g.periods.length===2&&g.periods.every(x=>x.min===45))&&await ask('公式戦にあわせて、時間を「45分×2本」にしますか？'))g.periods=[{min:45},{min:45}];}else g.type='';touch();renderGame();});
+  $('#g_img').onclick=()=>openImgMenu(g);
+  $('#g_addseg').onclick=()=>openSegTime(g,null);
+  v.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>{pt=b.dataset.pt==='time'?'time':+b.dataset.pt;renderGame();});
+  $('#g_text').onclick=()=>{const t=gameText();$('#g_out').innerHTML='<textarea class="mtext" readonly rows="16"></textarea><p class="note">長押しまたは全選択してコピーしてください。</p>';const ta=$('#g_out textarea');ta.value=t;ta.focus();ta.select();try{navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>{$('#g_out .note').textContent='コピーしました。';},()=>{});}catch(e){}};
+  const _gd=$('#g_del');if(_gd)_gd.onclick=async()=>{if(!await ask('この試合（'+fmtDate(g.date)+(g.opp?' vs '+g.opp:'')+'）を削除しますか？'))return;state.games=state.games.filter(x=>x.id!==g.id);state.curGame=null;pt=0;touch();renderGame();};
+  const ab=document.querySelector('.alertbox');if(ab)ab.ontoggle=()=>{alertOpen=ab.open;};
+  const li=$('#a_lim');if(li)li.onchange=e=>{const v=parseInt(e.target.value);g.maxMin=v>0?Math.min(300,v):90;touch();renderGame();};
+  document.querySelectorAll('[data-ago]').forEach(b=>b.onclick=()=>{pt=b.dataset.ago==='time'?'time':+b.dataset.ago;renderGame();const el=document.querySelector(pt==='time'?'.ttbl':'.segedit');if(el)el.scrollIntoView({block:'start'});});
+  if(pt!=='time')bindSeg(g,pt);
+  renderSave();
+}
+function segHtml(g,i){
+  const s=g.segs[i],xy=SYS[s.sys].xy,sn=snFor(gAll());const[a,b]=segRange(g,i);const d=diff(g,i);
+  const nm=id=>{const p=byId(id);return p?esc(p.name):'?';};
+  const dHtml=d?`<div class="card diffc"><h3>${startLabel(s)} の変更</h3>${d.sys?`<p>システム：${SYS[g.segs[i-1].sys].label} → ${SYS[s.sys].label}</p>`:''}
+${d.ins.length?`<p><b class="din">IN</b>${d.ins.map(([id,q])=>`${nm(id)}<small>${q}</small>`).join('、')}</p>`:''}
+${d.outs.length?`<p><b class="dout">OUT</b>${d.outs.map(([id,q])=>`${nm(id)}<small>${q}</small>`).join('、')}</p>`:''}
+${d.moves.length?`<p><b class="dmv">位置変更</b>${d.moves.map(([id,f,t])=>`${nm(id)}<small>${f}→${t}</small>`).join('、')}</p>`:''}
+${!d.sys&&!d.ins.length&&!d.outs.length&&!d.moves.length?'<p class="note" style="margin:0">前の区間からまだ変更がありません。枠をタップして選手を入れ替えてください。</p>':''}</div>`:'';
+  const playing=new Set(s.lineup.filter(Boolean));
+  const bench=gParts().filter(p=>!playing.has(p.id)).sort(sortP);
+  return `<section class="segedit"><div class="seghead"><div><b>区間${i+1}</b><span>${segLabel(g,i)}（${b-a}分）</span></div>
+<div class="sacts" style="padding:0">${i>0?'<button class="btn ghost sm" id="s_time">開始時点を変更</button><button class="btn ghost sm" id="s_del" style="border-color:var(--short);color:var(--short)">区間を削除</button>':''}</div></div>
+${dHtml}
+<div class="pset"><div class="scope" style="margin-top:0"><span>システム</span><div class="seg">${['3421','3412'].map(q=>`<button class="num${s.sys===q?' on':''}" data-ssys="${q}">${SYS[q].label}</button>`).join('')}</div></div></div>
+<div class="mact"><button class="btn" id="s_auto">出場時間が少ない順に組む</button>${i>0?'<button class="btn ghost" id="s_copy">前の区間をコピー</button>':''}</div>
+<div class="pitch mpitch">${PITCH_SVG}
+${xy.map(([q,x,y],k)=>{const p=byId(s.lineup[k]);const ch=d&&p&&d.ins.some(z=>z[0]===p.id);return `<button class="mslot ${fit(p,q)}${p&&p.inj?' inj':''}" style="left:${x}%;top:${y}%" data-sslot="${k}"><em>${q}</em><b>${p?esc(sn[p.id]||p.name):'＋'}</b>${ch?'<i class="subin">IN</i>':''}</button>`}).join('')}</div>
+<div class="legend"><span><i style="background:var(--ok)"></i>1st</span><span><i style="background:var(--warn)"></i>2nd</span><span><i style="background:var(--short)"></i>本職外</span><span>IN＝この区間から入った選手</span></div>
+${spHtml(g,i)}
+${i>0?prevHtml(g,i):''}
+<div class="mact"><button class="btn ghost" id="s_next">＋この後のメンバー変更を追加</button></div>
+<section><h2>この区間で出ていない選手</h2><div class="chips">${bench.length?bench.map(p=>`<span class="mchip">${esc(p.name)}<small>${p.p1||'－'}</small></span>`).join(''):'<p class="note">全員出場しています。</p>'}</div></section></section>`;
+}
+function prevHtml(g,i){
+  const before=minutesBefore(g,i),now=new Set(g.segs[i].lineup.filter(Boolean));
+  const played=gAll().filter(p=>before[p.id]).sort((a,b)=>before[b.id]-before[a.id]||sortP(a,b));
+  const none=gParts().filter(p=>!before[p.id]).sort(sortP);
+  const per=minutesBy(g,-1,i);
+  const brk=id=>{const x=per[id];return x?x.per.map((m,k)=>m?`${k+1}本${m}'`:null).filter(Boolean).join(' '):'';};
+  return `<details class="prevbox"${prevOpen?' open':''}><summary>${startLabel(g.segs[i])} までの出場</summary>
+<div class="prevp"><h4>出場した選手（多い順）</h4><div class="pchips">${played.map(p=>`<span class="pchip${now.has(p.id)?' now':''}">${esc(p.name)}<small>${brk(p.id)}</small></span>`).join('')||'<span class="note" style="margin:0">まだいません。</span>'}</div></div>
+<div class="prevp"><h4>ここまで出場なし</h4><div class="pchips">${none.length?none.map(p=>`<span class="pchip${now.has(p.id)?' now':''}"><em>${p.p1||''}</em>${esc(p.name)}</span>`).join(''):'<span class="note" style="margin:0">全員出場済みです。</span>'}</div></div>
+<p class="note">青く囲まれた選手は、この区間にも出ています。</p></details>`;
+}
+function bindSeg(g,i){
+  const s=g.segs[i];
+  document.querySelectorAll('[data-ssys]').forEach(b=>b.onclick=()=>{const sys=b.dataset.ssys;if(sys===s.sys)return;const old=SYS[s.sys].xy.map((x,k)=>[x[0],s.lineup[k]]).filter(x=>x[1]);s.sys=sys;const nx=SYS[sys].xy;s.lineup=nx.map(()=>'');const left=[];old.forEach(([q,id])=>{const k=nx.findIndex((z,j)=>z[0]===q&&!s.lineup[j]);if(k>=0)s.lineup[k]=id;else left.push(id);});left.forEach(id=>{const k=s.lineup.indexOf('');if(k>=0)s.lineup[k]=id;});touch();renderGame();});
+  const cp=$('#s_copy');if(cp)cp.onclick=async()=>{const pv=g.segs[i-1];if(s.lineup.some(Boolean)&&s.lineup.join()!==pv.lineup.join()&&!await ask(`区間${i}（${segLabel(g,i-1)}）のメンバーとシステムで置き換えますか？`))return;s.sys=pv.sys;s.lineup=pv.lineup.slice();s.sp=JSON.parse(JSON.stringify(pv.sp||{}));touch();renderGame();};
+  bindSp(g,i);
+  $('#s_auto').onclick=async()=>{if(s.lineup.some(Boolean)&&!await ask('この区間のメンバーを置き換えて組みますか？'))return;autoSeg(g,i);};
+  document.querySelectorAll('[data-sslot]').forEach(b=>b.onclick=()=>openSSlot(g,i,+b.dataset.sslot));
+  const pb=document.querySelector('.prevbox');if(pb)pb.ontoggle=()=>{prevOpen=pb.open;};
+  $('#s_next').onclick=()=>openSegTime(g,null,i);
+  const tb=$('#s_time');if(tb)tb.onclick=()=>openSegTime(g,i);
+  const db=$('#s_del');if(db)db.onclick=async()=>{if(!await ask(`区間${i+1}（${segLabel(g,i)}）を削除しますか？前の区間のメンバーがそのまま続きます。`))return;g.segs.splice(i,1);pt=Math.max(0,i-1);touch();renderGame();};
+}
+function openSegTime(g,editIdx,afterIdx){
+  const cur=editIdx!=null?g.segs[editIdx]:null;
+  let dp,dt;
+  if(cur){dp=cur.p;dt=cur.t;}
+  else{const base=g.segs[afterIdx!=null?afterIdx:g.segs.length-1];const nx=afterIdx!=null?g.segs[afterIdx+1]:null;
+    dp=base.p;dt=Math.min(g.periods[base.p].min-1,base.t+Math.round(g.periods[base.p].min/2));
+    if(nx&&(nx.p<dp||(nx.p===dp&&nx.t<=dt))){dp=base.p;dt=base.t+1;}}
+  const d=modal(`<div class="shead"><b>${cur?'開始時点を変更':'メンバー変更を追加'}</b><button class="btn ghost sm" data-x>閉じる</button></div>
+<div class="subform"><label>どの本から<select id="st_p">${g.periods.map((p,k)=>`<option value="${k}"${k===dp?' selected':''}>${k+1}本目（${p.min}分）</option>`).join('')}</select></label>
+<label>何分から<span class="pmin"><input id="st_t" type="number" inputmode="numeric" min="0" value="${dt}">分　<small>0分＝その本の開始から</small></span></label>
+<p class="note" id="st_prev" style="margin:0"></p><p class="err" id="st_err"></p>
+<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="st_ok">${cur?'変更する':'追加して編集する'}</button></div></div>`);
+  const upd=()=>{const p=+$('#st_p').value,t=parseInt($('#st_t').value);$('#st_t').max=g.periods[p].min-1;
+    if(!cur&&t>=0&&t<g.periods[p].min){const k=activeAt(g,p,t);$('#st_prev').textContent=`区間${k+1}（${segLabel(g,k)}）のメンバーを引き継いで作ります。`;}else $('#st_prev').textContent='';};
+  upd();$('#st_p').onchange=upd;$('#st_t').oninput=upd;
+  d.querySelector('[data-x]').onclick=closeModal;
+  $('#st_ok').onclick=()=>{const p=+$('#st_p').value,t=parseInt($('#st_t').value),mx=g.periods[p].min;
+    if(!(t>=0&&t<mx)){$('#st_err').textContent=`時間は0〜${mx-1}分で入力してください（${mx}分ちょうどは次の本の0分です）。`;return;}
+    if(p===0&&t===0&&cur!==g.segs[0]){$('#st_err').textContent='1本目の開始は最初の区間です。';return;}
+    if(g.segs.some(x=>x!==cur&&x.p===p&&x.t===t)){$('#st_err').textContent='その時点にはすでに区間があります。';return;}
+    let target;
+    if(cur){cur.p=p;cur.t=t;target=cur;}
+    else{const k=activeAt(g,p,t),src=g.segs[k];target={p,t,sys:src.sys,lineup:src.lineup.slice(),sp:JSON.parse(JSON.stringify(src.sp||{}))};g.segs.push(target);}
+    g.segs.sort((a,b)=>a.p-b.p||a.t-b.t);pt=g.segs.indexOf(target);touch();closeModal();renderGame();
+    const el=document.querySelector('.segedit');if(el)el.scrollIntoView({block:'start'});};
+}
+function autoSeg(g,i){
+  const s=g.segs[i],mins=minutesBy(g,i),ps=gParts().slice(),xy=SYS[s.sys].xy;
+  const key=p=>(mins[p.id]?mins[p.id].tot:0)+Math.random()*0.01;const lineup=xy.map(()=>'');const used=new Set();
+  const pick=cond=>ps.filter(p=>!used.has(p.id)&&cond(p)).sort((a,b)=>key(a)-key(b))[0];
+  POS.forEach(q=>xy.forEach(([z],k)=>{if(z!==q||lineup[k])return;const p=pick(p=>p.p1===q)||pick(p=>p.p2===q);if(p){lineup[k]=p.id;used.add(p.id);}}));
+  xy.forEach(([z],k)=>{if(lineup[k])return;const p=pick(p=>z==='GK'||p.p1!=='GK');if(p){lineup[k]=p.id;used.add(p.id);}});
+  s.lineup=lineup;touch();renderGame();
+}
+function openSSlot(g,i,k){
+  const s=g.segs[i],q=SYS[s.sys].xy[k][0],cur=s.lineup[k],mins=minutesBy(g,i),prev=i>0?new Set(g.segs[i-1].lineup):new Set();
+  const segLen=(()=>{const[a,b]=segRange(g,i);return b-a;})(),lim=g.maxMin||90;
+  const over=id=>((mins[id]||{}).tot||0)+segLen>lim;
+  const brk=id=>{const x=mins[id];const w=over(id)?`<b class="owarn">入れると上限${lim}分超え</b>`:'';if(!x||!x.tot)return'まだ出場なし'+w;return x.per.map((m,j)=>m?`${j+1}本${m}'`:null).filter(Boolean).join('・')+`（計${x.tot}'）`+w;return x.per.map((m,j)=>m?`${j+1}本${m}'`:null).filter(Boolean).join('・')+`（計${x.tot}'）`;};
+  const row=p=>{const j=s.lineup.indexOf(p.id);return `<button class="prow${p.id===cur?' cur':''}" data-pid="${esc(p.id)}"><span>${p.team?`<i class="tb ${p.team}">${p.team}</i>`:''}${esc(p.name)} <small>${p.p1||'－'}${p.p2?'/'+p.p2:''}　${brk(p.id)}</small></span><em class="${j<0?'free':''}">${j<0?(prev.has(p.id)?'前の区間で出場':'控え'):'出場中 '+SYS[s.sys].xy[j][0]}</em></button>`;};
+  const ps=gParts();
+  const d=modal(`<div class="shead"><b>区間${i+1}　${q}</b><button class="btn ghost sm" data-x>閉じる</button></div>
+<div class="slist">${[['f1',q+'が1st'],['f2',q+'が2nd'],['f0','その他']].map(([f,l])=>{const a=ps.filter(p=>fit(p,q)===f).sort((a,b)=>((mins[a.id]||{}).tot||0)-((mins[b.id]||{}).tot||0)||sortP(a,b));return a.length?`<h4>${l}（出場時間が少ない順）</h4>`+a.map(row).join(''):''}).join('')}</div>
+${cur?'<div class="sfoot"><button class="btn ghost" data-clear>この枠を空ける</button></div>':''}`);
+  d.querySelector('[data-x]').onclick=closeModal;
+  d.querySelectorAll('[data-pid]').forEach(b=>b.onclick=()=>{const id=b.dataset.pid,j=s.lineup.indexOf(id);if(j>=0)s.lineup[j]=cur||'';else if(cur)spReplace(s,cur,id);s.lineup[k]=id;touch();closeModal();renderGame();});
+  const c=d.querySelector('[data-clear]');if(c)c.onclick=()=>{s.lineup[k]='';touch();closeModal();renderGame();};
+}
+function openBulk(g){
+  const gr=[];g.periods.forEach(p=>{const l=gr[gr.length-1];if(l&&l[0]===p.min)l[1]++;else gr.push([p.min,1]);});
+  let rows=gr.length?gr:[[45,2]];
+  const d=modal(`<div class="shead"><b>時間と本数</b><button class="btn ghost sm" data-x>閉じる</button></div><p class="note" style="margin:0 0 10px">上から順に1本目、2本目…となります。例：45分×2本、30分×1本。</p><div class="slist" id="bk_rows"></div><div class="sacts"><button class="btn ghost sm" id="bk_add">＋行を追加</button></div><p class="err" id="bk_err"></p><div class="sfoot" style="justify-content:flex-end"><button class="btn" id="bk_ok">この内容にする</button></div>`);
+  const draw=()=>{$('#bk_rows').innerHTML=rows.map((r,i)=>`<div class="bkrow"><input type="number" inputmode="numeric" min="1" max="120" value="${r[0]}" data-bm="${i}"><span>分 ×</span><input type="number" inputmode="numeric" min="1" max="10" value="${r[1]}" data-bc="${i}"><span>本</span>${rows.length>1?`<button class="delbtn" data-br="${i}">削除</button>`:''}</div>`).join('');
+    d.querySelectorAll('[data-bm]').forEach(x=>x.oninput=()=>rows[+x.dataset.bm][0]=parseInt(x.value)||0);
+    d.querySelectorAll('[data-bc]').forEach(x=>x.oninput=()=>rows[+x.dataset.bc][1]=parseInt(x.value)||0);
+    d.querySelectorAll('[data-br]').forEach(x=>x.onclick=()=>{rows.splice(+x.dataset.br,1);draw();});};
+  draw();
+  d.querySelector('[data-x]').onclick=closeModal;
+  $('#bk_add').onclick=()=>{rows.push([30,1]);draw();};
+  $('#bk_ok').onclick=async()=>{
+    if(rows.some(r=>!(r[0]>=1&&r[0]<=120)||!(r[1]>=1&&r[1]<=10))){$('#bk_err').textContent='時間は1〜120分、本数は1〜10本で入力してください。';return;}
+    const mins=[];rows.forEach(([m,c])=>{for(let i=0;i<c;i++)mins.push(m);});
+    if(mins.length>12){$('#bk_err').textContent='合計12本までにしてください。';return;}
+    const lost=g.segs.filter(s=>s.p>=mins.length&&!(s.p===0&&s.t===0));
+    if(lost.length&&!await ask((mins.length+1)+'本目以降に始まる区間（'+lost.length+'つ）が消えます。よろしいですか？'))return;
+    g.periods=mins.map(m=>({min:m}));pt=0;touch();closeModal();renderGame();};
+}
+function timeHtml(g,ps,fair){
+  const lim=g.maxMin||90;
+  const mins=minutesBy(g,-1);
+  const rows=ps.map(p=>{const x=mins[p.id]||{per:g.periods.map(()=>0),tot:0};return{p,m:x.per,t:x.tot};}).sort((a,b)=>b.t-a.t||sortP(a.p,b.p));
+  const mx=Math.max(1,fair,...rows.map(r=>r.t));
+  return `<p class="note">均等に出す場合の目安は1人約${fair}分です。バーの黄色い線が目安の位置です。上限（${lim}分）を超えた選手は赤で表示します。</p>
+<div class="card tbl"><table class="ttbl"><thead><tr><th>選手</th>${g.periods.map((x,k)=>`<th>${k+1}本</th>`).join('')}<th>計</th></tr></thead><tbody>
+${rows.map(r=>`<tr class="${r.t===0?'zero':''}"><td><div class="tn">${esc(r.p.name)}<small>${r.p.p1||''}</small>${r.p.inj?'<i class="injtag">ケガ</i>':''}</div><div class="tbar"><span style="width:${r.t/mx*100}%"></span>${fair?`<i style="left:${Math.min(100,fair/mx*100)}%"></i>`:''}</div></td>${r.m.map(x=>`<td class="num${x?'':' dim'}">${x||'－'}</td>`).join('')}<td class="num${r.t>lim?' over':''}"><b>${r.t}</b></td></tr>`).join('')}
+</tbody></table></div>`;
+}
+function gameText(){
+  const g=G();let t=`${g.opp?'vs '+g.opp:'メンバー選考'}（${fmtDate(g.date)}）${perSummary(g)}\n`;
+  const nm=id=>{const p=byId(id);return p?p.name:'?';};
+  g.segs.forEach((s,i)=>{const xy=SYS[s.sys].xy;const[a,b]=segRange(g,i);const d=diff(g,i);
+    t+=`\n■${segLabel(g,i)}（${b-a}分）${SYS[s.sys].label}\n`;
+    if(!d||d.sys||d.ins.length+d.moves.length>4){POS.forEach(q=>{const n=xy.map((z,k)=>z[0]===q?s.lineup[k]:null).filter(x=>x!==null);if(!n.length)return;t+=`${q}：${n.map(id=>id?nm(id):'（空き）').join('、')}\n`;});}
+    if(d&&!d.sys&&!d.ins.length&&!d.outs.length&&!d.moves.length)t+='（変更なし）\n';
+    if(d){if(d.ins.length)t+='IN：'+d.ins.map(([id,q])=>`${nm(id)}（${q}）`).join('、')+'\n';if(d.outs.length)t+='OUT：'+d.outs.map(([id])=>nm(id)).join('、')+'\n';if(d.moves.length)t+='位置変更：'+d.moves.map(([id,f,q])=>`${nm(id)} ${f}→${q}`).join('、')+'\n';}
+      {spClean(s);const tx=spText(s),pv=i>0?(spClean(g.segs[i-1]),spText(g.segs[i-1])):'';if(tx&&tx!==pv)t+='セットプレー\n'+tx+'\n';}
+  });
+  t+=offText(g);
+  const mins=minutesBy(g,-1);
+  const sq=isOff(g)?new Set([...starters(g),...(g.bench||[])]):null;
+  t+='\n■出場時間\n'+gAll().filter(p=>!sq||sq.has(p.id)).map(p=>({p,m:(mins[p.id]||{tot:0}).tot})).sort((a,b)=>b.m-a.m).map(r=>`${r.p.name} ${r.m}分`).join('\n')+'\n';
+  return t;
+}
+
+function openPick(list,setList,title,done){
+  let show='all';let sel=new Set(list);
+  const d=modal(`<div class="shead"><b>${title} <span data-cnt class="num"></span></b><button class="btn ghost sm" data-x>完了</button></div>
+<div class="seg" style="margin-bottom:8px">${[['A','Aチーム'],['B','Bチーム'],['all','全員']].map(([k,l])=>`<button data-show="${k}">${l}</button>`).join('')}</div>
+<div class="sacts" style="margin-bottom:8px"><button class="btn ghost sm" data-allon>表示中を全員入れる</button><button class="btn ghost sm" data-alloff>表示中を全員外す</button></div><div class="slist"></div>`);
+  const cnt=()=>state.players.filter(p=>sel.has(p.id)&&!p.inj).length+'人';
+  const commit=()=>{const order=state.players.filter(p=>sel.has(p.id)).map(p=>p.id);setList(order);touch();d.querySelector('[data-cnt]').textContent=cnt();};
+  const draw=()=>{const ps=state.players.filter(p=>!p.out&&(show==='all'||p.team===show)).sort(sortP);
+    d.querySelector('.slist').innerHTML=ps.map(p=>p.inj?`<div class="prow inj"><span>${esc(p.name)} <small>${p.p1||'－'}</small></span><i class="injtag">ケガ</i></div>`:`<label class="prow"><span>${p.team?`<i class="tb ${p.team}">${p.team}</i>`:''}${esc(p.name)} <small>${p.grade?p.grade+'年':''}　${p.p1||'－'}</small></span><input type="checkbox" data-att="${esc(p.id)}"${sel.has(p.id)?' checked':''}></label>`).join('')||'<p class="note">該当する選手はいません。</p>';
+    d.querySelectorAll('.seg [data-show]').forEach(b=>b.classList.toggle('on',b.dataset.show===show));
+    d.querySelectorAll('[data-att]').forEach(c=>c.onchange=()=>{c.checked?sel.add(c.dataset.att):sel.delete(c.dataset.att);commit();});
+    d.querySelector('[data-cnt]').textContent=cnt();};
+  const fin=()=>{closeModal();done();};
+  d.querySelector('[data-x]').onclick=fin;d.onclick=e=>{if(e.target===d)fin();};
+  d.querySelectorAll('[data-show]').forEach(b=>b.onclick=()=>{show=b.dataset.show;draw();});
+  d.querySelector('[data-allon]').onclick=()=>{d.querySelectorAll('[data-att]').forEach(c=>sel.add(c.dataset.att));commit();draw();};
+  d.querySelector('[data-alloff]').onclick=()=>{d.querySelectorAll('[data-att]').forEach(c=>sel.delete(c.dataset.att));commit();draw();};
+  draw();
+}
+
+shell();renderTop();renderList();
+setTab(tab==='game'?'game':'pos');
+renderSave();
+try{if(!localStorage.getItem('tmu-help-seen'))setTimeout(openHelp,400);}catch(e){}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
+})();
+</script></body></html>
