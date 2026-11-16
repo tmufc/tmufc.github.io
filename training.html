@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#13294B"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="TMU FC App">
+<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-192.png"><link rel="manifest" href="manifest.webmanifest">
+<title>トレーニング｜TMU FC App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF2F7;--surface:#FFFFFF;--ink:#14202E;--sub:#5B6B7E;--line:#D5DDE7;--navy:#13294B;--blue:#1F5FBF;--ok:#23885C;--warn:#B98510;--red:#C93C34;--chip:#E3EAF3;--sel:#DCE8FA;--ga:#1F5FBF;--gb:#23885C;--gr:#B98510;color-scheme:light;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D1520;--surface:#162130;--ink:#E5ECF4;--sub:#93A3B6;--line:#273548;--navy:#0B1A30;--blue:#6FA2EE;--ok:#45B985;--warn:#E0B13E;--red:#EE6A61;--chip:#203047;--sel:#1E3354;--ga:#6FA2EE;--gb:#45B985;--gr:#E0B13E;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0D1520;--surface:#162130;--ink:#E5ECF4;--sub:#93A3B6;--line:#273548;--navy:#0B1A30;--blue:#6FA2EE;--ok:#45B985;--warn:#E0B13E;--red:#EE6A61;--chip:#203047;--sel:#1E3354;--ga:#6FA2EE;--gb:#45B985;--gr:#E0B13E;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.55;padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.num{font-family:"Barlow Condensed","Zen Kaku Gothic New",system-ui,sans-serif;font-weight:700;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+header{background:var(--navy);color:#fff;padding:calc(12px + env(safe-area-inset-top,0px)) 0 12px}
+.hrow{display:flex;align-items:center;gap:8px}
+.hrow h1{margin:0;font-size:18px;flex:1}
+.apptabs{display:inline-flex;max-width:100%;overflow-x:auto;background:rgba(255,255,255,.1);border-radius:999px;padding:3px;margin-top:10px;scrollbar-width:none}
+.apptabs a,.apptabs span{color:rgba(255,255,255,.8);font-size:14px;padding:5px 11px;border-radius:999px;text-decoration:none;white-space:nowrap}
+.apptabs .on{background:#fff;color:var(--navy);font-weight:700}
+main{padding:14px 0 10px}
+h2{font-size:16px;margin:22px 0 8px;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+h2 small{font-size:12px;font-weight:400;color:var(--sub)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.pad{padding:14px}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.list li:last-child{border-bottom:0}
+.list .m{flex:1;min-width:0}
+.list .m small{display:block;font-size:12px;color:var(--sub)}
+.tap{cursor:pointer}.tap:hover{background:var(--sel)}
+.go{color:var(--sub);font-size:18px}
+.tag{font-size:11px;border-radius:4px;padding:1px 7px;white-space:nowrap;background:var(--chip);color:var(--sub)}
+.t-a{background:color-mix(in srgb,var(--ga) 15%,transparent);color:var(--ga)}
+.t-b{background:color-mix(in srgb,var(--gb) 15%,transparent);color:var(--gb)}
+.t-r{background:color-mix(in srgb,var(--gr) 18%,transparent);color:var(--gr)}
+.t-red{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
+.btn{border:1px solid var(--blue);background:var(--blue);color:#fff;font-weight:700;font-size:15px;padding:11px 18px;border-radius:10px}
+.btn.ghost{background:transparent;color:var(--blue)}
+.btn.sm{font-size:13px;padding:6px 12px;font-weight:400;border-radius:8px}
+.btn.block{width:100%}
+.btn.red{background:transparent;color:var(--red);border-color:var(--red)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.note{font-size:12px;color:var(--sub);margin:8px 2px 0}
+.empty{padding:18px;text-align:center;color:var(--sub);font-size:13px}
+.back{border:0;background:none;color:var(--blue);font-size:15px;padding:4px 0}
+.top{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.dhead{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:6px 0 4px}
+.dhead h2{margin:0;font-size:22px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--sub)}
+.meta b{color:var(--ink)}
+.in{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-size:16px}
+textarea.in{min-height:76px;resize:vertical}
+.fl{display:block;font-size:12px;color:var(--sub);margin:12px 0 4px}
+.fl:first-child{margin-top:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--bg)}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:999px;font-size:14px;color:var(--sub)}
+.seg button.on{background:var(--blue);color:#fff;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.stat small{display:block;font-size:11px;color:var(--sub)}
+.stat b{font-size:24px;line-height:1.1}
+.grp{padding:10px 14px;border-bottom:1px solid var(--line)}
+.grp:last-child{border-bottom:0}
+.grp h3{margin:0 0 6px;font-size:14px;display:flex;align-items:center;gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 11px;font-size:13px;display:inline-flex;align-items:center;gap:4px}
+.chip i{font-style:normal;font-size:10px;border-radius:3px;padding:0 4px;background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.menu{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;gap:10px}
+.menu:last-child{border-bottom:0}
+.menu .no{flex:0 0 26px;height:26px;border-radius:50%;background:var(--chip);display:flex;align-items:center;justify-content:center;font-size:14px}
+.menu .b{flex:1;min-width:0}
+.menu .t{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.menu .t b{font-size:16px}
+.menu .d{font-size:13px;color:var(--sub);margin-top:2px}
+.menu .x{white-space:pre-line;font-size:14px;margin-top:6px}
+.menu .ops{display:flex;flex-direction:column;gap:4px}
+.menu .ops button{border:1px solid var(--line);background:none;border-radius:6px;width:30px;height:26px;font-size:12px;color:var(--sub)}
+.refl{padding:10px 14px;border-bottom:1px solid var(--line)}
+.refl:last-child{border-bottom:0}
+.refl .w{font-size:13px;font-weight:700;display:flex;gap:8px;align-items:center}
+.refl p{margin:2px 0 0;font-size:14px;white-space:pre-line}
+.rv{white-space:pre-line;font-size:14px;margin:0}
+.rvh{font-size:12px;color:var(--sub);margin:10px 0 2px}.rvh:first-child{margin-top:0}
+.vid a{color:var(--blue);word-break:break-all}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(5,12,24,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:90vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.shead{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700;font-size:17px;margin-bottom:10px}
+.sfoot{display:flex;gap:8px;justify-content:space-between;margin-top:16px;flex-wrap:wrap}
+.lib li{cursor:pointer}
+.toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#14202E;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:80;max-width:86vw;text-align:center}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:60vh;overflow:auto}
+.pgrid button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 10px;text-align:left;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.pgrid button span.g{font-size:11px;border-radius:4px;padding:1px 6px}
+@media (min-width:700px){.pgrid{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:430px){.apptabs a,.apptabs span{font-size:12px;padding:5px 6px}}
+</style></head><body data-page="tr">
+<header><div class="wrap"><div class="hrow"><h1>TMU FC App</h1></div>
+<nav class="apptabs" aria-label="アプリの切り替え"><a href="./#pos">ポジション</a><a href="./#game">メンバー選考</a><span class="on" aria-current="page">トレーニング</span><a href="condition.html">コンディション</a></nav></div></header>
+<main class="wrap" id="main"><p class="empty">読み込んでいます…</p></main>
+<script>
+window.__TR_MAIN=(function(CTX){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ds=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const pd=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c);};
+const W='日月火水木金土';
+const fmt=s=>{if(!s)return '';const d=pd(s);return `${d.getMonth()+1}/${d.getDate()}（${W[d.getDay()]}）`;};
+const T=ds(new Date());
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const ROSTER=CTX.roster.slice().sort((a,b)=>(b.grade||0)-(a.grade||0)||a.name.localeCompare(b.name,'ja'));
+const byId=id=>ROSTER.find(p=>p.id===id);
+const GL={A:'A',B:'B',P:'参加',R:'リハビリ',X:'休み'};
+const GC={A:'t-a',B:'t-b',P:'t-a',R:'t-r',X:'t-red'};
+const STG=['離脱','リハビリ','部分合流','完全合流'];
+let view={name:'list'},DAY=null,dayKey='';
+function toast(t){const o=document.createElement('div');o.className='toast';o.textContent=t;document.body.appendChild(o);setTimeout(()=>o.remove(),2200);}
+function ask(msg){return new Promise(res=>{const d=document.createElement('div');d.className='modal';d.innerHTML=`<div class="sheet"><p style="white-space:pre-line;margin:4px 0 0"></p><div class="sfoot" style="justify-content:flex-end"><button class="btn ghost" data-no>やめる</button><button class="btn" data-yes>OK</button></div></div>`;d.querySelector('p').textContent=msg;const done=v=>{d.remove();res(v);};d.querySelector('[data-no]').onclick=()=>done(false);d.querySelector('[data-yes]').onclick=()=>done(true);d.onclick=e=>{if(e.target===d)done(false);};document.body.appendChild(d);});}
+function sheet(html){closeSheet();const d=document.createElement('div');d.className='modal';d.id='sheet';d.innerHTML=`<div class="sheet">${html}</div>`;d.onclick=e=>{if(e.target===d)closeSheet();};document.body.appendChild(d);return d;}
+function closeSheet(){const d=$('#sheet');if(d)d.remove();}
+const totalMin=t=>(t.menus||[]).reduce((a,m)=>a+(+m.min||0),0);
+const trs=()=>Object.values(CTX.trainings).sort((a,b)=>b.date.localeCompare(a.date)||(b.start||'').localeCompare(a.start||''));
+
+// ---------- 一覧 ----------
+function listView(){
+  const L=trs();const up=L.filter(t=>t.date>=T).reverse(),past=L.filter(t=>t.date<T);
+  const row=t=>`<li class="tap" data-open="${t.id}"><div class="m"><b>${fmt(t.date)}</b>${t.start?` <span class="num" style="font-weight:400">${esc(t.start)}</span>`:''}　${esc(t.theme||'テーマ未設定')}<small>${(t.menus||[]).length}メニュー・${totalMin(t)}分${t.cnt?`・参加${t.cnt}人`:''}${t.review&&(t.review.good||t.review.issue)?'・振り返りあり':''}</small></div><span class="go">›</span></li>`;
+  const months={};past.forEach(t=>(months[t.date.slice(0,7)]=months[t.date.slice(0,7)]||[]).push(t));
+  return `<div class="acts" style="margin-top:0"><button class="btn" id="new">＋ 練習を作る</button><button class="btn ghost" id="lib">メニュー集（${Object.keys(CTX.menus).length}）</button></div>
+<h2>今日・これから</h2>${up.length?`<div class="card"><ul class="list">${up.map(row).join('')}</ul></div>`:'<div class="card empty">予定している練習はありません</div>'}
+${Object.keys(months).map(m=>`<h2>${+m.slice(0,4)}年${+m.slice(5)}月<small>${months[m].length}回</small></h2><div class="card"><ul class="list">${months[m].map(row).join('')}</ul></div>`).join('')}
+${!L.length?'<p class="note">「＋ 練習を作る」から、その日の練習メニューを登録します。コンディションの入力から、参加できる選手が自動で出ます。</p>':''}`;}
+function bindList(){
+  $('#new').onclick=newTraining;$('#lib').onclick=()=>openLib(null);
+  document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openDay(b.dataset.open));}
+function newTraining(){
+  const prev=trs().find(t=>t.date<=T);
+  const d=sheet(`<div class="shead">練習を作る<button class="btn ghost sm" data-x>閉じる</button></div>
+<label class="fl">日付</label><input type="date" class="in" id="n_date" value="${T}">
+<label class="fl">開始時刻</label><input type="time" class="in" id="n_start" value="${prev&&prev.start||''}">
+${prev?`<label style="display:flex;gap:8px;align-items:center;margin-top:14px;font-size:14px"><input type="checkbox" id="n_copy"> 前回（${fmt(prev.date)} ${esc(prev.theme||'')}）のメニューをコピーする</label>`:''}
+<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="n_ok">作る</button></div>`);
+  d.querySelector('[data-x]').onclick=closeSheet;
+  d.querySelector('#n_ok').onclick=async()=>{const date=d.querySelector('#n_date').value;if(!date){toast('日付を選んでください');return;}
+    const cp=d.querySelector('#n_copy');const t={id:uid('t'),date,start:d.querySelector('#n_start').value,place:prev?prev.place||'':'',theme:'',mode:prev?prev.mode||'ab':'ab',groups:{},menus:[],review:{good:'',issue:'',next:''},videos:[]};
+    if(cp&&cp.checked){t.theme=prev.theme||'';t.menus=JSON.parse(JSON.stringify(prev.menus||[])).map(m=>({...m,id:uid('m'),note:''}));}
+    await CTX.saveTraining(t);closeSheet();openDay(t.id);};}
+
+// ---------- 1日の練習 ----------
+async function openDay(id){view={name:'day',id};render();window.scrollTo(0,0);const t=CTX.trainings[id];if(!t)return;
+  if(dayKey!==t.date){DAY=null;render();DAY=await CTX.loadDay(t.date);dayKey=t.date;render();}}
+function statusOf(t,pid){
+  const r={g:null,flag:''};const ab=DAY?DAY.abs.find(a=>a.pid===pid):null;const inj=DAY?DAY.inj.find(j=>j.pid===pid):null;
+  if(inj&&inj.stage<2){r.auto=inj.stage===0?'X':'R';r.flag=STG[inj.stage]+'（'+(inj.part||'')+'）';}
+  else if(ab&&ab.kind==='欠席'){r.auto='X';r.flag='欠席（'+(ab.reason||'')+'）';}
+  else{const p=byId(pid);r.auto=t.mode==='ab'?(p&&p.team==='B'?'B':'A'):'P';
+    if(inj&&inj.stage===2)r.flag='部分合流（'+(inj.part||'')+'）';
+    if(ab&&ab.kind!=='欠席')r.flag=(r.flag?r.flag+'・':'')+ab.kind+(ab.note?'（'+ab.note+'）':'');}
+  let g=t.groups&&t.groups[pid];if(g&&t.mode==='all'&&(g==='A'||g==='B'))g='P';if(g&&t.mode==='ab'&&g==='P')g=null;
+  r.g=g||r.auto;r.manual=!!g&&g!==r.auto;return r;}
+function groupsOf(t){const keys=t.mode==='ab'?['A','B','R','X']:['P','R','X'];const out={};keys.forEach(k=>out[k]=[]);
+  ROSTER.forEach(p=>{const s=statusOf(t,p.id);(out[s.g]||(out[s.g]=[])).push({p,s});});return out;}
+function dayView(){
+  const t=CTX.trainings[view.id];if(!t)return '<button class="back" data-back>‹ 一覧</button><p class="empty">この練習は削除されました</p>';
+  const G=groupsOf(t);const play=t.mode==='ab'?G.A.length+G.B.length:G.P.length;
+  const ent=DAY?DAY.ent:{};const pm=Object.entries(ent).filter(([,e])=>e&&e.pm).map(([pid,e])=>({p:byId(pid),pm:e.pm})).filter(x=>x.p);
+  const rpeAvg=pm.length?(pm.reduce((a,x)=>a+(+x.pm.rpe||0),0)/pm.length).toFixed(1):'－';
+  const gsec=k=>`<div class="grp"><h3><span class="tag ${GC[k]}">${GL[k]}</span> <span class="num">${G[k].length}</span>人</h3><div class="chips">${G[k].length?G[k].map(({p,s})=>`<span class="chip">${esc(p.name)}${s.flag?`<i>${esc(s.flag.split('（')[0])}</i>`:''}</span>`).join(''):'<span class="note" style="margin:0">いません</span>'}</div></div>`;
+  const flags=ROSTER.map(p=>({p,s:statusOf(t,p.id)})).filter(x=>x.s.flag);
+  const menus=t.menus||[];
+  return `<div class="top"><button class="back" data-back>‹ 一覧</button><button class="btn ghost sm" id="share">テキストで共有</button></div>
+<div class="dhead"><h2>${fmt(t.date)}${t.start?` <span class="num" style="font-size:20px">${esc(t.start)}</span>`:''}</h2><button class="btn ghost sm" id="edhead">日付・テーマを編集</button></div>
+<div class="meta"><span>テーマ <b>${esc(t.theme||'未設定')}</b></span>${t.place?`<span>場所 <b>${esc(t.place)}</b></span>`:''}<span>合計 <b class="num">${totalMin(t)}</b>分</span></div>
+<div class="stats"><div class="stat"><small>参加</small><b class="num">${DAY?play:'…'}</b></div><div class="stat"><small>リハビリ</small><b class="num">${DAY?G.R.length:'…'}</b></div><div class="stat"><small>休み</small><b class="num">${DAY?G.X.length:'…'}</b></div><div class="stat"><small>平均きつさ</small><b class="num">${DAY?rpeAvg:'…'}</b></div></div>
+
+<h2>参加メンバー<span><span class="seg"><button data-mode="ab" class="${t.mode==='ab'?'on':''}">A・B分け</button><button data-mode="all" class="${t.mode==='all'?'on':''}">全員一緒</button></span></span></h2>
+${DAY?`<div class="card">${(t.mode==='ab'?['A','B','R','X']:['P','R','X']).map(gsec).join('')}</div>
+${flags.length?`<p class="note">${flags.map(x=>`${esc(x.p.name)}：${esc(x.s.flag)}`).join('　')}</p>`:''}
+<div class="acts"><button class="btn ghost sm" id="assign">メンバーを振り分ける</button></div>
+<p class="note">欠席連絡・ケガ（離脱／リハビリ）はコンディションから自動で反映します。${t.mode==='ab'?'A・Bはポジション画面のチーム分けが初期値です。':''}</p>`:'<div class="card empty">コンディションを読み込んでいます…</div>'}
+
+<h2>メニュー<small>${menus.length}本・${totalMin(t)}分</small></h2>
+<div class="card">${menus.length?menus.map((m,i)=>`<div class="menu"><div class="no num">${i+1}</div><div class="b tap" data-med="${i}"><div class="t"><b>${esc(m.name||'（名前なし）')}</b><span class="num">${+m.min||0}分</span>${t.mode==='ab'&&m.group&&m.group!=='all'?`<span class="tag ${m.group==='A'?'t-a':m.group==='B'?'t-b':'t-r'}">${m.group==='R'?'リハビリ':m.group}</span>`:''}</div>
+<div class="d">${[m.players,m.size].filter(Boolean).map(esc).join('・')}</div>${m.aim?`<div class="d">狙い：${esc(m.aim)}</div>`:''}${m.desc?`<div class="x">${esc(m.desc)}</div>`:''}${m.note?`<div class="x" style="color:var(--blue)">メモ：${esc(m.note)}</div>`:''}</div>
+<div class="ops"><button data-up="${i}" aria-label="上へ" ${i===0?'disabled':''}>▲</button><button data-dn="${i}" aria-label="下へ" ${i===menus.length-1?'disabled':''}>▼</button></div></div>`).join(''):'<div class="empty">まだメニューがありません</div>'}</div>
+<div class="acts"><button class="btn" id="madd">＋ 新しいメニュー</button><button class="btn ghost" id="mlib">メニュー集から追加</button></div>
+
+<h2>選手の振り返り<small>${DAY?`入力 ${pm.length}人`:''}</small></h2>
+${DAY?(pm.filter(x=>x.pm.note).length?`<div class="card">${pm.filter(x=>x.pm.note).sort((a,b)=>(b.pm.rpe||0)-(a.pm.rpe||0)).map(x=>`<div class="refl"><div class="w">${esc(x.p.name)}<span class="tag">きつさ ${x.pm.rpe??'－'}</span></div><p>${esc(x.pm.note)}</p></div>`).join('')}</div>`:'<div class="card empty">振り返りの入力はまだありません</div>'):'<div class="card empty">読み込んでいます…</div>'}
+<p class="note">選手がコンディションの「練習後のきつさ」に書いた振り返りが、この日の分だけ出ます。</p>
+
+<h2>スタッフの振り返り<button class="btn ghost sm" id="rv">${t.review&&(t.review.good||t.review.issue||t.review.next)?'編集':'書く'}</button></h2>
+<div class="card pad">${t.review&&(t.review.good||t.review.issue||t.review.next)?`<div class="rvh">良かったこと</div><p class="rv">${esc(t.review.good||'－')}</p><div class="rvh">課題</div><p class="rv">${esc(t.review.issue||'－')}</p><div class="rvh">次の練習へ</div><p class="rv">${esc(t.review.next||'－')}</p>${t.review.by?`<p class="note">${esc(t.review.by)}</p>`:''}`:'<p class="note" style="margin:0">練習後に、良かったこと・課題・次の練習へのつなぎを残します。</p>'}</div>
+
+<h2>映像<button class="btn ghost sm" id="vadd">＋ リンクを追加</button></h2>
+<div class="card">${(t.videos||[]).length?`<ul class="list vid">${t.videos.map((v,i)=>`<li><div class="m"><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.label||v.url)}</a>${v.label?`<small>${esc(v.url)}</small>`:''}</div><button class="btn ghost sm" data-vdel="${i}">削除</button></li>`).join('')}</ul>`:'<div class="empty">YouTubeやGoogleドライブなどの映像のリンクを登録できます</div>'}</div>
+
+<div class="acts" style="margin-top:28px"><button class="btn red sm" id="tdel">この練習を削除</button></div>`;}
+function bindDay(){
+  const t=CTX.trainings[view.id];$('[data-back]').onclick=()=>{view={name:'list'};render();window.scrollTo(0,0);};if(!t)return;
+  const save=()=>CTX.saveTraining(t);
+  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{t.mode=b.dataset.mode;save();render();});
+  const as=$('#assign');if(as)as.onclick=()=>openAssign(t);
+  $('#edhead').onclick=()=>editHead(t);
+  $('#madd').onclick=()=>editMenu(t,-1);$('#mlib').onclick=()=>openLib(t);
+  document.querySelectorAll('[data-med]').forEach(b=>b.onclick=()=>editMenu(t,+b.dataset.med));
+  document.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{const i=+b.dataset.up;if(i<1)return;const m=t.menus;[m[i-1],m[i]]=[m[i],m[i-1]];save();render();});
+  document.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>{const i=+b.dataset.dn;const m=t.menus;if(i>=m.length-1)return;[m[i+1],m[i]]=[m[i],m[i+1]];save();render();});
+  $('#rv').onclick=()=>editReview(t);
+  $('#vadd').onclick=()=>addVideo(t);
+  document.querySelectorAll('[data-vdel]').forEach(b=>b.onclick=async()=>{if(!await ask('このリンクを削除しますか？'))return;t.videos.splice(+b.dataset.vdel,1);save();render();});
+  $('#tdel').onclick=async()=>{if(!await ask(`${fmt(t.date)}の練習を削除しますか？\nメニュー・振り返り・映像のリンクも消えます（メニュー集は残ります）。`))return;await CTX.deleteTraining(t.id);view={name:'list'};render();};
+  $('#share').onclick=()=>shareText(t);}
+function editHead(t){
+  const d=sheet(`<div class="shead">日付・テーマ<button class="btn ghost sm" data-x>閉じる</button></div>
+<div class="row2"><div><label class="fl">日付</label><input type="date" class="in" id="h_date" value="${t.date}"></div><div><label class="fl">開始時刻</label><input type="time" class="in" id="h_start" value="${esc(t.start||'')}"></div></div>
+<label class="fl">場所</label><input class="in" id="h_place" value="${esc(t.place||'')}" placeholder="例：南大沢グラウンド">
+<label class="fl">この日のテーマ</label><input class="in" id="h_theme" value="${esc(t.theme||'')}" placeholder="例：ボール保持　前進の判断">
+<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="h_ok">保存</button></div>`);
+  d.querySelector('[data-x]').onclick=closeSheet;
+  d.querySelector('#h_ok').onclick=()=>{const nd=d.querySelector('#h_date').value;if(!nd){toast('日付を選んでください');return;}if(nd!==t.date){t.date=nd;dayKey='';}
+    t.start=d.querySelector('#h_start').value;t.place=d.querySelector('#h_place').value.trim();t.theme=d.querySelector('#h_theme').value.trim();CTX.saveTraining(t);closeSheet();openDay(t.id);};}
+function menuForm(m,t){return `<label class="fl">メニュー名</label><input class="in" id="m_name" value="${esc(m.name||'')}" placeholder="例：4対4＋2　ロンド">
+<div class="row2"><div><label class="fl">時間（分）</label><input type="number" inputmode="numeric" min="0" class="in" id="m_min" value="${m.min??15}"></div><div><label class="fl">人数</label><input class="in" id="m_players" value="${esc(m.players||'')}" placeholder="例：8対8＋GK"></div></div>
+<label class="fl">コートの広さ</label><input class="in" id="m_size" value="${esc(m.size||'')}" placeholder="例：40×30m">
+<label class="fl">狙い・テーマ</label><input class="in" id="m_aim" value="${esc(m.aim||'')}" placeholder="例：前進のための3人目の関わり">
+<label class="fl">図や説明（オーガナイズ・ルール・コーチングポイント）</label><textarea class="in" id="m_desc" style="min-height:120px" placeholder="例：2タッチ制限。中央ゾーンを通過したら得点…">${esc(m.desc||'')}</textarea>
+${t&&t.mode==='ab'?`<label class="fl">対象</label><div class="seg" id="m_grp">${[['all','全員'],['A','A'],['B','B'],['R','リハビリ']].map(([k,l])=>`<button type="button" data-g="${k}" class="${(m.group||'all')===k?'on':''}">${l}</button>`).join('')}</div>`:''}
+${t?`<label class="fl">この日のメモ（任意）</label><input class="in" id="m_note" value="${esc(m.note||'')}" placeholder="例：2本目からタッチ数を3に">`:''}`;}
+function readMenu(d,m){m.name=d.querySelector('#m_name').value.trim();m.min=Math.max(0,+d.querySelector('#m_min').value||0);m.players=d.querySelector('#m_players').value.trim();m.size=d.querySelector('#m_size').value.trim();m.aim=d.querySelector('#m_aim').value.trim();m.desc=d.querySelector('#m_desc').value;const n=d.querySelector('#m_note');if(n)m.note=n.value.trim();const g=d.querySelector('#m_grp .on');if(g)m.group=g.dataset.g;return m;}
+function editMenu(t,i){
+  const m=i>=0?{...t.menus[i]}:{id:uid('m'),min:15,group:'all'};
+  const inLib=m.lib&&CTX.menus[m.lib];
+  const d=sheet(`<div class="shead">${i>=0?'メニューを編集':'新しいメニュー'}<button class="btn ghost sm" data-x>閉じる</button></div>${menuForm(m,t)}
+<label style="display:flex;gap:8px;align-items:center;margin-top:14px;font-size:14px"><input type="checkbox" id="m_lib" ${inLib?'checked':''}> メニュー集に${inLib?'も反映する':'保存する'}</label>
+<div class="sfoot">${i>=0?'<button class="btn red sm" id="m_del">この日のメニューから外す</button>':'<span></span>'}<button class="btn" id="m_ok">保存</button></div>`);
+  bindSeg(d);d.querySelector('[data-x]').onclick=closeSheet;
+  d.querySelector('#m_ok').onclick=()=>{readMenu(d,m);if(!m.name){toast('メニュー名を入れてください');return;}
+    if(d.querySelector('#m_lib').checked){const lid=m.lib&&CTX.menus[m.lib]?m.lib:uid('L');m.lib=lid;CTX.saveMenu({id:lid,name:m.name,min:m.min,players:m.players,size:m.size,aim:m.aim,desc:m.desc,used:(CTX.menus[lid]&&CTX.menus[lid].used)||0});}
+    if(i>=0)t.menus[i]=m;else t.menus.push(m);CTX.saveTraining(t);closeSheet();render();};
+  const del=d.querySelector('#m_del');if(del)del.onclick=()=>{t.menus.splice(i,1);CTX.saveTraining(t);closeSheet();render();};}
+function bindSeg(d){d.querySelectorAll('#m_grp [data-g]').forEach(b=>b.onclick=()=>{d.querySelectorAll('#m_grp [data-g]').forEach(x=>x.classList.toggle('on',x===b));});}
+function openLib(t){
+  let q='';
+  const draw=()=>{const L=Object.values(CTX.menus).filter(m=>!q||[m.name,m.aim,m.players,m.desc].join(' ').toLowerCase().includes(q.toLowerCase())).sort((a,b)=>(b.used||0)-(a.used||0)||a.name.localeCompare(b.name,'ja'));
+    d.querySelector('#lib_l').innerHTML=L.length?L.map(m=>`<li data-lid="${m.id}"><div class="m"><b>${esc(m.name)}</b> <span class="num">${+m.min||0}分</span><small>${[m.players,m.size,m.aim].filter(Boolean).map(esc).join('・')}</small></div>${t?'<span class="btn sm">追加</span>':'<span class="go">›</span>'}</li>`).join(''):`<li class="empty" style="display:block">${q?'見つかりません':'まだメニュー集がありません。メニューを作るときに「メニュー集に保存する」を選ぶと、ここに入ります。'}</li>`;
+    d.querySelectorAll('[data-lid]').forEach(li=>li.onclick=()=>{const m=CTX.menus[li.dataset.lid];if(t){t.menus.push({id:uid('m'),lib:m.id,name:m.name,min:m.min,players:m.players,size:m.size,aim:m.aim,desc:m.desc,group:'all',note:''});CTX.saveTraining(t);CTX.saveMenu({...m,used:(m.used||0)+1});toast('「'+m.name+'」を追加しました');render();}else editLib(m);});};
+  const d=sheet(`<div class="shead">メニュー集<button class="btn ghost sm" data-x>閉じる</button></div><input class="in" id="lib_q" placeholder="探す（名前・狙い・説明）"><ul class="list lib" id="lib_l" style="margin-top:8px"></ul>${t?'':'<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="lib_new">＋ メニュー集に追加</button></div>'}`);
+  d.querySelector('[data-x]').onclick=closeSheet;d.querySelector('#lib_q').oninput=e=>{q=e.target.value;draw();};
+  const nb=d.querySelector('#lib_new');if(nb)nb.onclick=()=>editLib({id:uid('L'),min:15,used:0},true);
+  draw();}
+function editLib(m,isNew){
+  m={...m};const d=sheet(`<div class="shead">${isNew?'メニュー集に追加':'メニュー集のメニュー'}<button class="btn ghost sm" data-x>閉じる</button></div>${menuForm(m,null)}
+<div class="sfoot">${isNew?'<span></span>':'<button class="btn red sm" id="l_del">メニュー集から削除</button>'}<button class="btn" id="l_ok">保存</button></div>`);
+  d.querySelector('[data-x]').onclick=()=>openLib(null);
+  d.querySelector('#l_ok').onclick=()=>{readMenu(d,m);if(!m.name){toast('メニュー名を入れてください');return;}CTX.saveMenu(m);toast('保存しました');openLib(null);render();};
+  const del=d.querySelector('#l_del');if(del)del.onclick=async()=>{if(!await ask('「'+m.name+'」をメニュー集から削除しますか？\nこれまでの練習の記録には残ります。'))return;CTX.deleteMenu(m.id);openLib(null);render();};}
+function openAssign(t){
+  t.groups=t.groups||{};const keys=t.mode==='ab'?['A','B','R','X']:['P','R','X'];
+  const draw=()=>{d.querySelector('#as_g').innerHTML=ROSTER.map(p=>{const s=statusOf(t,p.id);return `<button data-pid="${p.id}"><span>${esc(p.name)}${s.flag?`<br><small style="color:var(--warn);font-size:11px">${esc(s.flag)}</small>`:''}</span><span class="g tag ${GC[s.g]}">${GL[s.g]}${s.manual?'＊':''}</span></button>`;}).join('');
+    d.querySelectorAll('[data-pid]').forEach(b=>b.onclick=()=>{const pid=b.dataset.pid;const s=statusOf(t,pid);const nx=keys[(keys.indexOf(s.g)+1)%keys.length];if(nx===s.auto)delete t.groups[pid];else t.groups[pid]=nx;draw();});};
+  const d=sheet(`<div class="shead">メンバーを振り分ける<button class="btn ghost sm" data-x>閉じる</button></div><p class="note" style="margin:0 0 10px">名前を押すたびに ${keys.map(k=>GL[k]).join(' → ')} と切り替わります。＊は手で変えた選手です。</p><div class="pgrid" id="as_g"></div><div class="sfoot"><button class="btn ghost sm" id="as_reset">自動に戻す</button><button class="btn" id="as_ok">保存</button></div>`);
+  draw();d.querySelector('[data-x]').onclick=()=>{closeSheet();CTX.saveTraining(t);render();};
+  d.querySelector('#as_reset').onclick=()=>{t.groups={};draw();};
+  d.querySelector('#as_ok').onclick=()=>{CTX.saveTraining(t);closeSheet();render();};}
+function editReview(t){
+  const r=t.review||{};const d=sheet(`<div class="shead">スタッフの振り返り<button class="btn ghost sm" data-x>閉じる</button></div>
+<label class="fl">良かったこと</label><textarea class="in" id="r_good">${esc(r.good||'')}</textarea>
+<label class="fl">課題</label><textarea class="in" id="r_issue">${esc(r.issue||'')}</textarea>
+<label class="fl">次の練習へ</label><textarea class="in" id="r_next">${esc(r.next||'')}</textarea>
+<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="r_ok">保存</button></div>`);
+  d.querySelector('[data-x]').onclick=closeSheet;
+  d.querySelector('#r_ok').onclick=()=>{t.review={good:d.querySelector('#r_good').value,issue:d.querySelector('#r_issue').value,next:d.querySelector('#r_next').value,by:CTX.me.name||''};CTX.saveTraining(t);closeSheet();render();};}
+function addVideo(t){
+  const d=sheet(`<div class="shead">映像のリンク<button class="btn ghost sm" data-x>閉じる</button></div>
+<label class="fl">URL</label><input class="in" id="v_url" type="url" inputmode="url" placeholder="https://">
+<label class="fl">名前（任意）</label><input class="in" id="v_label" placeholder="例：ゲーム形式 全体">
+<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="v_ok">追加</button></div>`);
+  d.querySelector('[data-x]').onclick=closeSheet;
+  d.querySelector('#v_ok').onclick=()=>{const url=d.querySelector('#v_url').value.trim();if(!/^https?:\/\//.test(url)){toast('https:// から始まるURLを入れてください');return;}t.videos=t.videos||[];t.videos.push({url,label:d.querySelector('#v_label').value.trim()});CTX.saveTraining(t);closeSheet();render();};}
+async function shareText(t){
+  const G=DAY?groupsOf(t):null;
+  let s=`【練習】${fmt(t.date)}${t.start?' '+t.start:''}${t.place?'　'+t.place:''}\nテーマ：${t.theme||'－'}\n合計${totalMin(t)}分\n\n`;
+  (t.menus||[]).forEach((m,i)=>{s+=`${i+1}. ${m.name}（${+m.min||0}分）${t.mode==='ab'&&m.group&&m.group!=='all'?'［'+(m.group==='R'?'リハビリ':m.group)+'］':''}\n`;if(m.players||m.size)s+=`　${[m.players,m.size].filter(Boolean).join('・')}\n`;if(m.aim)s+=`　狙い：${m.aim}\n`;});
+  if(G){s+='\n';(t.mode==='ab'?['A','B','R']:['P','R']).forEach(k=>{if(G[k].length)s+=`${GL[k]}（${G[k].length}人）：${G[k].map(x=>x.p.name).join('、')}\n`;});}
+  try{if(navigator.share){await navigator.share({text:s});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+  try{await navigator.clipboard.writeText(s);toast('コピーしました。LINEなどに貼り付けられます');}catch(e){const d=sheet(`<div class="shead">テキスト<button class="btn ghost sm" data-x>閉じる</button></div><textarea class="in" style="min-height:300px">${esc(s)}</textarea>`);d.querySelector('[data-x]').onclick=closeSheet;}}
+
+// ---------- 描画 ----------
+function render(){const m=$('#main');if(view.name==='day'){m.innerHTML=dayView();bindDay();}else{m.innerHTML=listView();bindList();}
+  const t=view.name==='day'&&CTX.trainings[view.id];if(t)CTX.setCount(t,DAY?(t.mode==='ab'?(()=>{const G=groupsOf(t);return G.A.length+G.B.length;})():groupsOf(t).P.length):null);}
+CTX.onRemote(()=>{if($('#sheet')||$('.modal'))return;const y=window.scrollY;render();window.scrollTo(0,y);});
+try{const h=location.hash.slice(1);if(h&&CTX.trainings[h]){openDay(h);}else render();}catch(e){render();}
+});
+</script>
+<script type="module" src="fb.js"></script>
+</body></html>

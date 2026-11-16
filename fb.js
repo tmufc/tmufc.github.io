@@ -2,7 +2,7 @@
 const SDK='https://www.gstatic.com/firebasejs/10.12.2/';
 const { initializeApp } = await import(SDK+'firebase-app.js');
 const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } = await import(SDK+'firebase-auth.js');
-const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, where, runTransaction, serverTimestamp } = await import(SDK+'firebase-firestore.js');
+const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, where, runTransaction, serverTimestamp } = await import(SDK+'firebase-firestore.js');
 
 const firebaseConfig={apiKey:"AIzaSyAu4LiAEFy7-e1ILCMoN2U__XNDAJybad8",authDomain:"tmufc-app.firebaseapp.com",projectId:"tmufc-app",storageBucket:"tmufc-app.firebasestorage.app",messagingSenderId:"820014072624",appId:"1:820014072624:web:c23b0b8bae92c6a9333ef5"};
 const KEY_LOCAL='tmu-pos-data';
@@ -99,11 +99,12 @@ async function route(user){
   const r=ME.role;
   if(r==='disabled'){showGate(`<p>このアカウントは利用停止になっています。監督に確認してください。</p><p style="font-size:12px;opacity:.7">${esc(ME.email)}</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}
   if(r==='pending')return pendingScreen();
-  if(!FULL.includes(r)&&PAGE==='pos'){location.replace('condition.html');return;}
+  if((!FULL.includes(r)&&PAGE==='pos')||(!CONDS.includes(r)&&PAGE==='tr')){location.replace('condition.html');return;}
   if(NEEDPID.includes(r)&&!ME.pid){showGate(`<p>選手として承認されていますが、名簿の名前と結びついていません。監督に確認してください。</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}
   started=true;showGate('<p>データを読み込んでいます…</p>');
   try{
     if(PAGE==='pos'){await stateInit();hideGate();window.__APP_MAIN();addAcct();}
+    else if(PAGE==='tr'){const roster=await getRoster();const ctx=await trInit(roster);hideGate();window.__TR_MAIN(ctx);addAcct();}
     else{const roster=await getRoster();if(NEEDPID.includes(r)&&!roster.some(p=>p.id===ME.pid)){showGate(`<p>名簿にあなたの名前が見つかりません。監督に確認してください。</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}const ctx=await condInit(r,ME.pid,roster);hideGate();window.__COND_MAIN(ctx);addAcct();}
   }catch(e){console.error(e);showGate(`<p>データを読み込めませんでした（${esc(e.code||e.message)}）。</p><button class="tb" onclick="location.reload()">読み込み直す</button>`);}
 }
@@ -129,6 +130,7 @@ ${pendTab==='player'?playerPart:staffPart}
 // ---------- アカウントとメンバー管理 ----------
 let usersCache=[],usersUnsub=null;
 function addAcct(){
+  if(!FULL.includes(ME.role))document.querySelectorAll('.apptabs a[href^="./#"]').forEach(a=>a.remove());
   const host=PAGE==='pos'?document.querySelector('header p'):document.querySelector('header .hrow');if(!host||host.querySelector('.tacct'))return;
   const b=document.createElement('button');b.className='tacct';b.type='button';b.innerHTML=`${esc((ME.name||ME.email).split(/[\s　@]/)[0])}<span class="cnt"></span>`;b.onclick=openAcct;host.appendChild(b);
   if(ME.role==='admin'){usersUnsub=onSnapshot(collection(db,'users'),s=>{usersCache=s.docs.map(d=>({uid:d.id,...d.data()}));const n=usersCache.filter(u=>u.role==='pending').length;b.querySelector('.cnt').innerHTML=n?`<i>${n}</i>`:'';if(document.querySelector('.tmod.users'))renderUsers();},()=>{});}
@@ -270,6 +272,25 @@ async function condInit(role,pid,roster){
     try{await Promise.all(jobs);}catch(e){console.error(e);toast('保存できませんでした（'+(e.code||'エラー')+'）');}
   }
   return {role,pid,roster,db:DB,save,syncInj,onRemote:f=>{onRemote=f;},me:ME};
+}
+
+// ---------- トレーニング ----------
+async function trInit(roster){
+  const T={},M={};let onRemote=null;
+  const watch=(coll,store)=>new Promise((res,rej)=>{let first=true;onSnapshot(collection(db,coll),s=>{const seen=new Set();s.docs.forEach(d=>{seen.add(d.id);store[d.id]={...d.data(),id:d.id};});Object.keys(store).forEach(k=>{if(!seen.has(k))delete store[k];});
+    if(first){first=false;res();}else if(onRemote)onRemote();},e=>{if(first){first=false;rej(e);}});});
+  await Promise.all([watch('trainings',T),watch('menus',M)]);
+  const put=(coll,o)=>{const data=clean(o);delete data.id;data.by=ME.email;data.at=serverTimestamp();return setDoc(doc(db,coll,o.id),data).catch(e=>{console.error(e);toast('保存できませんでした（'+(e.code||'エラー')+'）');});};
+  async function loadDay(date){
+    try{const [ab,inj,en]=await Promise.all([getDocs(query(collection(db,'absences'),where('date','==',date))),getDocs(collection(db,'injuries')),getDocs(query(collection(db,'entries'),where('ym','==',date.slice(0,7))))]);
+      const ent={};en.docs.forEach(d=>{const x=d.data();if(x.d&&x.d[date])ent[x.pid]=x.d[date];});
+      return {abs:ab.docs.map(d=>d.data()),inj:inj.docs.map(d=>d.data()).filter(j=>j.active&&j.stage<3&&(!j.date||j.date<=date)),ent};}
+    catch(e){console.error(e);toast('コンディションを読み込めませんでした');return {abs:[],inj:[],ent:{}};}}
+  return {roster,trainings:T,menus:M,me:ME,loadDay,
+    saveTraining:t=>{T[t.id]=t;return put('trainings',t);},deleteTraining:id=>{delete T[id];return deleteDoc(doc(db,'trainings',id)).catch(e=>toast('削除できませんでした'));},
+    saveMenu:m=>{M[m.id]=m;return put('menus',m);},deleteMenu:id=>{delete M[id];return deleteDoc(doc(db,'menus',id)).catch(e=>toast('削除できませんでした'));},
+    setCount:(t,n)=>{if(n!=null&&t.cnt!==n){t.cnt=n;put('trainings',t);}},
+    onRemote:f=>{onRemote=f;}};
 }
 
 window.TMU={statePush,toast,get me(){return ME;}};
