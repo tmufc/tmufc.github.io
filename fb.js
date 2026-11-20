@@ -48,6 +48,7 @@ css.textContent=`.tg{position:fixed;inset:0;z-index:100;background:#0E1A33;color
 .tmod .u b{font-size:15px}.tmod .u small{color:var(--sub,#5B6B7E);font-size:12px}
 .tmod .u .r{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .tmod select{font:inherit;font-size:14px;padding:6px 8px;border-radius:8px;border:1px solid var(--line,#D5DDE7);background:var(--bg,#EEF2F7);color:inherit}
+.tmod .sv.del{background:transparent;color:#C93C34;border:1px solid #C93C34}
 .tmod .sv{border:0;background:#4366B0;color:#fff;border-radius:8px;padding:7px 14px;font:inherit;font-weight:700;cursor:pointer}
 .tmod .tag{font-size:11px;border-radius:4px;padding:1px 7px;background:#EE6A61;color:#fff}
 .tmod .sec{font-size:12px;color:var(--sub,#5B6B7E);margin:14px 0 2px}
@@ -161,7 +162,7 @@ function renderUsers(){
 <input class="nm" data-nm value="${esc(u.role==='pending'&&u.requestStaff?u.requestName:(u.name||''))}" placeholder="名前" ${(u.role==='pending'&&u.requestStaff)||NAMED.includes(u.role)?'':'style="display:none"'} ${self?'disabled':''}>
 <select data-ti ${(u.role==='pending'&&u.requestStaff)||NAMED.includes(u.role)?'':'style="display:none"'} ${self?'disabled':''}>${TITLES.map(t=>`<option ${(u.title||u.requestTitle)===t?'selected':''}>${t}</option>`).join('')}</select>
 <select data-pid ${NEEDPID.includes(u.role)||(u.role==='pending'&&u.requestPid&&!u.requestStaff)?'':'style="display:none"'}><option value="">名簿の名前を選ぶ</option>${R.map(p=>`<option value="${esc(p.id)}" ${(u.pid||u.requestPid)===p.id?'selected':''}>${esc(p.name)}${linked.has(p.id)&&u.pid!==p.id?'（登録済み）':''}</option>`).join('')}</select>
-<button class="sv" data-save ${self?'disabled':''}>保存</button></div></div>`;};
+<button class="sv" data-save ${self?'disabled':''}>保存</button>${self?'':'<button class="sv del" data-del>削除</button>'}</div></div>`;};
   sh.innerHTML=`<div class="hd">メンバー管理<button class="x" data-x>閉じる</button></div><p style="font-size:13px;color:var(--sub);margin:0">権限を選んで「保存」を押します。選手は名簿の名前と結びつけてください。</p>${L.map(row).join('')}`;
   sh.querySelector('[data-x]').onclick=()=>m.remove();
   sh.querySelectorAll('.u').forEach(el=>{const rs=el.querySelector('[data-role]'),ps=el.querySelector('[data-pid]');
@@ -170,7 +171,9 @@ function renderUsers(){
     el.querySelector('[data-save]').onclick=async()=>{const role=rs.value,pid=NEEDPID.includes(role)?ps.value:'';if(NEEDPID.includes(role)&&!pid){toast('名簿の名前を選んでください');return;}
       const data={role,pid};if(NAMED.includes(role)){const nm=ns.value.trim();if(nm)data.name=nm;data.title=ts.value;}
       else if(NEEDPID.includes(role)){const p=(rosterCache||[]).find(x=>x.id===pid);if(p)data.name=p.name;}
-      try{await setDoc(doc(db,'users',el.dataset.uid),data,{merge:true});toast('保存しました');}catch(e){toast('保存できませんでした（'+(e.code||'')+'）');}};});
+      try{await setDoc(doc(db,'users',el.dataset.uid),data,{merge:true});toast('保存しました');}catch(e){toast('保存できませんでした（'+(e.code||'')+'）');}};
+    const dl=el.querySelector('[data-del]');if(dl)dl.onclick=async()=>{const u=usersCache.find(x=>x.uid===el.dataset.uid)||{};if(!confirm(`${u.name||u.email||'このアカウント'}（${u.email||''}）をメンバーから削除しますか？\n\nアプリを使えなくなります。同じGoogleアカウントでまたログインすると、承認待ちから始まります。\nこれまでの入力（コンディションなど）は選手の記録として残ります。`))return;
+      try{await deleteDoc(doc(db,'users',el.dataset.uid));toast('削除しました');}catch(e){toast('削除できませんでした（'+(e.code||'')+'）');}};});
 }
 
 // ---------- ポジション整理・メンバー選考（team/state） ----------
