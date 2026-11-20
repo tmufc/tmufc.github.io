@@ -251,7 +251,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}
 function modal(html,center){const m=document.createElement('div');m.className='modal'+(center?' c':'');m.innerHTML=`<div class="sheet${center?' center':''}" role="dialog">${html}</div>`;m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);return m;}
-function ask(msg){return new Promise(res=>{const m=modal(`<p style="margin:4px 0 14px;font-size:15px">${esc(msg)}</p><div class="acts" style="justify-content:flex-end;margin:0"><button class="btn ghost sm" data-no>やめる</button><button class="btn sm" data-yes>OK</button></div>`,true);m.querySelector('[data-no]').onclick=()=>{m.remove();res(false)};m.querySelector('[data-yes]').onclick=()=>{m.remove();res(true)};});}
+function ask(msg){return new Promise(res=>{const m=modal(`<p style="margin:4px 0 14px;font-size:15px;white-space:pre-line">${esc(msg)}</p><div class="acts" style="justify-content:flex-end;margin:0"><button class="btn ghost sm" data-no>やめる</button><button class="btn sm" data-yes>OK</button></div>`,true);m.querySelector('[data-no]').onclick=()=>{m.remove();res(false)};m.querySelector('[data-yes]').onclick=()=>{m.remove();res(true)};});}
 const ent=(d,pid)=>((DB.entries[d]||{})[pid])||{};
 const setEnt=(d,pid,k,v)=>{DB.entries[d]=DB.entries[d]||{};DB.entries[d][pid]=DB.entries[d][pid]||{};DB.entries[d][pid][k]=v;};
 const lv=(v,inv)=>{const x=inv?6-v:v;return x<=2?'d-g':x===3?'d-m':'d-b';};
@@ -538,7 +538,8 @@ ${done.length?`<h2>復帰した選手</h2><div class="card"><ul class="list">${d
 function sInjury(id){const j=fixInj(DB.injuries.find(x=>x.id===id)),p=byId(j.pid),pl=plan(j);
   const known=pl.every(Boolean);const w=[0,1,2,3].map(k=>{if(!known)return 1;const a=(pd(pl[k])-pd(pl[0]))/864e5,b=k<3?(pd(pl[k+1])-pd(pl[0]))/864e5:((pd(pl[3])-pd(pl[0]))/864e5)*1.12+1;return Math.max(1,b-a);});const sw=w.reduce((s,x)=>s+x,0);
   const D=days(14).filter(d=>d>=ds(addD(pd(j.date),-7)));const ams=D.map(d=>ent(d,j.pid).am);
-  window.__bind=()=>{const a=$('#ij_adv');if(a)a.onclick=()=>{j.stage++;j.actual[j.stage]=T;if(j.stage>=3){j.endDate=T;}save();toast(`「${STG[j.stage]}」に進めました`);render();};
+  window.__bind=()=>{const dl=$('#ij_del');if(dl)dl.onclick=async()=>{if(!await ask(`${p.name}の「${j.part||'ケガ'}」の記録を削除しますか？\n間違って登録した記録や、名簿にいない選手の記録を消すときに使います。元に戻せません。`))return;const k=DB.injuries.findIndex(x=>x.id===j.id);if(k>=0)DB.injuries.splice(k,1);save();toast('削除しました');back();};
+    const a=$('#ij_adv');if(a)a.onclick=()=>{j.stage++;j.actual[j.stage]=T;if(j.stage>=3){j.endDate=T;}save();toast(`「${STG[j.stage]}」に進めました`);render();};
     const e=$('#ij_edit');if(e)e.onclick=()=>go(()=>sInjEdit(j.id));
     const bk=$('#ij_back');if(bk)bk.onclick=()=>{if(j.stage>0){j.actual[j.stage]='';j.stage--;j.endDate=null;save();render();}};};
   const evs=j.events.slice().sort((a,b)=>a.date.localeCompare(b.date));
@@ -547,7 +548,7 @@ function sInjury(id){const j=fixInj(DB.injuries.find(x=>x.id===id)),p=byId(j.pid
 <h2>復帰までの予定<small>トレーナーが入力</small></h2><div class="card pad"><div class="stages">${[0,1,2,3].map(k=>`<span class="s${k} ${k<j.stage?'done':k===j.stage?'now':''}" style="width:${w[k]/sw*100}%">${STG[k]}</span>`).join('')}</div><div class="stlab">${pl.map(d=>`<span>${mdx(d)}</span>`).join('')}</div>
 <ul class="list" style="margin-top:8px">${[0,1,2,3].map(k=>`<li style="padding-left:0;padding-right:0;align-items:flex-start"><div class="m">${STG[k]}<small>${esc(j.notes[k])||STGD[k]}</small></div><span class="num" style="font-size:17px">${k===0?md(j.date):mdx(pl[k])}</span>${k===0?'':`<span class="tag ${k<=j.stage?'t-ok':pl[k]&&pl[k]<T?'t-red':pl[k]?'t-blue':''}">${k<=j.stage?'済'+(j.actual[k]&&j.actual[k]!==pl[k]?'（'+md(j.actual[k])+'）':''):pl[k]&&pl[k]<T?'予定超過':pl[k]?'予定':'未定'}</span>`}</li>`).join('')}</ul>
 ${evs.length?`<div class="gh">通院・再評価など</div><ul class="list">${evs.map(e=>`<li style="padding-left:0;padding-right:0"><div class="m">${esc(e.text)}</div><span class="num" style="font-size:17px">${md(e.date)}</span><span class="tag ${e.date<T?'':'t-blue'}">${e.date<T?'済':'予定'}</span></li>`).join('')}</ul>`:''}
-<div class="acts">${j.stage<3?`<button class="btn" id="ij_adv">「${STG[j.stage+1]}」に進める</button>`:''}<button class="btn ghost" id="ij_edit">予定を編集</button>${j.stage>0?'<button class="btn ghost sm" id="ij_back">1つ前の段階に戻す</button>':''}</div></div>
+<div class="acts">${j.stage<3?`<button class="btn" id="ij_adv">「${STG[j.stage+1]}」に進める</button>`:''}<button class="btn ghost" id="ij_edit">予定を編集</button>${j.stage>0?'<button class="btn ghost sm" id="ij_back">1つ前の段階に戻す</button>':''}<button class="btn ghost sm" id="ij_del" style="color:var(--red);border-color:var(--red)">このケガを削除</button></div></div>
 <h2>受傷前後の体調<small>疲労・張り</small></h2><div class="card chart">${D.length>1?line([{v:ams.map(x=>x?x.fat:null),c:'var(--red)'},{v:ams.map(x=>x?x.sore:null),c:'var(--warn)'}],{labels:D.map((d,i)=>d===j.date?'受傷':i%2===1?md(d):''),band:[4,5]}):'<div class="empty">データがありません</div>'}<div class="legend"><span><i style="background:var(--red)"></i>疲労</span><span><i style="background:var(--warn)"></i>張り</span></div></div>
 ${selfRec(j.pid,true)}
 <p class="note">実際の復帰は、医師やトレーナーの判断で決めてください。</p>`;}
