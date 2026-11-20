@@ -202,7 +202,7 @@ const jget=(k,d)=>{try{return JSON.parse(ls.get(k))??d}catch(e){return d}};
 let DB=CTX.db;
 const pos=jget(KP,null);
 const ROSTER=CTX.roster.map(p=>({id:p.id,name:p.name,grade:p.grade||0,team:p.team||'',p1:p.p1||''})).sort((a,b)=>(b.grade-a.grade)||a.name.localeCompare(b.name,'ja'));
-const byId=id=>ROSTER.find(p=>p.id===id);
+const byId=id=>ROSTER.find(p=>p.id===id)||{id,name:'（名簿にない選手）',grade:0,team:'',p1:'',gone:true};
 const SELFK=['筋トレ','ランニング','ボール・技術','ケア','リハビリ','その他'];
 let UI=jget(KU,{role:'player',me:'',tab:'home',stab:'today'});
 UI.role=CTX.role==='player'?'player':CTX.role==='leader'?(UI.role==='player'?'player':'staff'):'staff';if(CTX.role==='player'||CTX.role==='leader')UI.me=CTX.pid;

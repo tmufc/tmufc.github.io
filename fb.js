@@ -107,7 +107,7 @@ async function route(user){
     else if(PAGE==='sch'){const roster=await getRoster();const ctx=await schInit(roster);hideGate();window.__SCH_MAIN(ctx);addAcct();}
     else if(PAGE==='tr'){const roster=await getRoster();const ctx=await trInit(roster);hideGate();window.__TR_MAIN(ctx);addAcct();}
     else{const roster=await getRoster();if(NEEDPID.includes(r)&&!roster.some(p=>p.id===ME.pid)){showGate(`<p>名簿にあなたの名前が見つかりません。監督に確認してください。</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}const ctx=await condInit(r,ME.pid,roster);hideGate();window.__COND_MAIN(ctx);addAcct();}
-  }catch(e){console.error(e);showGate(`<p>データを読み込めませんでした（${esc(e.code||e.message)}）。</p><button class="tb" onclick="location.reload()">読み込み直す</button>`);}
+  }catch(e){console.error(e);showGate(`<p>データを読み込めませんでした（${esc(e.code||e.message)}）。</p><button class="tb" onclick="location.reload()">読み込み直す</button><button class="tb ghost" id="tg_out" style="margin-top:10px">ログアウト</button><p class="gh" style="margin-top:14px">直らないときは、この画面を監督に送ってください。</p>`);const o=gate.querySelector('#tg_out');if(o)o.onclick=()=>signOut(auth);}
 }
 let pendTab=null;
 async function pendingScreen(){
