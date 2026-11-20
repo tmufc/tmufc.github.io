@@ -114,11 +114,13 @@ textarea.in{min-height:76px;resize:vertical}
 .today .ev .tm{color:#fff}
 .today .noev{color:rgba(255,255,255,.75);font-size:14px;margin:4px 0}
 .att{margin-top:12px;background:rgba(255,255,255,.08);border-radius:10px;padding:10px 12px}
-.att .cnt{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;align-items:baseline}
+.att .cnt{display:flex;gap:6px 12px;flex-wrap:wrap;font-size:13px;align-items:baseline}
 .att .cnt b{font-size:22px;margin-right:2px}
 .att .names{font-size:13px;margin-top:8px;line-height:1.7}
 .att .names em{font-style:normal;font-size:11px;opacity:.7;margin-right:6px}
 .att .names em.f{margin:0 0 0 3px;opacity:.85}
+.att .names em.ab{color:#FF9A92;opacity:1}
+.att.light .names em.ab{color:var(--red)}
 .att button{border:0;background:none;color:#9CC0FF;font-size:12px;padding:0;margin-left:auto}
 .att.light{background:var(--bg)}
 .att.light button{color:var(--blue)}
@@ -171,10 +173,10 @@ const trOf=date=>CTX.trainings?Object.values(CTX.trainings).filter(t=>t.date===d
 function evHtml(e){return `<div class="ev"><div class="tm num">${e.allDay?'終日':esc(e.start)+(e.end?`<small>〜${esc(e.end)}</small>`:'')}</div><div class="bd"><b>${esc(e.title||'（予定）')}</b>${e.location?`<div class="loc">📍 ${esc(e.location)}</div>`:''}${e.desc?`<div class="ds">${esc(e.desc)}</div>`:''}</div></div>`;}
 function ntHtml(n){const mine=canPost;return `<div class="nt${n.important?' imp':''}"><p>${esc(n.text)}</p><div class="by">${esc(n.byName||'')}${n.at?'・'+new Date(n.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}):''}${mine?`<button data-ned="${n.id}">編集</button>`:''}</div></div>`;}
 function attHtml(date,light){const a=CTX.days[date];if(!a)return '';
-  const join=a.join||[],rehab=a.rehab||[],off=a.off||[];const late=new Set(a.late||[]),part=new Set(a.partial||[]);
-  const list=(ids,mark)=>ids.map(id=>nm(id)).filter(Boolean).length?ids.filter(nm).map(id=>esc(nm(id))+(mark&&late.has(id)?'<em class="f">（遅刻・早退）</em>':'')+(mark&&part.has(id)?'<em class="f">（部分合流）</em>':'')).join('、'):'なし';
-  return `<div class="att${light?' light':''}"><div class="cnt"><span>参加予定 <b class="num">${join.length}</b>人</span><span>リハビリ <b class="num">${rehab.length}</b></span><span>休み <b class="num">${off.length}</b></span><button data-att="${date}">${open[date]?'閉じる':'名前を見る'}</button></div>
-${open[date]?`<div class="names"><div><em>参加予定</em>${list(join,true)}</div><div><em>リハビリ</em>${list(rehab)}</div><div><em>休み</em>${list(off)}</div></div>`:''}</div>`;}
+  const join=a.join||[],rehab=a.rehab||[],inj=a.inj||[],off=a.off||[];const late=new Set(a.late||[]),part=new Set(a.partial||[]),absn=new Set(a.absent||[]);
+  const list=(ids,mark)=>ids.map(id=>nm(id)).filter(Boolean).length?ids.filter(nm).map(id=>esc(nm(id))+(mark&&late.has(id)?'<em class="f">（遅刻・早退）</em>':'')+(mark&&part.has(id)?'<em class="f">（部分合流）</em>':'')+(absn.has(id)?'<em class="f ab">（欠席）</em>':'')).join('、'):'なし';
+  return `<div class="att${light?' light':''}"><div class="cnt"><span>参加予定 <b class="num">${join.length}</b>人</span><span>リハビリ <b class="num">${rehab.length}</b></span>${a.inj?`<span>ケガ <b class="num">${inj.length}</b></span>`:''}<span>休み <b class="num">${off.length}</b></span><button data-att="${date}">${open[date]?'閉じる':'名前を見る'}</button></div>
+${open[date]?`<div class="names"><div><em>参加予定</em>${list(join,true)}</div><div><em>リハビリ</em>${list(rehab)}</div>${a.inj?`<div><em>ケガ</em>${list(inj)}</div>`:''}<div><em>休み</em>${list(off)}</div></div>`:''}</div>`;}
 function render(){
   const ev=evOf(T),nt=ntOf(T),tr=trOf(T);
   let h=`<div class="today"><div class="d">今日</div><h2>${fmt(T)}</h2>${ev.length?ev.map(evHtml).join(''):'<p class="noev">今日の予定はありません</p>'}
@@ -186,7 +188,7 @@ ${attHtml(T)}${nt.length?`<div style="margin-top:10px">${nt.map(ntHtml).join('')
   for(let i=1;i<DAYS;i++){const d=addD(T,i),e=evOf(d),n=ntOf(d),t=trOf(d);if(!e.length&&!n.length&&!t.length)continue;any=true;const w=pd(d).getDay();
     h+=`<div class="card day"><div class="dh"><span class="${w===0?'sun':w===6?'sat':''}">${fmt(d)}</span>${i===1?'<small>明日</small>':''}</div><div class="bx">${e.map(evHtml).join('')}${t.map(x=>`<a class="trl" href="training.html#${x.id}">練習メニュー（${esc(x.theme||'テーマ未設定')}）›</a>`).join('<br>')}${attHtml(d,true)}${n.length?`<div style="margin-top:6px">${n.map(ntHtml).join('')}</div>`:''}</div></div>`;}
   if(!any)h+='<div class="card empty">2週間以内の予定はありません</div>';
-  h+=`<p class="note">予定は部のGoogleカレンダーから自動で取り込みます（10〜15分ごと）。参加予定は、欠席連絡とケガの状況から出しています。</p>`;
+  h+=`<p class="note">予定は部のGoogleカレンダーから自動で取り込みます（10〜15分ごと）。参加予定は、欠席連絡（休み）とケガの状況から出しています。</p>`;
   $('#main').innerHTML=h;
   document.querySelectorAll('[data-att]').forEach(b=>b.onclick=()=>{open[b.dataset.att]=!open[b.dataset.att];render();});
   const na=$('#nadd');if(na)na.onclick=()=>editNotice(null);

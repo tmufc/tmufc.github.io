@@ -309,9 +309,9 @@ async function schInit(roster){
   if(live){jobs.push(watch(query(collection(db,'trainings'),where('date','>=',T)),TR));jobs.push(watch(query(collection(db,'absences'),where('date','>=',T)),AB));jobs.push(watch(collection(db,'injuries'),IJ));}
   await Promise.all(jobs);
   // スタッフはその場で計算（選手は15分ごとの自動処理の結果を見る）
-  const calcDay=date=>{const r={date,join:[],late:[],partial:[],rehab:[],off:[]};const inj=Object.values(IJ).filter(j=>j.active&&j.stage<3);const abs=Object.values(AB);
+  const calcDay=date=>{const r={date,join:[],late:[],partial:[],rehab:[],inj:[],off:[],absent:[]};const inj=Object.values(IJ).filter(j=>j.active&&j.stage<3);const abs=Object.values(AB);
     roster.forEach(p=>{const j=inj.find(x=>x.pid===p.id&&(!x.date||x.date<=date));const a=abs.find(x=>x.pid===p.id&&x.date===date);
-      if(j&&j.stage===0)r.off.push(p.id);else if(j&&j.stage===1)r.rehab.push(p.id);else if(a&&a.kind==='欠席')r.off.push(p.id);
+      if(j&&j.stage<2&&a)r.absent.push(p.id);if(j&&j.stage===0)r.inj.push(p.id);else if(j&&j.stage===1)r.rehab.push(p.id);else if(a&&a.kind==='欠席')r.off.push(p.id);
       else{r.join.push(p.id);if(j&&j.stage===2)r.partial.push(p.id);if(a)r.late.push(p.id);}});return r;};
   const dayMap=new Proxy(D,{get:(o,k)=>{if(live&&typeof k==='string'&&k>=T&&k<=dstr(new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()+6)))return calcDay(k);return Object.values(o).find(v=>v.date===k);}});
   return {roster,events:E,days:dayMap,notices:N,trainings:CONDS.includes(ME.role)?TR:null,me:ME,canPost:ME.role!=='player',
