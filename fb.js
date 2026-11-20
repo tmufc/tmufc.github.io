@@ -310,7 +310,11 @@ async function schInit(roster){
   await Promise.all(jobs);
   // スタッフはその場で計算（選手は15分ごとの自動処理の結果を見る）
   const calcDay=date=>{const r={date,join:[],late:[],partial:[],rehab:[],inj:[],off:[],absent:[]};const inj=Object.values(IJ).filter(j=>j.active&&j.stage<3);const abs=Object.values(AB);
-    roster.forEach(p=>{const j=inj.find(x=>x.pid===p.id&&(!x.date||x.date<=date));const a=abs.find(x=>x.pid===p.id&&x.date===date);
+    // トレーニング画面で手で振り分けた人（休み・ケガ・リハビリ・参加）はそれを優先
+    const G={};Object.values(TR).filter(t=>t.date===date&&t.groups).forEach(t=>Object.assign(G,t.groups));
+    roster.forEach(p=>{const j=inj.find(x=>x.pid===p.id&&(!x.date||x.date<=date));const a=abs.find(x=>x.pid===p.id&&x.date===date);const g=G[p.id];
+      if(g==='X'){r.off.push(p.id);return;}if(g==='I'){r.inj.push(p.id);if(a)r.absent.push(p.id);return;}if(g==='R'){r.rehab.push(p.id);if(a)r.absent.push(p.id);return;}
+      if(g){r.join.push(p.id);if(j&&j.stage===2)r.partial.push(p.id);if(a&&a.kind!=='欠席')r.late.push(p.id);return;}
       if(j&&j.stage<2&&a)r.absent.push(p.id);if(j&&j.stage===0)r.inj.push(p.id);else if(j&&j.stage===1)r.rehab.push(p.id);else if(a&&a.kind==='欠席')r.off.push(p.id);
       else{r.join.push(p.id);if(j&&j.stage===2)r.partial.push(p.id);if(a)r.late.push(p.id);}});return r;};
   const dayMap=new Proxy(D,{get:(o,k)=>{if(live&&typeof k==='string'&&k>=T&&k<=dstr(new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()+6)))return calcDay(k);return Object.values(o).find(v=>v.date===k);}});

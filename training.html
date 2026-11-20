@@ -62,10 +62,15 @@ textarea.in{min-height:76px;resize:vertical}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--bg)}
 .seg button{border:0;background:none;padding:6px 14px;border-radius:999px;font-size:14px;color:var(--sub)}
 .seg button.on{background:var(--blue);color:#fff;font-weight:700}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}
 .stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
 .stat small{display:block;font-size:11px;color:var(--sub)}
 .stat b{font-size:24px;line-height:1.1}
+.stat em{display:block;font-style:normal;font-size:10px;line-height:1.3;color:var(--sub);margin-top:2px}
+.grp h3 .pos{font-size:12px;font-weight:400;color:var(--sub);margin-left:6px}
+.grp h3 .pos b{color:var(--blue)}
+.chip.gk{border-color:color-mix(in srgb,var(--blue) 45%,var(--line))}
+.chip u{text-decoration:none;font-size:10px;font-weight:700;color:#fff;background:var(--blue);border-radius:3px;padding:0 4px;margin-right:2px}
 .grp{padding:10px 14px;border-bottom:1px solid var(--line)}
 .grp:last-child{border-bottom:0}
 .grp h3{margin:0 0 6px;font-size:14px;display:flex;align-items:center;gap:6px}
@@ -127,6 +132,9 @@ const byId=id=>ROSTER.find(p=>p.id===id);
 const GL={A:'A',B:'B',P:'参加',R:'リハビリ',I:'ケガ',X:'休み'};
 const GC={A:'t-a',B:'t-b',P:'t-a',R:'t-r',I:'t-red',X:'t-x'};
 const STG=['離脱','リハビリ','部分合流','完全合流'];
+const isGK=p=>!!p&&p.p1==='GK';
+const gkN=arr=>arr.filter(x=>isGK(x.p)).length;
+const posTxt=arr=>{const g=gkN(arr);return `GK ${g}・FP ${arr.length-g}`;};
 let view={name:'list'},DAY=null,dayKey='';
 function toast(t){const o=document.createElement('div');o.className='toast';o.textContent=t;document.body.appendChild(o);setTimeout(()=>o.remove(),2200);}
 function ask(msg){return new Promise(res=>{const d=document.createElement('div');d.className='modal';d.innerHTML=`<div class="sheet"><p style="white-space:pre-line;margin:4px 0 0"></p><div class="sfoot" style="justify-content:flex-end"><button class="btn ghost" data-no>やめる</button><button class="btn" data-yes>OK</button></div></div>`;d.querySelector('p').textContent=msg;const done=v=>{d.remove();res(v);};d.querySelector('[data-no]').onclick=()=>done(false);d.querySelector('[data-yes]').onclick=()=>done(true);d.onclick=e=>{if(e.target===d)done(false);};document.body.appendChild(d);});}
@@ -196,20 +204,20 @@ function statusOf(t,pid){
   let g=t.groups&&t.groups[pid];if(g&&t.mode==='all'&&(g==='A'||g==='B'))g='P';if(g&&t.mode==='ab'&&g==='P')g=null;
   r.g=g||r.auto;r.manual=!!g&&g!==r.auto;return r;}
 function groupsOf(t){const keys=t.mode==='ab'?['A','B','R','I','X']:['P','R','I','X'];const out={};keys.forEach(k=>out[k]=[]);
-  ROSTER.forEach(p=>{const s=statusOf(t,p.id);(out[s.g]||(out[s.g]=[])).push({p,s});});return out;}
+  ROSTER.forEach(p=>{const s=statusOf(t,p.id);(out[s.g]||(out[s.g]=[])).push({p,s});});Object.values(out).forEach(a=>a.sort((x,y)=>isGK(y.p)-isGK(x.p)));return out;}
 function dayView(){
   const t=CTX.trainings[view.id];if(!t)return '<button class="back" data-back>‹ 一覧</button><p class="empty">この練習は削除されました</p>';
   const G=groupsOf(t);const play=t.mode==='ab'?G.A.length+G.B.length:G.P.length;
   const ent=DAY?DAY.ent:{};const pm=Object.entries(ent).filter(([,e])=>e&&e.pm).map(([pid,e])=>({p:byId(pid),pm:e.pm})).filter(x=>x.p);
   const inG=x=>!(t.mode==='ab')||!DAY||statusOf(t,x.p.id).g===curG;
   const rpeAvg=pm.length?(pm.reduce((a,x)=>a+(+x.pm.rpe||0),0)/pm.length).toFixed(1):'－';
-  const gsec=k=>`<div class="grp"><h3><span class="tag ${GC[k]}">${GL[k]}</span> <span class="num">${G[k].length}</span>人</h3><div class="chips">${G[k].length?G[k].map(({p,s})=>`<span class="chip">${esc(p.name)}${s.tags.filter(x=>!(k==='I'&&x==='離脱')&&!(k==='R'&&x==='リハビリ')).map(x=>`<i class="${x==='欠席'?'ab':''}">${esc(x)}</i>`).join('')}</span>`).join(''):'<span class="note" style="margin:0">いません</span>'}</div></div>`;
+  const gsec=k=>`<div class="grp"><h3><span class="tag ${GC[k]}">${GL[k]}</span> <span class="num">${G[k].length}</span>人${G[k].length&&'ABP'.includes(k)?`<span class="pos"><b>GK ${gkN(G[k])}</b>・FP ${G[k].length-gkN(G[k])}</span>`:''}</h3><div class="chips">${G[k].length?G[k].map(({p,s})=>`<span class="chip${isGK(p)?' gk':''}">${isGK(p)?'<u>GK</u>':''}${esc(p.name)}${s.tags.filter(x=>!(k==='I'&&x==='離脱')&&!(k==='R'&&x==='リハビリ')).map(x=>`<i class="${x==='欠席'?'ab':''}">${esc(x)}</i>`).join('')}</span>`).join(''):'<span class="note" style="margin:0">いません</span>'}</div></div>`;
   const flags=ROSTER.map(p=>({p,s:statusOf(t,p.id)})).filter(x=>x.s.flag);
   const C=P(t);const menus=C.menus;const ab=t.mode==='ab';
   return `<div class="top"><button class="back" data-back>‹ 一覧</button><button class="btn ghost sm" id="share">テキストで共有</button></div>
 <div class="dhead"><h2>${fmt(t.date)}${t.start?` <span class="num" style="font-size:20px">${esc(t.start)}</span>`:''}</h2><button class="btn ghost sm" id="edhead">日付・テーマを編集</button></div>
 <div class="meta">${ab?'':`<span>テーマ <b>${esc(t.theme||'未設定')}</b></span>`}${t.place?`<span>場所 <b>${esc(t.place)}</b></span>`:''}${ab?'':`<span>合計 <b class="num">${totalMin(t)}</b>分</span>`}</div>
-<div class="stats"><div class="stat"><small>参加</small><b class="num">${DAY?play:'…'}</b></div><div class="stat"><small>リハビリ</small><b class="num">${DAY?G.R.length:'…'}</b></div><div class="stat"><small>ケガ</small><b class="num">${DAY?G.I.length:'…'}</b></div><div class="stat"><small>休み</small><b class="num">${DAY?G.X.length:'…'}</b></div><div class="stat"><small>きつさ</small><b class="num">${DAY?rpeAvg:'…'}</b></div></div>
+<div class="stats"><div class="stat"><small>参加</small><b class="num">${DAY?play:'…'}</b>${DAY?`<em>${posTxt(t.mode==='ab'?G.A.concat(G.B):G.P)}</em>`:''}</div><div class="stat"><small>リハビリ</small><b class="num">${DAY?G.R.length:'…'}</b></div><div class="stat"><small>ケガ</small><b class="num">${DAY?G.I.length:'…'}</b></div><div class="stat"><small>休み</small><b class="num">${DAY?G.X.length:'…'}</b></div><div class="stat"><small>きつさ</small><b class="num">${DAY?rpeAvg:'…'}</b></div></div>
 
 <h2>参加メンバー<span><span class="seg"><button data-mode="ab" class="${t.mode==='ab'?'on':''}">A・B分け</button><button data-mode="all" class="${t.mode==='all'?'on':''}">全員一緒</button></span></span></h2>
 ${DAY?`<div class="card">${(t.mode==='ab'?['A','B','R','I','X']:['P','R','I','X']).map(gsec).join('')}</div>
@@ -217,7 +225,7 @@ ${flags.length?`<p class="note">${flags.map(x=>`${esc(x.p.name)}：${esc(x.s.fla
 <div class="acts"><button class="btn ghost sm" id="assign">メンバーを振り分ける</button></div>
 <p class="note">コンディションから自動で振り分けます：欠席連絡は「休み」、ケガで離脱中は「ケガ」、リハビリ中は「リハビリ」。${t.mode==='ab'?'A・Bはポジション画面のチーム分けが初期値です。':''}</p>`:'<div class="card empty">コンディションを読み込んでいます…</div>'}
 
-${ab?`<div class="gtabs">${['A','B'].map(k=>`<button data-cg="${k}" class="${curG===k?'on g'+k:''}">${k}チーム<small>${DAY?groupsOf(t)[k].length+'人・':''}${sumMin(t.parts[k].menus)}分</small></button>`).join('')}</div>
+${ab?`<div class="gtabs">${['A','B'].map(k=>`<button data-cg="${k}" class="${curG===k?'on g'+k:''}">${k}チーム<small>${DAY?groupsOf(t)[k].length+'人（GK '+gkN(groupsOf(t)[k])+'）・':''}${sumMin(t.parts[k].menus)}分</small></button>`).join('')}</div>
 <div class="meta" style="margin-top:8px"><span>${curG}のテーマ <b>${esc(C.theme||'未設定')}</b></span></div>`:''}
 <h2>${ab?curG+'の':''}メニュー<small>${menus.length}本・${sumMin(menus)}分</small></h2>
 <div class="card">${menus.length?menus.map((m,i)=>`<div class="menu"><div class="no num">${i+1}</div><div class="b tap" data-med="${i}">${m.from?`<div class="slot num">${esc(slotTxt(m))}</div>`:''}<div class="t"><b>${esc(m.name||'（名前なし）')}</b><span class="num">${fmtN(mMin(m))}分</span></div>
@@ -355,7 +363,7 @@ async function shareText(t){
   const menuTxt=ms=>{let x='';(ms||[]).forEach((m,i)=>{x+=`${i+1}. ${m.from?slotTxt(m)+'　':''}${m.name}（${fmtN(mMin(m))}分${m.play?'＝'+timeTxt(m):''}）\n`;if(m.players||m.size)x+=`　${[m.players,m.size].filter(Boolean).join('・')}\n`;if(m.aim)x+=`　狙い：${m.aim}\n`;});return x;};
   if(t.mode==='ab'){ensureParts(t);['A','B'].forEach(k=>{const p=t.parts[k];s+=`\n■${k}チーム　テーマ：${p.theme||'－'}（${sumMin(p.menus)}分）\n`+menuTxt(p.menus);});}
   else s+=`テーマ：${t.theme||'－'}\n合計${totalMin(t)}分\n\n`+menuTxt(t.menus);
-  if(G){s+='\n';(t.mode==='ab'?['A','B','R','I','X']:['P','R','I','X']).forEach(k=>{if(G[k].length)s+=`${GL[k]}（${G[k].length}人）：${G[k].map(x=>x.p.name).join('、')}\n`;});}
+  if(G){s+='\n';(t.mode==='ab'?['A','B','R','I','X']:['P','R','I','X']).forEach(k=>{if(G[k].length)s+=`${GL[k]}（${G[k].length}人${'ABP'.includes(k)?'＝'+posTxt(G[k]):''}）：${G[k].map(x=>x.p.name).join('、')}\n`;});}
   try{if(navigator.share){await navigator.share({text:s});return;}}catch(e){if(e&&e.name==='AbortError')return;}
   try{await navigator.clipboard.writeText(s);toast('コピーしました。LINEなどに貼り付けられます');}catch(e){const d=sheet(`<div class="shead">テキスト<button class="btn ghost sm" data-x>閉じる</button></div><textarea class="in" style="min-height:300px">${esc(s)}</textarea>`);d.querySelector('[data-x]').onclick=closeSheet;}}
 
