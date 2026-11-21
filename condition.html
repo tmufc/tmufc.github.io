@@ -185,6 +185,8 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--sel)}
 .empty{padding:18px;text-align:center;color:var(--sub);font-size:13px}
 @media (min-width:700px){.todo{grid-template-columns:repeat(4,1fr)}.pick{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:430px){.apptabs a,.apptabs span{font-size:12px;padding:5px 6px}}
+.mine{margin-bottom:10px}.mine .list li{gap:6px}.mine .list li.cur{background:color-mix(in srgb,var(--blue) 8%,transparent)}
+.btn.red{color:var(--red);border-color:var(--red)}
 </style></head><body data-page="cond">
 <header><div class="wrap"><div class="hrow"><h1>TMU FC App</h1></div>
 <nav class="apptabs" aria-label="アプリの切り替え"><a href="schedule.html">スケジュール</a><a href="./#pos">ポジション</a><a href="./#game">メンバー選考</a><a href="training.html">トレーニング</a><span class="on" aria-current="page">コンディション</span></nav>
@@ -353,7 +355,7 @@ ${(()=>{const a=e.am;const m3=days(3).reduce((s,d)=>s+selfOn(me.id,d).reduce((t,
 ${card('am','朝のチェック','睡眠・疲労・張り・気分',e.am?`入力済み（${e.am.at}）`:'未入力 ›',e.am?'done':'')}
 ${card('pm','練習後のきつさ',yd.pm&&!e.pm?'昨日の分は入力済み':'練習のあとに入力',e.pm?'入力済み':'入力する ›',e.pm?'done':'')}
 ${card('pain','痛み・ケガの報告','痛みや違和感があるとき',rep.length?`報告済み（${rep.length}件）`:'報告する ›',rep.length?'alert':'')}
-${card('abs','欠席・遅刻の連絡','練習を休む・遅れるとき',ab?`${ab.kind}で連絡済み`:'連絡する ›',ab?'done':'')}
+${(()=>{const fu=DB.absences.filter(a=>a.pid===me.id&&a.date>T).length;return card('abs','欠席・遅刻の連絡','練習を休む・遅れるとき',ab?`今日は${ab.kind}で連絡済み${fu?`・今後${fu}件`:''}`:fu?`今後${fu}件連絡済み ›`:'連絡する ›',ab?'done':'');})()}
 ${(()=>{const t=selfOn(me.id,T);return card('self','自主トレ・ケア','筋トレ・ランニング・ケアなど',t.length?`今日 ${t.reduce((a,x)=>a+x.min,0)}分（${t.length}件）・追加する ›`:'記録する ›',(t.length?'done ':'')+'wide');})()}
 </div>
 <h2>最近の入力<small>疲労（1〜5）</small></h2><div class="card chart">${line([{v:days(7).map(d=>(ent(d,me.id).am||{}).fat??null),c:'var(--red)'}],{h:100,labels:days(7).map(md)})}</div>
@@ -411,12 +413,14 @@ function formView(){const me=byId(UI.me),k=F._k;let body='',title='';
   if(k==='pm'){title='練習後のきつさ';body=`<div class="q"><div class="ql">今日の練習は、全体としてどのくらいきつかったですか<small>0〜10</small></div>${scale('rpe',0,10,'まったく楽','限界','rpe')}<div class="rpedesc">${F.rpe!=null?RPED[F.rpe]:''}</div></div>
 <div class="q"><div class="ql">練習時間<small>分</small></div>${choice('min_s',['60','90','100','110','120','150'])}</div>
 <div class="q"><div class="ql">振り返り・反省<small>任意</small></div><textarea class="in" id="f_note" placeholder="例：前からのプレスで2人目の寄せが遅れた。次は声をかけて早めに動く">${esc(F.note||'')}</textarea></div>`;if(F.min_s===undefined)F.min_s=String(F.min||120);}
-  if(k==='pain'){title='痛み・ケガの報告';body=`<div class="q"><div class="ql">部位</div><div class="parts">${PARTS.map(p=>`<button type="button" data-ch="part" data-v="${p}" class="${F.part===p?'on':''}">${p}</button>`).join('')}</div></div>
+  if(k==='pain'){title='痛み・ケガの報告';const mine=DB.reports.filter(r=>r.pid===me.id&&r.date===T);
+    body=`${mine.length?`<div class="mine"><div class="ql">今日送った報告</div><ul class="list">${mine.map(r=>`<li><div class="m">${esc(r.side||'')}${esc(r.part||'')}・程度${r.level}<small>${esc(r.at||'')}　${esc(r.join||'')}</small></div>${r.status==='new'?`<button type="button" class="btn ghost sm red" data-rpdel="${r.id}">取り消す</button>`:'<span class="tag t-blue">トレーナー確認済み</span>'}</li>`).join('')}</ul></div><div class="ql" style="margin-top:6px">新しく報告する</div>`:''}<div class="q"><div class="ql">部位</div><div class="parts">${PARTS.map(p=>`<button type="button" data-ch="part" data-v="${p}" class="${F.part===p?'on':''}">${p}</button>`).join('')}</div></div>
 <div class="q"><div class="ql">左右</div>${choice('side',['左','右','両方','なし'])}</div>
 <div class="q"><div class="ql">痛みの程度</div>${scale('level',1,5,'少し気になる','とても痛い')}</div>
 <div class="q"><div class="ql">練習への参加</div>${choice('join',['フル参加できる','一部なら可能','参加できない'])}</div>
 <div class="q"><div class="ql">いつから・どんな状況で</div><textarea class="in" id="f_when" placeholder="例：昨日のゲームの後半から、ダッシュすると痛い">${esc(F.when||'')}</textarea></div>`;}
-  if(k==='abs'){title='欠席・遅刻の連絡';body=`<div class="q"><div class="ql">日付</div><input type="date" class="in" id="f_date" value="${F.date}"></div>
+  if(k==='abs'){title='欠席・遅刻の連絡';const mine=DB.absences.filter(a=>a.pid===me.id&&a.date>=T).sort((a,b)=>a.date.localeCompare(b.date));
+    body=`${mine.length?`<div class="mine"><div class="ql">連絡済み（今日以降）</div><ul class="list">${mine.map(a=>`<li class="${F.id===a.id?'cur':''}"><div class="m">${mdw(a.date)}　<b>${esc(a.kind)}</b><small>${esc(a.reason||'')}${a.note?'・'+esc(a.note):''}</small></div><button type="button" class="btn ghost sm" data-abedit="${a.id}">直す</button><button type="button" class="btn ghost sm red" data-abdel="${a.id}">取り消す</button></li>`).join('')}</ul></div><div class="ql" style="margin-top:6px">${F.id?'連絡を直す':'新しく連絡する'}</div>`:''}<div class="q"><div class="ql">日付</div><input type="date" class="in" id="f_date" value="${F.date}"></div>
 <div class="q"><div class="ql">欠席か遅刻か</div>${choice('kind',['欠席','遅刻','早退'])}</div>
 <div class="q"><div class="ql">理由</div>${choice('reason',['授業','就活','体調不良','ケガ','その他'])}</div>
 <div class="q"><div class="ql">補足<small>${F.kind==='遅刻'?'到着予定の時刻など':'任意'}</small></div><input class="in" id="f_note" value="${esc(F.note||'')}" placeholder="${F.kind==='遅刻'?'例：19:00着':'例：病院に寄ってから'}"></div>`;}
@@ -427,7 +431,7 @@ function formView(){const me=byId(UI.me),k=F._k;let body='',title='';
 <div class="q"><div class="ql">ひと言<small>任意</small></div><textarea class="in" id="f_note" placeholder="例：スクワット3セット、坂ダッシュ10本">${esc(F.note||'')}</textarea></div>
 <div class="q"><div class="ql">チームに共有<small>「チーム」の画面に表示されます</small></div>${choice('share',['共有しない','共有する'])}<p class="note">${F.share==='共有する'?'内容・時間・ひと言がチームに表示されます。きつさは表示されません。':'あなたとスタッフだけが見られます。'}</p></div>`;}
   window.__bind=bindForm;
-  return `<div class="fhead"><button class="back" data-back>‹ 戻る</button><h2>${title}</h2></div>${body}<div class="submit"><p class="err" id="f_err"></p><button class="btn block" id="f_ok">${(k==='am'&&ent(T,me.id).am)||(k==='pm'&&ent(T,me.id).pm)?'修正して送信':'送信する'}</button></div>`;}
+  return `<div class="fhead"><button class="back" data-back>‹ 戻る</button><h2>${title}</h2></div>${body}${(k==='am'&&ent(T,me.id).am)||(k==='pm'&&ent(T,me.id).pm)?'<button class="btn ghost block red" id="f_del" style="margin:4px 0 8px">今日の入力を削除する</button>':''}${k==='abs'&&F.id?'<button class="btn ghost block red" id="f_del" style="margin:4px 0 8px">この連絡を取り消す</button>':''}<div class="submit"><p class="err" id="f_err"></p><button class="btn block" id="f_ok">${(k==='am'&&ent(T,me.id).am)||(k==='pm'&&ent(T,me.id).pm)||(k==='abs'&&F.id)?'修正して送信':'送信する'}</button></div>`;}
 function keepText(){['f_note','f_when'].forEach(id=>{const el=document.getElementById(id);if(el)F[id==='f_note'?'note':'when']=el.value;});const d=document.getElementById('f_date');if(d)F.date=d.value;}
 function rerender(){keepText();const y=window.scrollY;stack[stack.length-1]=formView;render();window.scrollTo(0,y);}
 function bindForm(){
@@ -436,7 +440,18 @@ function bindForm(){
   document.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{F.sleep=Math.max(0,Math.min(14,F.sleep+ +b.dataset.step));rerender();});
   document.querySelectorAll('[data-mstep]').forEach(b=>b.onclick=()=>{F.min=Math.max(10,Math.min(300,F.min+ +b.dataset.mstep));rerender();});
   document.querySelectorAll('[data-mch]').forEach(b=>b.onclick=()=>{const a=F[b.dataset.mch],v=b.dataset.v;const i=a.indexOf(v);if(i>=0)a.splice(i,1);else a.push(v);rerender();});
-  $('#f_ok').onclick=submitForm;}
+  $('#f_ok').onclick=submitForm;
+  const me=byId(UI.me);const dl=$('#f_del');
+  if(dl)dl.onclick=async()=>{const k=F._k;
+    if(k==='am'||k==='pm'){if(!await ask(`今日の「${k==='am'?'朝のチェック':'練習後のきつさ'}」の入力を削除しますか？`))return;const o=(DB.entries[T]||{})[me.id];if(o){delete o[k];if(!Object.keys(o).length)delete DB.entries[T][me.id];}save();toast('削除しました');return home();}
+    if(k==='abs'&&F.id){await delAbs(F.id);}};
+  document.querySelectorAll('[data-abdel]').forEach(b=>b.onclick=()=>delAbs(b.dataset.abdel));
+  document.querySelectorAll('[data-abedit]').forEach(b=>b.onclick=()=>{const a=DB.absences.find(x=>x.id===b.dataset.abedit);if(!a)return;F={_k:'abs',...a};rerenderNoKeep();});
+  document.querySelectorAll('[data-rpdel]').forEach(b=>b.onclick=async()=>{const r=DB.reports.find(x=>x.id===b.dataset.rpdel);if(!r)return;if(!await ask(`${r.side||''}${r.part||''}の痛みの報告を取り消しますか？`))return;DB.reports=DB.reports.filter(x=>x.id!==r.id);save();toast('報告を取り消しました');rerenderNoKeep();});}
+async function delAbs(id){const a=DB.absences.find(x=>x.id===id);if(!a)return;if(!await ask(`${mdw(a.date)}の「${a.kind}」の連絡を取り消しますか？`))return;
+  DB.absences=DB.absences.filter(x=>x.id!==id);save();toast('連絡を取り消しました');
+  if(F.id===id)F={_k:'abs',date:T,kind:null,reason:null,note:''};rerenderNoKeep();}
+function rerenderNoKeep(){const y=window.scrollY;stack[stack.length-1]=formView;render();window.scrollTo(0,y);}
 function submitForm(){keepText();const me=byId(UI.me),k=F._k;const err=t=>{$('#f_err').textContent=t;};
   const now=new Date(),hm=`${pad(now.getHours())}:${pad(now.getMinutes())}`;
   if(k==='am'){const miss=[['sq','睡眠の質'],['fat','疲労感'],['sore','筋肉の張り'],['mood','気分']].filter(([x])=>F[x]==null).map(x=>x[1]);if(!F.pain_s)miss.push('痛みや違和感');
@@ -450,7 +465,7 @@ function submitForm(){keepText();const me=byId(UI.me),k=F._k;const err=t=>{$('#f
   if(k==='self'){if(!F.kinds.length)return err('内容を選んでください。');if(F.rpe==null)return err('きつさを選んでください。');if(!F.date)return err('日付を入れてください。');
     DB.self.push({id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),pid:me.id,date:F.date,ts:Date.now(),kinds:F.kinds.slice(),min:F.min,rpe:F.rpe,note:F.note||'',shared:F.share==='共有する',likes:[]});save();toast(F.share==='共有する'?'記録してチームに共有しました':'自主トレを記録しました');return home();}
   if(k==='abs'){if(!F.kind)return err('欠席・遅刻・早退のどれかを選んでください。');if(!F.reason)return err('理由を選んでください。');if(!F.date)return err('日付を入れてください。');
-    DB.absences=DB.absences.filter(a=>!(a.pid===me.id&&a.date===F.date));DB.absences.push({id:'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),pid:me.id,date:F.date,kind:F.kind,reason:F.reason,note:F.note||''});save();toast('連絡しました');return home();}}
+    DB.absences=DB.absences.filter(a=>!(a.pid===me.id&&a.date===F.date)&&a.id!==F.id);DB.absences.push({id:F.id||'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),pid:me.id,date:F.date,kind:F.kind,reason:F.reason,note:F.note||''});save();toast('連絡しました');return home();}}
 // ================= STAFF =================
 function sToday(){
   const filled=ROSTER.filter(p=>ent(T,p.id).am).length;const al=allAlerts();const red=new Set(al.filter(a=>a.lv==='red').map(a=>a.pid));const warnP=new Set(al.map(a=>a.pid));
