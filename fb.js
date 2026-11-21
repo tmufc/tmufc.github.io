@@ -51,6 +51,16 @@ css.textContent=`.tg{position:fixed;inset:0;z-index:100;background:#0E1A33;color
 .tmod .sv.del{background:transparent;color:#C93C34;border:1px solid #C93C34}
 .tmod .sv{border:0;background:#4366B0;color:#fff;border-radius:8px;padding:7px 14px;font:inherit;font-weight:700;cursor:pointer}
 .tmod .tag{font-size:11px;border-radius:4px;padding:1px 7px;background:#EE6A61;color:#fff}
+.tmod .unreg{margin:12px 0 4px;border:1px solid var(--line,#D5DDE7);border-radius:10px;padding:10px 12px;font-size:14px}
+.tmod .unreg.ok{color:var(--sub,#5B6B7E)}
+.tmod .unreg summary{cursor:pointer}
+.tmod .unreg .gh{font-size:12px;color:var(--sub,#5B6B7E);margin:8px 0}
+.tmod .unreg .ug{display:flex;gap:8px;margin:6px 0;align-items:baseline}
+.tmod .unreg .ug small{min-width:3.5em;color:var(--sub,#5B6B7E);font-size:12px}
+.tmod .unreg .un{display:inline-block;font-size:13px;border:1px solid var(--line,#D5DDE7);border-radius:999px;padding:2px 10px;margin:0 4px 4px 0}
+.tmod .unreg .un.rq{border-color:#EE6A61}
+.tmod .unreg .un i{font-style:normal;font-size:10px;color:#EE6A61;margin-left:4px}
+.tmod .unreg .x{margin-top:6px}
 .tmod .sec{font-size:12px;color:var(--sub,#5B6B7E);margin:14px 0 2px}
 .tg .tabs{display:flex;gap:6px;margin:6px 0 4px}.tg .tabs button{flex:1;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;border-radius:10px;padding:9px;font:inherit;font-weight:700;cursor:pointer}.tg .tabs button.on{background:#fff;color:#13294B}
 .tg input,.tg select{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;margin-top:6px}.tg select option{color:#13294B}
@@ -153,6 +163,21 @@ ${NAMED.includes(ME.role)?`<div class="r" style="display:flex;gap:6px;flex-wrap:
 function confirmBox(t){return window.confirm?window.confirm(t):true;}
 let rosterCache=null;
 async function openUsers(){rosterCache=rosterCache||await getRoster();const m=document.createElement('div');m.className='tmod users';m.innerHTML='<div class="sh"></div>';m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);renderUsers();}
+// 名簿にいるのに、まだアカウントと結びついていない選手
+function unregHtml(){
+  const R=(rosterCache||[]);if(!R.length)return '';
+  const linked=new Set(usersCache.filter(u=>NEEDPID.includes(u.role)&&u.pid).map(u=>u.pid));
+  const req=new Set(usersCache.filter(u=>u.role==='pending'&&u.requestPid&&!u.requestStaff).map(u=>u.requestPid));
+  const un=R.filter(p=>!linked.has(p.id)).sort((a,b)=>(b.grade||0)-(a.grade||0)||String(a.name).localeCompare(String(b.name),'ja'));
+  const done=R.length-un.length;
+  if(!un.length)return `<div class="unreg ok">選手の登録：<b>${done}/${R.length}人</b>　全員登録済みです</div>`;
+  const gr={};un.forEach(p=>(gr[p.grade||0]||(gr[p.grade||0]=[])).push(p));
+  const txt=un.filter(p=>!req.has(p.id)).map(p=>p.name).join('、');
+  return `<details class="unreg"><summary>選手の登録：<b>${done}/${R.length}人</b>　<span class="tag">未登録 ${un.length}人</span></summary>
+<p class="gh">名簿にいるのに、まだアプリに登録（承認）されていない選手です。「申請中」は承認待ちの中にいます。</p>
+${Object.keys(gr).sort((a,b)=>b-a).map(g=>`<div class="ug"><small>${+g?g+'年':'学年なし'}</small><div>${gr[g].map(p=>`<span class="un${req.has(p.id)?' rq':''}">${esc(p.name)}${req.has(p.id)?'<i>申請中</i>':''}</span>`).join('')}</div></div>`).join('')}
+${txt?`<button class="x" data-cpun data-txt="${esc('まだアプリに登録していない人：'+txt)}">名前をコピー（LINEで声かけ用）</button>`:''}</details>`;
+}
 function renderUsers(){
   const m=document.querySelector('.tmod.users');if(!m)return;const sh=m.querySelector('.sh');const R=rosterCache||[];
   const ord={pending:0,admin:1,staff:2,medical:3,leader:4,player:5,disabled:6};const L=usersCache.slice().sort((a,b)=>(ord[a.role]??9)-(ord[b.role]??9)||String(a.name).localeCompare(String(b.name),'ja'));
@@ -163,8 +188,11 @@ function renderUsers(){
 <select data-ti ${(u.role==='pending'&&u.requestStaff)||NAMED.includes(u.role)?'':'style="display:none"'} ${self?'disabled':''}>${TITLES.map(t=>`<option ${(u.title||u.requestTitle)===t?'selected':''}>${t}</option>`).join('')}</select>
 <select data-pid ${NEEDPID.includes(u.role)||(u.role==='pending'&&u.requestPid&&!u.requestStaff)?'':'style="display:none"'}><option value="">名簿の名前を選ぶ</option>${R.map(p=>`<option value="${esc(p.id)}" ${(u.pid||u.requestPid)===p.id?'selected':''}>${esc(p.name)}${linked.has(p.id)&&u.pid!==p.id?'（登録済み）':''}</option>`).join('')}</select>
 <button class="sv" data-save ${self?'disabled':''}>保存</button>${self?'':'<button class="sv del" data-del>削除</button>'}</div></div>`;};
-  sh.innerHTML=`<div class="hd">メンバー管理<button class="x" data-x>閉じる</button></div><p style="font-size:13px;color:var(--sub);margin:0">権限を選んで「保存」を押します。選手は名簿の名前と結びつけてください。</p>${L.map(row).join('')}`;
+  const wasOpen=!!sh.querySelector('details.unreg[open]');
+  sh.innerHTML=`<div class="hd">メンバー管理<button class="x" data-x>閉じる</button></div><p style="font-size:13px;color:var(--sub);margin:0">権限を選んで「保存」を押します。選手は名簿の名前と結びつけてください。</p>${unregHtml()}${L.map(row).join('')}`;
   sh.querySelector('[data-x]').onclick=()=>m.remove();
+  if(wasOpen){const dt=sh.querySelector('details.unreg');if(dt)dt.open=true;}
+  const cp=sh.querySelector('[data-cpun]');if(cp)cp.onclick=async()=>{try{await navigator.clipboard.writeText(cp.dataset.txt);toast('コピーしました');}catch(e){toast('コピーできませんでした');}};
   sh.querySelectorAll('.u').forEach(el=>{const rs=el.querySelector('[data-role]'),ps=el.querySelector('[data-pid]');
     const ns=el.querySelector('[data-nm]'),ts=el.querySelector('[data-ti]');
     rs.onchange=()=>{ps.style.display=NEEDPID.includes(rs.value)?'':'none';const st=NAMED.includes(rs.value);ns.style.display=st?'':'none';ts.style.display=st?'':'none';};
