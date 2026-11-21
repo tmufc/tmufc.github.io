@@ -10,7 +10,7 @@ const ADMIN_EMAILS=[];
 const TITLES=['総監督','監督','コーチ','トレーナー','マネージャー'];
 const FULL=['admin','staff','leader'],CONDS=['admin','staff','leader','medical'],NEEDPID=['player','leader'],NAMED=['admin','staff','medical'];
 const ROLE_ORDER=['pending','player','leader','medical','staff','admin','disabled'];
-const ROLE_LABEL={admin:'管理者（全機能＋メンバー管理）',staff:'総監督・監督・コーチ（全機能）',medical:'トレーナー・マネージャー（コンディションのみ）',leader:'幹部（全機能＋選手の入力）',player:'選手（選手の入力）',pending:'承認待ち',disabled:'利用停止'};
+const ROLE_LABEL={admin:'管理者（全機能＋メンバー管理）',staff:'総監督・監督・コーチ（全機能）',medical:'トレーナー・マネージャー（コンディション・トレーニング・スケジュール）',leader:'幹部（全機能＋選手の入力）',player:'選手（選手の入力）',pending:'承認待ち',disabled:'利用停止'};
 
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
