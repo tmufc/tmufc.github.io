@@ -86,6 +86,15 @@ textarea.in{min-height:76px;resize:vertical}
 .menu .b{flex:1;min-width:0}
 .menu .t{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 .menu .t b{font-size:16px}
+.mgap{font-size:12px;color:var(--sub);padding:2px 0 2px 34px;margin:-2px 0}
+.mgap b{font-size:13px;color:var(--ink);margin:0 1px}
+.gapall{display:flex;gap:8px;align-items:center}.gapall .in{flex:1}
+.gaps{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.gaps .gm{display:flex;gap:8px;align-items:baseline;padding:6px 0;font-size:14px}
+.gaps .gm b{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gaps .gs{min-width:3em;color:var(--blue);font-weight:700;font-size:13px}.gaps .gn{color:var(--sub);font-size:13px}
+.gaps .gg{display:flex;gap:6px;align-items:center;padding:2px 0 2px 3.4em;font-size:13px;color:var(--sub)}
+.gaps .gg .in{width:4.5em;padding:4px 8px;text-align:center}
 .menu .slot{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:1px}
 .menu .d{font-size:13px;color:var(--sub);margin-top:2px}
 .menu .x{white-space:pre-line;font-size:14px;margin-top:6px}
@@ -232,10 +241,10 @@ ${flags.length?`<p class="note">${flags.map(x=>`${esc(x.p.name)}：${esc(x.s.fla
 ${ab?`<div class="gtabs">${['A','B'].map(k=>`<button data-cg="${k}" class="${curG===k?'on g'+k:''}">${k}チーム<small>${DAY?groupsOf(t)[k].length+'人（GK '+gkN(groupsOf(t)[k])+'）・':''}${sumMin(t.parts[k].menus)}分</small></button>`).join('')}</div>
 <div class="meta" style="margin-top:8px"><span>${curG}のテーマ <b>${esc(C.theme||'未設定')}</b></span></div>`:''}
 <h2>${ab?curG+'の':''}メニュー<small>${menus.length}本・${sumMin(menus)}分</small></h2>
-<div class="card">${menus.length?menus.map((m,i)=>`<div class="menu"><div class="no num">${i+1}</div><div class="b tap" data-med="${i}">${m.from?`<div class="slot num">${esc(slotTxt(m))}</div>`:''}<div class="t"><b>${esc(m.name||'（名前なし）')}</b><span class="num">${fmtN(mMin(m))}分</span></div>
+<div class="card">${menus.length?menus.map((m,i)=>`${i&&+m.gap>0?`<div class="mgap tap" data-gapopen>↓ 間 <b class="num">${fmtN(+m.gap)}</b>分</div>`:''}<div class="menu"><div class="no num">${i+1}</div><div class="b tap" data-med="${i}">${m.from?`<div class="slot num">${esc(slotTxt(m))}</div>`:''}<div class="t"><b>${esc(m.name||'（名前なし）')}</b><span class="num">${fmtN(mMin(m))}分</span></div>
 <div class="d">${[timeTxt(m),m.players,m.size].filter(Boolean).map(esc).join('・')}</div>${m.aim?`<div class="d">狙い：${esc(m.aim)}</div>`:''}${m.desc?`<div class="x">${esc(m.desc)}</div>`:''}${m.note?`<div class="x" style="color:var(--blue)">メモ：${esc(m.note)}</div>`:''}</div>
 <div class="ops"><button data-up="${i}" aria-label="上へ" ${i===0?'disabled':''}>▲</button><button data-dn="${i}" aria-label="下へ" ${i===menus.length-1?'disabled':''}>▼</button></div></div>`).join(''):'<div class="empty">まだメニューがありません</div>'}</div>
-<div class="acts"><button class="btn" id="madd">＋ 新しいメニュー</button><button class="btn ghost" id="mlib">メニュー集から追加</button>${menus.length?'<button class="btn ghost" id="mslot">時間の目安を自動で入れる</button>':''}</div>
+<div class="acts"><button class="btn" id="madd">＋ 新しいメニュー</button><button class="btn ghost" id="mlib">メニュー集から追加</button>${menus.length?'<button class="btn ghost" id="mslot">時間の目安・メニュー間を設定</button>':''}</div>
 
 <h2>${ab?curG+'の':''}選手の振り返り<small>${DAY?`入力 ${pm.filter(inG).length}人`:''}</small></h2>
 ${DAY?(pm.filter(x=>x.pm.note&&inG(x)).length?`<div class="card">${pm.filter(x=>x.pm.note&&inG(x)).sort((a,b)=>(b.pm.rpe||0)-(a.pm.rpe||0)).map(x=>`<div class="refl"><div class="w">${esc(x.p.name)}<span class="tag">きつさ ${x.pm.rpe??'－'}</span></div><p>${esc(x.pm.note)}</p></div>`).join('')}</div>`:'<div class="card empty">振り返りの入力はまだありません</div>'):'<div class="card empty">読み込んでいます…</div>'}
@@ -257,6 +266,7 @@ function bindDay(){
   $('#edhead').onclick=()=>editHead(t);
   $('#madd').onclick=()=>editMenu(t,-1);$('#mlib').onclick=()=>openLib(t);
   const ms=$('#mslot');if(ms)ms.onclick=()=>autoSlots(t);
+  document.querySelectorAll('[data-gapopen]').forEach(x=>x.onclick=()=>autoSlots(t));
   document.querySelectorAll('[data-med]').forEach(b=>b.onclick=()=>editMenu(t,+b.dataset.med));
   document.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{const i=+b.dataset.up;if(i<1)return;const m=P(t).menus;[m[i-1],m[i]]=[m[i],m[i-1]];save();render();});
   document.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>{const i=+b.dataset.dn;const m=P(t).menus;if(i>=m.length-1)return;[m[i+1],m[i]]=[m[i],m[i+1]];save();render();});
@@ -300,15 +310,27 @@ function bindTime(d){const g=id=>d.querySelector(id);const tot=g('#m_min');if(!t
   if(fr){fr.oninput=updTo;to.oninput=()=>{autoTo=!to.value;if(autoTo)updTo();};}}
 function autoSlots(t){
   const C=P(t);const ms=C.menus;let st=toM(t.start);
-  const d=sheet(`<div class="shead">時間の目安を自動で入れる<button class="btn ghost sm" data-x>閉じる</button></div>
-<p class="note" style="margin:0 0 6px">開始時刻から、メニューの順番と合計時間で ${ms.length}本 の時間の目安を入れます。${ms.some(m=>m.from)?'<br>今入っている時間の目安は上書きされます。':''}</p>
+  const gv=m=>Math.max(0,+m.gap||0);
+  const d=sheet(`<div class="shead">時間の目安を入れる<button class="btn ghost sm" data-x>閉じる</button></div>
+<p class="note" style="margin:0 0 6px">開始時刻とメニュー間の時間（給水・移動・説明など）から、${ms.length}本 の時間の目安を入れます。${ms.some(m=>m.from)?'<br>今入っている時間の目安は上書きされます。':''}</p>
 <label class="fl">開始時刻</label><input type="time" class="in" id="as_st" value="${st!=null?toHM2(st):''}">
-<label class="fl">メニュー間の切り替え（分）</label><input type="number" inputmode="numeric" min="0" class="in" id="as_gap" value="0">
+${ms.length>1?`<label class="fl">メニュー間の時間（分）</label>
+<div class="gapall"><input type="number" inputmode="numeric" min="0" class="in" id="as_all" placeholder="例：3"><button class="btn ghost sm" id="as_fill">全部に入れる</button></div>
+<div class="gaps">${ms.map((m,i)=>`<div class="gm"><span class="num gs" data-s="${i}"></span><b>${i+1}. ${esc(m.name||'（名前なし）')}</b><span class="num gn">${fmtN(mMin(m))}分</span></div>${i<ms.length-1?`<div class="gg"><span>↓ 間</span><input type="number" inputmode="numeric" min="0" class="in" data-gap="${i+1}" value="${gv(ms[i+1])}"><span>分</span></div>`:''}`).join('')}</div>`:''}
+<p class="note" id="as_end" style="margin:8px 0 0"></p>
 <div class="sfoot" style="justify-content:flex-end"><button class="btn" id="as_go">入れる</button></div>`);
+  const gaps=()=>ms.map((m,i)=>{if(!i)return 0;const el=d.querySelector(`[data-gap="${i}"]`);return el?Math.max(0,+el.value||0):0;});
+  const prev=()=>{let c=toM(d.querySelector('#as_st').value);const G=gaps();const e=d.querySelector('#as_end');
+    if(c==null){d.querySelectorAll('[data-s]').forEach(x=>x.textContent='');e.textContent='';return;}
+    ms.forEach((m,i)=>{c+=G[i];const x=d.querySelector(`[data-s="${i}"]`);if(x)x.textContent=toHM(c);c+=mMin(m);});
+    e.innerHTML=`終わり <b class="num">${toHM(c)}</b>（メニュー ${fmtN(sumMin(ms))}分＋間 ${fmtN(G.reduce((a,b)=>a+b,0))}分）`;};
   d.querySelector('[data-x]').onclick=closeSheet;
+  d.querySelectorAll('#as_st,[data-gap]').forEach(x=>x.oninput=prev);
+  const fl=d.querySelector('#as_fill');if(fl)fl.onclick=()=>{const v=d.querySelector('#as_all').value;if(v==='')return;d.querySelectorAll('[data-gap]').forEach(x=>x.value=Math.max(0,+v||0));prev();};
+  prev();
   d.querySelector('#as_go').onclick=()=>{let c=toM(d.querySelector('#as_st').value);if(c==null){toast('開始時刻を入れてください');return;}
-    const gap=Math.max(0,+d.querySelector('#as_gap').value||0);if(!t.start)t.start=toHM2(c);
-    ms.forEach((m,i)=>{const n=mMin(m);m.from=toHM2(c);m.to=toHM2(c+n);c+=n+(i<ms.length-1?gap:0);});
+    const G=gaps();if(!t.start)t.start=toHM2(c);
+    ms.forEach((m,i)=>{m.gap=G[i];c+=G[i];const n=mMin(m);m.from=toHM2(c);m.to=toHM2(c+n);c+=n;});
     CTX.saveTraining(t);closeSheet();toast('時間の目安を入れました');render();};}
 function readMenu(d,m){m.name=d.querySelector('#m_name').value.trim();const nv=id=>{const v=d.querySelector(id).value;return v===''?null:Math.max(0,+v);};m.play=nv('#m_play');m.rest=nv('#m_rest');m.sets=nv('#m_sets');if(m.sets!=null)m.sets=Math.max(1,Math.round(m.sets));m.min=nv('#m_min');if(m.min==null)m.min=m.play?calcTotal(m.play,m.rest,m.sets||1):0;m.players=d.querySelector('#m_players').value.trim();m.size=d.querySelector('#m_size').value.trim();m.aim=d.querySelector('#m_aim').value.trim();m.desc=d.querySelector('#m_desc').value;const n=d.querySelector('#m_note');if(n)m.note=n.value.trim();const fr=d.querySelector('#m_from');if(fr){m.from=fr.value||'';m.to=fr.value?(d.querySelector('#m_to').value||toHM2(toM(fr.value)+(+m.min||0))):'';}const g=d.querySelector('#m_grp .on');if(g)m.group=g.dataset.g;return m;}
 function editMenu(t,i){
