@@ -2,10 +2,12 @@
 const SDK='https://www.gstatic.com/firebasejs/10.12.2/';
 const { initializeApp } = await import(SDK+'firebase-app.js');
 const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } = await import(SDK+'firebase-auth.js');
-const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, where, runTransaction, serverTimestamp } = await import(SDK+'firebase-firestore.js');
+const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, where, runTransaction, serverTimestamp, arrayUnion, arrayRemove } = await import(SDK+'firebase-firestore.js');
 
 const firebaseConfig={apiKey:"AIzaSyAu4LiAEFy7-e1ILCMoN2U__XNDAJybad8",authDomain:"tmufc-app.firebaseapp.com",projectId:"tmufc-app",storageBucket:"tmufc-app.firebasestorage.app",messagingSenderId:"820014072624",appId:"1:820014072624:web:c23b0b8bae92c6a9333ef5"};
 const KEY_LOCAL='tmu-pos-data';
+// 通知：Firebaseの「プロジェクトの設定 → Cloud Messaging → ウェブプッシュ証明書」で作った鍵（公開してよい鍵）
+const VAPID_KEY='';
 const ADMIN_EMAILS=[];
 const TITLES=['総監督','監督','コーチ','トレーナー','マネージャー'];
 const FULL=['admin','staff','leader'],CONDS=['admin','staff','leader','medical'],NEEDPID=['player','leader'],NAMED=['admin','staff','medical'];
@@ -50,6 +52,8 @@ css.textContent=`.tg{position:fixed;inset:0;z-index:100;background:#0E1A33;color
 .tmod select{font:inherit;font-size:14px;padding:6px 8px;border-radius:8px;border:1px solid var(--line,#D5DDE7);background:var(--bg,#EEF2F7);color:inherit}
 .tmod .sv.del{background:transparent;color:#C93C34;border:1px solid #C93C34}
 .tmod .sv{border:0;background:#4366B0;color:#fff;border-radius:8px;padding:7px 14px;font:inherit;font-weight:700;cursor:pointer}
+.tmod .sv.ghost{background:transparent;color:#4366B0;border:1px solid #4366B0}
+.tmod .sv:disabled{opacity:.6}
 .tmod .tag{font-size:11px;border-radius:4px;padding:1px 7px;background:#EE6A61;color:#fff}
 .tmod .unreg{margin:12px 0 4px;border:1px solid var(--line,#D5DDE7);border-radius:10px;padding:10px 12px;font-size:14px}
 .tmod .unreg.ok{color:var(--sub,#5B6B7E)}
@@ -65,6 +69,12 @@ css.textContent=`.tg{position:fixed;inset:0;z-index:100;background:#0E1A33;color
 .tg .tabs{display:flex;gap:6px;margin:6px 0 4px}.tg .tabs button{flex:1;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;border-radius:10px;padding:9px;font:inherit;font-weight:700;cursor:pointer}.tg .tabs button.on{background:#fff;color:#13294B}
 .tg input,.tg select{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;margin-top:6px}.tg select option{color:#13294B}
 .tmod input.nm{font:inherit;font-size:14px;padding:6px 8px;border-radius:8px;border:1px solid var(--line,#D5DDE7);background:var(--bg,#EEF2F7);color:inherit;width:9em}
+.tmod .nt{margin-top:14px;padding-top:12px;border-top:1px solid var(--line,#D5DDE7)}
+.tmod .nt .ntt{display:block;margin-bottom:4px}
+.tmod .nt .gh{font-size:12px;color:var(--sub,#5B6B7E);margin:4px 0 8px;line-height:1.6}
+.tmod .nt .ntr{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin:8px 0}
+.tmod .nt .ntr input{margin-top:3px}
+.tmod .nt .sv{margin-top:6px}
 .tmod .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .tmod .btnrow button{border:1px solid var(--line,#D5DDE7);background:none;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer;color:inherit}
 .ttoast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#14202E;color:#fff;font-size:13px;padding:9px 16px;border-radius:8px;z-index:120;max-width:90%;text-align:center}`;
@@ -142,6 +152,7 @@ ${pendTab==='player'?playerPart:staffPart}
 // ---------- アカウントとメンバー管理 ----------
 let usersCache=[],usersUnsub=null;
 function addAcct(){
+  setTimeout(ntRefresh,3000);
   if(!FULL.includes(ME.role))document.querySelectorAll('.apptabs a[href^="./#"]').forEach(a=>a.remove());
   if(!CONDS.includes(ME.role))document.querySelectorAll('.apptabs a[href="training.html"]').forEach(a=>a.remove());
   try{const on=document.querySelector('.apptabs .on');if(on)on.scrollIntoView({inline:'center',block:'nearest'});}catch(e){}
@@ -153,13 +164,48 @@ function openAcct(){
   const m=document.createElement('div');m.className='tmod';m.innerHTML=`<div class="sh"><div class="hd">アカウント<button class="x" data-x>閉じる</button></div>
 <p style="margin:0">${esc(ME.name)}${ME.raw.title?`<small style="color:var(--sub)">（${esc(ME.raw.title)}）</small>`:''}<br><small style="color:var(--sub)">${esc(ME.email)}</small></p><p>権限：<b>${ROLE_LABEL[ME.role]||ME.role}</b></p>
 ${NAMED.includes(ME.role)?`<div class="r" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input class="nm" data-mynm value="${esc(ME.name)}" placeholder="名前"><select data-myti>${TITLES.map(t=>`<option ${ME.raw.title===t?'selected':''}>${t}</option>`).join('')}</select><button class="sv" data-mysv>名前を保存</button></div>`:''}
+${ntKinds().length?'<div class="nt" data-nt></div>':''}
 <div class="btnrow">${ME.role==='admin'?'<button data-users>メンバー管理</button>':''}<button data-tout>ログアウト</button></div></div>`;
   m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);
   m.querySelector('[data-x]').onclick=()=>m.remove();
   m.querySelector("[data-tout]").onclick=async()=>{if(confirmBox('ログアウトしますか？'))await signOut(auth);};
   const u=m.querySelector('[data-users]');if(u)u.onclick=()=>{m.remove();openUsers();};
+  const nt=m.querySelector('[data-nt]');if(nt)renderNotif(nt);
   const ms=m.querySelector('[data-mysv]');if(ms)ms.onclick=async()=>{const name=m.querySelector('[data-mynm]').value.trim();if(!name){toast('名前を入れてください');return;}try{await setDoc(doc(db,'users',ME.uid),{name,title:m.querySelector('[data-myti]').value},{merge:true});ME.name=name;toast('保存しました');m.remove();const b=document.querySelector('.tacct');if(b&&b.firstChild)b.firstChild.textContent=name.split(/[\s　]/)[0];}catch(e){toast('保存できませんでした');}};
 }
+// ---------- 通知 ----------
+const NT_LABEL={am:'朝のチェックのリマインド（毎朝9時・未入力のとき）',pain:'選手から痛みの報告が来たとき',abs:'今日の欠席・遅刻の連絡が入ったとき'};
+const ntKinds=()=>[...(NEEDPID.includes(ME.role)&&ME.pid?['am']:[]),...(CONDS.includes(ME.role)?['pain','abs']:[])];
+const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const standalone=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const NT_LOCAL='tmu-fcm-token';
+async function fcmToken(){
+  const reg=await navigator.serviceWorker.register('sw.js');await navigator.serviceWorker.ready;
+  const M=await import(SDK+'firebase-messaging.js');if(!(await M.isSupported()))throw new Error('unsupported');
+  return await M.getToken(M.getMessaging(app),{vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});}
+async function ntSave(token,extra){
+  await setDoc(doc(db,'tokens',ME.uid),{role:ME.role,pid:ME.pid||'',name:ME.name||'',updated:serverTimestamp(),...(token?{tokens:arrayUnion(token)}:{}),...(extra||{})},{merge:true});}
+async function renderNotif(box){
+  const head='<b class="ntt">通知</b>';
+  const ok='Notification' in window&&'serviceWorker' in navigator&&'PushManager' in window;
+  if(isIOS()&&!standalone()){box.innerHTML=head+'<p class="gh">iPhoneでは、ホーム画面に追加したアプリから開くと通知を受け取れます。Safariの共有ボタン →「ホーム画面に追加」で追加して、そこから開いてください。</p>';return;}
+  if(!ok){box.innerHTML=head+'<p class="gh">このブラウザは通知に対応していません。iPhoneはiOS 16.4以降が必要です。</p>';return;}
+  if(!VAPID_KEY){box.innerHTML=head+'<p class="gh">通知はまだ準備中です。</p>';return;}
+  let d={};try{const sn=await getDoc(doc(db,'tokens',ME.uid));d=sn.data()||{};}catch(e){}
+  const mine=localStorage.getItem(NT_LOCAL);const on=Notification.permission==='granted'&&mine&&(d.tokens||[]).includes(mine);
+  const pf=d.prefs||{};
+  if(!on){box.innerHTML=head+`${Notification.permission==='denied'?'<p class="gh">通知が「許可しない」になっています。端末の設定（iPhoneは 設定 → 通知 → TMU FC App）で許可してから、もう一度押してください。</p>':'<p class="gh">この端末で通知を受け取れるようにします。</p>'}<button class="sv" data-nton>この端末で通知を受け取る</button>`;
+    box.querySelector('[data-nton]').onclick=async e=>{const b=e.target;b.disabled=true;b.textContent='設定中…';
+      try{const per=await Notification.requestPermission();if(per!=='granted'){toast('通知が許可されませんでした');renderNotif(box);return;}
+        const t=await fcmToken();localStorage.setItem(NT_LOCAL,t);const prefs={};ntKinds().forEach(k=>{if(pf[k]===undefined)prefs[k]=true;});
+        await ntSave(t,Object.keys(prefs).length?{prefs:{...pf,...prefs}}:{});toast('通知を受け取れるようにしました');renderNotif(box);}
+      catch(err){console.error(err);toast('設定できませんでした（'+(err.code||err.message||'エラー')+'）');renderNotif(box);}};return;}
+  box.innerHTML=head+`<p class="gh">この端末で通知を受け取っています。受け取る通知を選べます。</p>${ntKinds().map(k=>`<label class="ntr"><input type="checkbox" data-ntk="${k}" ${pf[k]!==false?'checked':''}> ${NT_LABEL[k]}</label>`).join('')}<button class="sv ghost" data-ntoff>この端末の通知を止める</button>`;
+  box.querySelectorAll('[data-ntk]').forEach(c=>c.onchange=async()=>{try{await ntSave(null,{prefs:{...pf,[c.dataset.ntk]:c.checked}});pf[c.dataset.ntk]=c.checked;toast(c.checked?'オンにしました':'オフにしました');}catch(e){toast('保存できませんでした');}});
+  box.querySelector('[data-ntoff]').onclick=async()=>{try{await setDoc(doc(db,'tokens',ME.uid),{tokens:arrayRemove(mine)},{merge:true});try{const M=await import(SDK+'firebase-messaging.js');await M.deleteToken(M.getMessaging(app));}catch(e){}localStorage.removeItem(NT_LOCAL);toast('この端末の通知を止めました');renderNotif(box);}catch(e){toast('止められませんでした');}};}
+// 開くたびに通知の宛先を最新にしておく（宛先が変わることがあるため）
+async function ntRefresh(){try{if(!VAPID_KEY||!('Notification' in window)||Notification.permission!=='granted')return;const old=localStorage.getItem(NT_LOCAL);if(!old||!ntKinds().length)return;
+  const t=await fcmToken();if(t!==old){await setDoc(doc(db,'tokens',ME.uid),{tokens:arrayRemove(old)},{merge:true});localStorage.setItem(NT_LOCAL,t);}await ntSave(t);}catch(e){}}
 function confirmBox(t){return window.confirm?window.confirm(t):true;}
 let rosterCache=null;
 async function openUsers(){rosterCache=rosterCache||await getRoster();const m=document.createElement('div');m.className='tmod users';m.innerHTML='<div class="sh"></div>';m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);renderUsers();}
