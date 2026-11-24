@@ -174,7 +174,7 @@ ${ntKinds().length?'<div class="nt" data-nt></div>':''}
   const ms=m.querySelector('[data-mysv]');if(ms)ms.onclick=async()=>{const name=m.querySelector('[data-mynm]').value.trim();if(!name){toast('名前を入れてください');return;}try{await setDoc(doc(db,'users',ME.uid),{name,title:m.querySelector('[data-myti]').value},{merge:true});ME.name=name;toast('保存しました');m.remove();const b=document.querySelector('.tacct');if(b&&b.firstChild)b.firstChild.textContent=name.split(/[\s　]/)[0];}catch(e){toast('保存できませんでした');}};
 }
 // ---------- 通知 ----------
-const NT_LABEL={am:'朝のチェックのリマインド（未入力のとき：練習日は8時と練習2時間前、練習がない日は12時）',pain:'選手から痛みの報告が来たとき',abs:'今日の欠席・遅刻の連絡が入ったとき'};
+const NT_LABEL={am:'朝のチェックのリマインド（未入力のとき：練習・試合の日は2時間前、ない日は12時）',pain:'選手から痛みの報告が来たとき',abs:'今日の欠席・遅刻の連絡が入ったとき'};
 const ntKinds=()=>[...(NEEDPID.includes(ME.role)&&ME.pid?['am']:[]),...(CONDS.includes(ME.role)?['pain','abs']:[])];
 const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const standalone=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
