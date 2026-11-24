@@ -7,7 +7,7 @@ const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
 const firebaseConfig={apiKey:"AIzaSyAu4LiAEFy7-e1ILCMoN2U__XNDAJybad8",authDomain:"tmufc-app.firebaseapp.com",projectId:"tmufc-app",storageBucket:"tmufc-app.firebasestorage.app",messagingSenderId:"820014072624",appId:"1:820014072624:web:c23b0b8bae92c6a9333ef5"};
 const KEY_LOCAL='tmu-pos-data';
 // 通知：Firebaseの「プロジェクトの設定 → Cloud Messaging → ウェブプッシュ証明書」で作った鍵（公開してよい鍵）
-const VAPID_KEY='';
+const VAPID_KEY='BL89NrfnKievTaEjRF_p70pdsDSMsHPw12gBoSIiOSt96_cXYap6xF4ev3JLkglDFqD8jpod4FLD0TV4NmrrgnE';
 const ADMIN_EMAILS=[];
 const TITLES=['総監督','監督','コーチ','トレーナー','マネージャー'];
 const FULL=['admin','staff','leader'],CONDS=['admin','staff','leader','medical'],NEEDPID=['player','leader'],NAMED=['admin','staff','medical'];
