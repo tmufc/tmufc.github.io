@@ -2,7 +2,7 @@
 const SDK='https://www.gstatic.com/firebasejs/10.12.2/';
 const { initializeApp } = await import(SDK+'firebase-app.js');
 const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } = await import(SDK+'firebase-auth.js');
-const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, where, runTransaction, serverTimestamp, arrayUnion, arrayRemove } = await import(SDK+'firebase-firestore.js');
+const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot, collection, query, where, runTransaction, serverTimestamp, arrayUnion, arrayRemove, orderBy, limit, increment, updateDoc } = await import(SDK+'firebase-firestore.js');
 
 const firebaseConfig={apiKey:"AIzaSyAu4LiAEFy7-e1ILCMoN2U__XNDAJybad8",authDomain:"tmufc-app.firebaseapp.com",projectId:"tmufc-app",storageBucket:"tmufc-app.firebasestorage.app",messagingSenderId:"820014072624",appId:"1:820014072624:web:c23b0b8bae92c6a9333ef5"};
 const KEY_LOCAL='tmu-pos-data';
@@ -38,6 +38,9 @@ css.textContent=`.tg{position:fixed;inset:0;z-index:100;background:#0E1A33;color
 .tg .names button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;border-radius:10px;padding:10px;font:inherit;font-size:14px;text-align:left;cursor:pointer}
 .tg .names button.on{background:#4366B0;border-color:#4366B0}
 .tg .gh{font-size:12px;color:rgba(255,255,255,.6);margin:12px 0 0}
+.ptr{position:fixed;left:50%;top:-40px;transform:translate(-50%,0);z-index:90;background:#14202E;color:#fff;font-size:13px;padding:7px 14px;border-radius:999px;transition:transform .15s;pointer-events:none;white-space:nowrap}
+.ptr.go{background:#1F5FBF}
+.trf{font-size:15px!important;padding:2px 9px!important;line-height:1.2}
 .tacct{border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font:inherit;font-size:12px;border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap;margin-left:8px;vertical-align:middle;position:relative}
 .tacct i{font-style:normal;background:#EE6A61;color:#fff;border-radius:999px;font-size:10px;padding:0 5px;margin-left:4px}
 .tbanner{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:90;background:#13294B;color:#fff;border:1px solid #4366B0;border-radius:12px;padding:10px 12px;font-size:13px;display:flex;gap:10px;align-items:center;max-width:92%;font-family:inherit}
@@ -120,13 +123,18 @@ async function route(user){
   const r=ME.role;
   if(r==='disabled'){showGate(`<p>このアカウントは利用停止になっています。監督に確認してください。</p><p style="font-size:12px;opacity:.7">${esc(ME.email)}</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}
   if(r==='pending')return pendingScreen();
-  if((!FULL.includes(r)&&PAGE==='pos')||(!CONDS.includes(r)&&PAGE==='tr')){location.replace('condition.html');return;}
+  // アプリを開いたとき（ハッシュなしの index）はホームへ
+  if(PAGE==='pos'&&!location.hash){location.replace('home.html');return;}
+  if((!FULL.includes(r)&&PAGE==='pos')||(!CONDS.includes(r)&&PAGE==='tr')){location.replace('home.html');return;}
   if(NEEDPID.includes(r)&&!ME.pid){showGate(`<p>選手として承認されていますが、名簿の名前と結びついていません。監督に確認してください。</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}
   started=true;showGate('<p>データを読み込んでいます…</p>');
   try{
     if(PAGE==='pos'){await stateInit();hideGate();window.__APP_MAIN();addAcct();}
     else if(PAGE==='sch'){const roster=await getRoster();const ctx=await schInit(roster);hideGate();window.__SCH_MAIN(ctx);addAcct();}
     else if(PAGE==='tr'){const roster=await getRoster();const ctx=await trInit(roster);hideGate();window.__TR_MAIN(ctx);addAcct();}
+    else if(PAGE==='hm'){const roster=await getRoster();const ctx=await hmInit(roster);hideGate();window.__HM_MAIN(ctx);addAcct();}
+    else if(PAGE==='ch'){const ctx=await chInit();hideGate();window.__CH_MAIN(ctx);addAcct();}
+    else if(PAGE==='rv'){const roster=await getRoster();const ctx=await rvInit(roster);hideGate();window.__RV_MAIN(ctx);addAcct();}
     else{const roster=await getRoster();if(NEEDPID.includes(r)&&!roster.some(p=>p.id===ME.pid)){showGate(`<p>名簿にあなたの名前が見つかりません。監督に確認してください。</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}const ctx=await condInit(r,ME.pid,roster);hideGate();window.__COND_MAIN(ctx);addAcct();}
   }catch(e){console.error(e);showGate(`<p>データを読み込めませんでした（${esc(e.code||e.message)}）。</p><button class="tb" onclick="location.reload()">読み込み直す</button><button class="tb ghost" id="tg_out" style="margin-top:10px">ログアウト</button><p class="gh" style="margin-top:14px">直らないときは、この画面を監督に送ってください。</p>`);const o=gate.querySelector('#tg_out');if(o)o.onclick=()=>signOut(auth);}
 }
@@ -151,14 +159,27 @@ ${pendTab==='player'?playerPart:staffPart}
 
 // ---------- アカウントとメンバー管理 ----------
 let usersCache=[],usersUnsub=null;
+// ---------- 画面の更新 ----------
+function reloadPage(){if(document.querySelector('.modal,.tmod,#sheet')&&!confirm('入力中の内容は消えます。画面を更新しますか？'))return;
+  if(PAGE==='pos'&&(window.__TMU_SAVE_STATUS==='wait'||pushTimer)){toast('保存中です。少し待ってからもう一度押してください');return;}
+  try{toast('更新しています…');}catch(e){}setTimeout(()=>location.reload(),150);}
+// 画面のいちばん上で下に引っぱると更新（アプリとして開いたときにブラウザの更新がないため）
+function pullToRefresh(){if(window.__ptr)return;window.__ptr=true;
+  const ind=document.createElement('div');ind.className='ptr';ind.textContent='↓ 引っぱって更新';document.body.appendChild(ind);
+  let y0=null,dy=0;const TH=80;
+  addEventListener('touchstart',e=>{if(window.scrollY>0||e.touches.length!==1||document.querySelector('.modal,.tmod,#sheet')){y0=null;return;}y0=e.touches[0].clientY;dy=0;},{passive:true});
+  addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy<=0||window.scrollY>0){ind.style.transform='';return;}const d=Math.min(dy,TH*1.4);ind.style.transform=`translate(-50%,${d}px)`;ind.textContent=dy>TH?'↻ はなすと更新':'↓ 引っぱって更新';ind.classList.toggle('go',dy>TH);},{passive:true});
+  addEventListener('touchend',()=>{if(y0==null)return;const go=dy>TH;y0=null;ind.style.transform='';ind.classList.remove('go');if(go)reloadPage();},{passive:true});}
 function addAcct(){
   setTimeout(ntRefresh,3000);
   if(!FULL.includes(ME.role))document.querySelectorAll('.apptabs a[href^="./#"]').forEach(a=>a.remove());
   if(!CONDS.includes(ME.role))document.querySelectorAll('.apptabs a[href="training.html"]').forEach(a=>a.remove());
   try{const on=document.querySelector('.apptabs .on');if(on)on.scrollIntoView({inline:'center',block:'nearest'});}catch(e){}
   const host=PAGE==='pos'?document.querySelector('header p'):document.querySelector('header .hrow');if(!host||host.querySelector('.tacct'))return;
+  const rf=document.createElement('button');rf.className='tacct trf';rf.type='button';rf.setAttribute('aria-label','画面を更新');rf.title='画面を更新';rf.textContent='↻';rf.onclick=reloadPage;host.appendChild(rf);
+  pullToRefresh();
   const b=document.createElement('button');b.className='tacct';b.type='button';b.innerHTML=`${esc((ME.name||ME.email).split(/[\s　@]/)[0])}<span class="cnt"></span>`;b.onclick=openAcct;host.appendChild(b);
-  if(ME.role==='admin'){usersUnsub=onSnapshot(collection(db,'users'),s=>{usersCache=s.docs.map(d=>({uid:d.id,...d.data()}));const n=usersCache.filter(u=>u.role==='pending').length;b.querySelector('.cnt').innerHTML=n?`<i>${n}</i>`:'';if(document.querySelector('.tmod.users'))renderUsers();},()=>{});}
+  if(ME.role==='admin'){usersUnsub=onSnapshot(collection(db,'users'),s=>{usersCache=s.docs.map(d=>({uid:d.id,...d.data()}));pushDir();const n=usersCache.filter(u=>u.role==='pending').length;b.querySelector('.cnt').innerHTML=n?`<i>${n}</i>`:'';if(document.querySelector('.tmod.users'))renderUsers();},()=>{});}
 }
 function openAcct(){
   const m=document.createElement('div');m.className='tmod';m.innerHTML=`<div class="sh"><div class="hd">アカウント<button class="x" data-x>閉じる</button></div>
@@ -174,8 +195,8 @@ ${ntKinds().length?'<div class="nt" data-nt></div>':''}
   const ms=m.querySelector('[data-mysv]');if(ms)ms.onclick=async()=>{const name=m.querySelector('[data-mynm]').value.trim();if(!name){toast('名前を入れてください');return;}try{await setDoc(doc(db,'users',ME.uid),{name,title:m.querySelector('[data-myti]').value},{merge:true});ME.name=name;toast('保存しました');m.remove();const b=document.querySelector('.tacct');if(b&&b.firstChild)b.firstChild.textContent=name.split(/[\s　]/)[0];}catch(e){toast('保存できませんでした');}};
 }
 // ---------- 通知 ----------
-const NT_LABEL={am:'朝のチェックのリマインド（未入力のとき：練習・試合の日は2時間前、ない日は12時）',pain:'選手から痛みの報告が来たとき',abs:'今日の欠席・遅刻の連絡が入ったとき'};
-const ntKinds=()=>[...(NEEDPID.includes(ME.role)&&ME.pid?['am']:[]),...(CONDS.includes(ME.role)?['pain','abs']:[])];
+const NT_LABEL={dm:'メッセージが届いたとき',am:'朝のチェックのリマインド（未入力のとき：練習・試合の日は2時間前、ない日は12時）',pain:'選手から痛みの報告が来たとき',abs:'今日の欠席・遅刻の連絡が入ったとき'};
+const ntKinds=()=>['dm',...(NEEDPID.includes(ME.role)&&ME.pid?['am']:[]),...(CONDS.includes(ME.role)?['pain','abs']:[])];
 const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const standalone=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const NT_LOCAL='tmu-fcm-token';
@@ -255,7 +276,12 @@ const KEY='tmu-pos-data';
 let baseRev=0,baseJson=null,pushTimer=null,pushing=false,lastRoster='';
 const stateRef=()=>doc(db,'team','state');
 function rosterOf(st){return (st.players||[]).filter(p=>!p.out).map(p=>({id:p.id,name:p.name,grade:p.grade||0,team:p.team||'',p1:p.p1||''}));}
-async function pushRoster(st){const r=rosterOf(st);const j=JSON.stringify(r);if(j===lastRoster)return;try{await setDoc(doc(db,'team','roster'),{players:r,at:serverTimestamp()});lastRoster=j;}catch(e){}}
+// 試合 → 振り返り（試合ごとの見出しだけを、全員が読める場所に置く）
+async function pushGames(st){if(!FULL.includes(ME.role))return;let old={};try{old=JSON.parse(localStorage.getItem('tmu-rv-games')||'{}');}catch(e){}
+  const now={};(st.games||[]).forEach(g=>{if(!g||!g.id||!g.date)return;now[g.id]=JSON.stringify({date:g.date,opp:g.opp||'',type:g.type==='official'?'official':'practice'});});
+  for(const id of Object.keys(now)){if(old[id]===now[id])continue;try{await setDoc(doc(db,'reviews',id),{...JSON.parse(now[id]),upd:Date.now()},{merge:true});old[id]=now[id];}catch(e){console.error(e);return;}}
+  try{localStorage.setItem('tmu-rv-games',JSON.stringify(old));}catch(e){}}
+async function pushRoster(st){pushGames(st);const r=rosterOf(st);const j=JSON.stringify(r);if(j===lastRoster)return;try{await setDoc(doc(db,'team','roster'),{players:r,at:serverTimestamp()});lastRoster=j;}catch(e){}}
 function mergeById(base,mine,theirs){const b={},m={};(base||[]).forEach(x=>b[x.id]=JSON.stringify(x));(mine||[]).forEach(x=>m[x.id]=x);
   let out=(theirs||[]).filter(x=>!(x.id in b&&!(x.id in m)));
   (mine||[]).forEach(x=>{if(b[x.id]===JSON.stringify(x))return;const i=out.findIndex(y=>y.id===x.id);if(i>=0)out[i]=x;else out.push(x);});return out;}
@@ -396,6 +422,89 @@ async function schInit(roster){
     saveNotice:async(x,isNew)=>{const data={text:x.text,date:x.date||'',important:!!x.important,byName:isNew?(ME.name||''):(x.byName||ME.name||''),by:isNew?ME.uid:(x.by||ME.uid),at:isNew?Date.now():(x.at||Date.now()),editedBy:ME.uid};N[x.id]={...data,id:x.id};try{await setDoc(doc(db,'notices',x.id),data);}catch(e){console.error(e);toast('保存できませんでした（'+(e.code||'')+'）');}},
     deleteNotice:async id=>{delete N[id];try{await deleteDoc(doc(db,'notices',id));}catch(e){toast('削除できませんでした');}},
     onRemote:f=>{onRemote=f;}};
+}
+
+// ---------- ホーム ----------
+// 開いたときに今日の分だけを1回読む（ずっと見張らないので軽い）
+async function hmInit(roster){
+  const d0=new Date();const T=dstr(d0);const ym=T.slice(0,7);const isStaffR=CONDS.includes(ME.role);const pid=ME.pid||'';
+  const safe=async(f,dflt)=>{try{return await f();}catch(e){console.error(e);return dflt;}};
+  const docs=s=>s.docs.map(d=>({...d.data(),id:d.id}));
+  const [ev,day,nt,rv,rooms]=await Promise.all([
+    safe(async()=>docs(await getDocs(query(collection(db,'events'),where('date','==',T)))),[]),
+    safe(async()=>{const s=await getDoc(doc(db,'days',T));return s.exists()?s.data():null;},null),
+    safe(async()=>docs(await getDocs(query(collection(db,'notices'),orderBy('at','desc'),limit(6)))),[]),
+    safe(async()=>docs(await getDocs(query(collection(db,'reviews'),orderBy('date','desc'),limit(4)))),[]),
+    safe(async()=>docs(await getDocs(query(collection(db,'rooms'),where('members','array-contains',ME.uid)))),[])]);
+  const out={roster,me:ME,T,events:ev,day,notices:nt,reviews:rv,rooms,isStaff:isStaffR,isFull:FULL.includes(ME.role),isPlayer:NEEDPID.includes(ME.role)&&!!pid,
+    openUsers:ME.role==='admin'?()=>openUsers():null};
+  if(out.isPlayer){const me=roster.find(p=>p.id===pid);out.myName=me?me.name:(ME.name||'');
+    const [en,ab]=await Promise.all([safe(async()=>{const s=await getDoc(doc(db,'entries',pid+'_'+ym));return s.exists()?((s.data().d||{})[T]||{}):{};},{}),
+      safe(async()=>docs(await getDocs(query(collection(db,'absences'),where('pid','==',pid),where('date','==',T)))),[])]);
+    out.today=en;out.absence=ab[0]||null;}
+  else out.myName=ME.name||'';
+  if(isStaffR){const [rp,ens,tr]=await Promise.all([safe(async()=>docs(await getDocs(query(collection(db,'reports'),where('status','==','new')))),[]),
+      safe(async()=>docs(await getDocs(query(collection(db,'entries'),where('ym','==',ym)))),[]),
+      safe(async()=>docs(await getDocs(query(collection(db,'trainings'),where('date','==',T)))),[])]);
+    out.newReports=rp;const done=new Set(ens.filter(e=>((e.d||{})[T]||{}).am).map(e=>e.pid));out.amMissing=roster.filter(p=>!done.has(p.id));out.trainings=tr;}
+  if(ME.role==='admin')out.pending=await safe(async()=>(await getDocs(query(collection(db,'users'),where('role','==','pending')))).docs.length,0);
+  return out;
+}
+
+// ---------- メッセージ（1対1） ----------
+// メッセージの相手を選ぶための名簿（名前・学年・役割だけ）。監督の端末が、承認済みのメンバーから作る
+let lastDir='';
+async function pushDir(){try{rosterCache=rosterCache||await getRoster();}catch(e){}
+  const R=rosterCache||[];const list=usersCache.filter(u=>['admin','staff','leader','medical','player'].includes(u.role)).map(u=>{const p=u.pid?R.find(x=>x.id===u.pid):null;
+    return {uid:u.uid,name:p?p.name:(u.name||u.email||''),title:u.title||'',role:u.role,grade:p?p.grade||0:0,team:p?p.team||'':''};}).sort((a,b)=>a.uid.localeCompare(b.uid));
+  const j=JSON.stringify(list);if(j===lastDir)return;try{await setDoc(doc(db,'team','dir'),{list,at:Date.now()});lastDir=j;}catch(e){console.error(e);}}
+async function chInit(){
+  let dir=[];try{const s=await getDoc(doc(db,'team','dir'));dir=(s.data()||{}).list||[];}catch(e){console.error(e);}
+  const R={};let onRooms=null,unsubM=null;
+  await new Promise(res=>{let first=true;onSnapshot(query(collection(db,'rooms'),where('members','array-contains',ME.uid)),s=>{const seen=new Set();s.docs.forEach(d=>{seen.add(d.id);R[d.id]={...d.data(),id:d.id};});Object.keys(R).forEach(k=>{if(!seen.has(k))delete R[k];});
+    if(first){first=false;res();}else if(onRooms)onRooms();},e=>{console.error(e);if(first){first=false;res();}});});
+  const me=dir.find(x=>x.uid===ME.uid);const myName=me?me.name:(ME.name||'');
+  const ridOf=o=>[ME.uid,o].sort().join('_');
+  const msgs=rid=>collection(db,'rooms',rid,'msgs');
+  return {me:ME,dir:dir.filter(x=>x.uid!==ME.uid),rooms:R,myName,ridOf,
+    onRooms:f=>{onRooms=f;},
+    ensure:async o=>{const rid=ridOf(o.uid);const mem=[ME.uid,o.uid].sort();if(!R[rid])await setDoc(doc(db,'rooms',rid),{members:mem,names:{[ME.uid]:myName,[o.uid]:o.name},lastAt:0,read:{},block:[]},{merge:true});return rid;},
+    open:(rid,n,cb)=>{if(unsubM)unsubM();unsubM=onSnapshot(query(msgs(rid),orderBy('at','desc'),limit(n)),s=>cb(s.docs.map(d=>({...d.data(),id:d.id})).reverse(),s.docs.length>=n),e=>{console.error(e);cb(null,false);});},
+    close:()=>{if(unsubM){unsubM();unsubM=null;}},
+    send:async(rid,text)=>{const at=Date.now();await setDoc(doc(msgs(rid)),{by:ME.uid,text,at});await updateDoc(doc(db,'rooms',rid),{lastAt:at,lastBy:ME.uid,lastText:text.slice(0,60),['read.'+ME.uid]:at,['names.'+ME.uid]:myName});},
+    del:async(rid,id)=>{await deleteDoc(doc(db,'rooms',rid,'msgs',id));},
+    read:async rid=>{try{await updateDoc(doc(db,'rooms',rid),{['read.'+ME.uid]:Date.now()});}catch(e){}},
+    block:async(rid,on)=>{await updateDoc(doc(db,'rooms',rid),{block:on?arrayUnion(ME.uid):arrayRemove(ME.uid)});},
+    // グループ
+    createGroup:async(title,ps)=>{const rid='g'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);const at=Date.now();const names={[ME.uid]:myName};ps.forEach(p=>names[p.uid]=p.name);
+      await setDoc(doc(db,'rooms',rid),{type:'group',title,owner:ME.uid,members:[ME.uid,...ps.map(p=>p.uid)],names,lastAt:at,lastBy:ME.uid,lastText:'グループを作りました',read:{[ME.uid]:at}});return rid;},
+    addMembers:async(rid,ps)=>{const x={members:arrayUnion(...ps.map(p=>p.uid))};ps.forEach(p=>x['names.'+p.uid]=p.name);await updateDoc(doc(db,'rooms',rid),x);},
+    removeMember:async(rid,uid)=>{await updateDoc(doc(db,'rooms',rid),{members:arrayRemove(uid)});},
+    rename:async(rid,title)=>{await updateDoc(doc(db,'rooms',rid),{title});},
+    leave:async(rid)=>{const r=R[rid];const x={members:arrayRemove(ME.uid)};if(r&&r.owner===ME.uid){const nx=(r.members||[]).find(u=>u!==ME.uid);if(nx)x.owner=nx;}await updateDoc(doc(db,'rooms',rid),x);}};
+}
+
+// ---------- 振り返り ----------
+async function rvInit(roster){
+  const M={};let onMeta=null,unsubT=null;
+  // スタッフが開いたときは、試合の一覧を最新にしておく
+  if(FULL.includes(ME.role)){try{const s=await getDoc(stateRef());if(s.exists())await pushGames(JSON.parse(s.data().json||'{}'));}catch(e){console.error(e);}}
+  await new Promise(res=>{let first=true;onSnapshot(query(collection(db,'reviews'),orderBy('date','desc'),limit(60)),s=>{const seen=new Set();s.docs.forEach(d=>{seen.add(d.id);M[d.id]={...d.data(),id:d.id};});Object.keys(M).forEach(k=>{if(!seen.has(k))delete M[k];});
+    if(first){first=false;res();}else if(onMeta)onMeta();},e=>{console.error(e);if(first){first=false;res();}});});
+  const me=roster.find(p=>p.id===ME.pid);const title=(ME.raw&&ME.raw.title)||'';
+  const myName=me?me.name:(ME.name||'スタッフ')+(title?'（'+title+'）':'');
+  const posts=gid=>collection(db,'reviews',gid,'posts');
+  const bump=async(gid,n)=>{try{await updateDoc(doc(db,'reviews',gid),{...(n?{n:increment(n)}:{}),last:Date.now()});}catch(e){}};
+  return {roster,metas:M,me:ME,myName,myGrade:me?me.grade:0,myTeam:me?me.team:'',canMod:FULL.includes(ME.role),
+    onMeta:f=>{onMeta=f;},
+    open:(gid,n,cb)=>{if(unsubT)unsubT();unsubT=onSnapshot(query(posts(gid),orderBy('at','desc'),limit(n)),s=>cb(s.docs.map(d=>({...d.data(),id:d.id})),s.docs.length>=n),e=>{console.error(e);cb(null,false);});},
+    close:()=>{if(unsubT){unsubT();unsubT=null;}},
+    add:async(gid,x)=>{const ref=doc(posts(gid));await setDoc(ref,{...x,uid:ME.uid,name:myName,grade:me?me.grade:0,staff:!me,at:Date.now(),replies:[]});bump(gid,1);},
+    edit:async(gid,id,x)=>{await updateDoc(doc(db,'reviews',gid,'posts',id),{...x,edited:Date.now()});},
+    del:async(gid,id)=>{await deleteDoc(doc(db,'reviews',gid,'posts',id));bump(gid,-1);},
+    reply:async(gid,id,text)=>{await updateDoc(doc(db,'reviews',gid,'posts',id),{replies:arrayUnion({id:'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),uid:ME.uid,name:myName,staff:!me,text,at:Date.now()})});bump(gid,0);},
+    unreply:async(gid,id,r)=>{await updateDoc(doc(db,'reviews',gid,'posts',id),{replies:arrayRemove(r)});},
+    setMeta:async(gid,x)=>{await setDoc(doc(db,'reviews',gid),x,{merge:true});}};
 }
 
 window.TMU={statePush,toast,get me(){return ME;}};

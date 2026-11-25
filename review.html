@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#13294B"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="TMU FC App">
+<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-192.png"><link rel="manifest" href="manifest.webmanifest">
+<title>振り返り｜TMU FC App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF2F7;--surface:#FFFFFF;--ink:#14202E;--sub:#5B6B7E;--line:#D5DDE7;--navy:#13294B;--blue:#1F5FBF;--ok:#23885C;--warn:#B98510;--red:#C93C34;--chip:#E3EAF3;--sel:#DCE8FA;--ga:#1F5FBF;--gb:#23885C;--gr:#B98510;color-scheme:light;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D1520;--surface:#162130;--ink:#E5ECF4;--sub:#93A3B6;--line:#273548;--navy:#0B1A30;--blue:#6FA2EE;--ok:#45B985;--warn:#E0B13E;--red:#EE6A61;--chip:#203047;--sel:#1E3354;--ga:#6FA2EE;--gb:#45B985;--gr:#E0B13E;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0D1520;--surface:#162130;--ink:#E5ECF4;--sub:#93A3B6;--line:#273548;--navy:#0B1A30;--blue:#6FA2EE;--ok:#45B985;--warn:#E0B13E;--red:#EE6A61;--chip:#203047;--sel:#1E3354;--ga:#6FA2EE;--gb:#45B985;--gr:#E0B13E;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.55;padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.num{font-family:"Barlow Condensed","Zen Kaku Gothic New",system-ui,sans-serif;font-weight:700;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+header{background:var(--navy);color:#fff;padding:calc(12px + env(safe-area-inset-top,0px)) 0 12px}
+.hrow{display:flex;align-items:center;gap:8px}
+.hrow h1{margin:0;font-size:18px;flex:1}
+.apptabs{display:inline-flex;max-width:100%;overflow-x:auto;background:rgba(255,255,255,.1);border-radius:999px;padding:3px;margin-top:10px;scrollbar-width:none}
+.apptabs a,.apptabs span{color:rgba(255,255,255,.8);font-size:14px;padding:5px 11px;border-radius:999px;text-decoration:none;white-space:nowrap}
+.apptabs .on{background:#fff;color:var(--navy);font-weight:700}
+main{padding:14px 0 10px}
+h2{font-size:16px;margin:22px 0 8px;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+h2 small{font-size:12px;font-weight:400;color:var(--sub)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.pad{padding:14px}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.list li:last-child{border-bottom:0}
+.list .m{flex:1;min-width:0}
+.list .m small{display:block;font-size:12px;color:var(--sub)}
+.tap{cursor:pointer}.tap:hover{background:var(--sel)}
+.go{color:var(--sub);font-size:18px}
+.tag{font-size:11px;border-radius:4px;padding:1px 7px;white-space:nowrap;background:var(--chip);color:var(--sub)}
+.t-a{background:color-mix(in srgb,var(--ga) 15%,transparent);color:var(--ga)}
+.t-b{background:color-mix(in srgb,var(--gb) 15%,transparent);color:var(--gb)}
+.t-r{background:color-mix(in srgb,var(--gr) 18%,transparent);color:var(--gr)}
+.t-red{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
+.btn{border:1px solid var(--blue);background:var(--blue);color:#fff;font-weight:700;font-size:15px;padding:11px 18px;border-radius:10px}
+.btn.ghost{background:transparent;color:var(--blue)}
+.btn.sm{font-size:13px;padding:6px 12px;font-weight:400;border-radius:8px}
+.btn.block{width:100%}
+.btn.red{background:transparent;color:var(--red);border-color:var(--red)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.note{font-size:12px;color:var(--sub);margin:8px 2px 0}
+.empty{padding:18px;text-align:center;color:var(--sub);font-size:13px}
+.back{border:0;background:none;color:var(--blue);font-size:15px;padding:4px 0}
+.top{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.dhead{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:6px 0 4px}
+.dhead h2{margin:0;font-size:22px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--sub)}
+.meta b{color:var(--ink)}
+.in{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-size:16px}
+textarea.in{min-height:76px;resize:vertical}
+.fl{display:block;font-size:12px;color:var(--sub);margin:12px 0 4px}
+.fl:first-child{margin-top:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--bg)}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:999px;font-size:14px;color:var(--sub)}
+.seg button.on{background:var(--blue);color:#fff;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.stat small{display:block;font-size:11px;color:var(--sub)}
+.stat b{font-size:24px;line-height:1.1}
+.grp{padding:10px 14px;border-bottom:1px solid var(--line)}
+.grp:last-child{border-bottom:0}
+.grp h3{margin:0 0 6px;font-size:14px;display:flex;align-items:center;gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 11px;font-size:13px;display:inline-flex;align-items:center;gap:4px}
+.chip i{font-style:normal;font-size:10px;border-radius:3px;padding:0 4px;background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.menu{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;gap:10px}
+.menu:last-child{border-bottom:0}
+.menu .no{flex:0 0 26px;height:26px;border-radius:50%;background:var(--chip);display:flex;align-items:center;justify-content:center;font-size:14px}
+.menu .b{flex:1;min-width:0}
+.menu .t{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.menu .t b{font-size:16px}
+.menu .d{font-size:13px;color:var(--sub);margin-top:2px}
+.menu .x{white-space:pre-line;font-size:14px;margin-top:6px}
+.menu .ops{display:flex;flex-direction:column;gap:4px}
+.menu .ops button{border:1px solid var(--line);background:none;border-radius:6px;width:30px;height:26px;font-size:12px;color:var(--sub)}
+.refl{padding:10px 14px;border-bottom:1px solid var(--line)}
+.refl:last-child{border-bottom:0}
+.refl .w{font-size:13px;font-weight:700;display:flex;gap:8px;align-items:center}
+.refl p{margin:2px 0 0;font-size:14px;white-space:pre-line}
+.rv{white-space:pre-line;font-size:14px;margin:0}
+.rvh{font-size:12px;color:var(--sub);margin:10px 0 2px}.rvh:first-child{margin-top:0}
+.vid a{color:var(--blue);word-break:break-all}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(5,12,24,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:90vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.shead{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700;font-size:17px;margin-bottom:10px}
+.sfoot{display:flex;gap:8px;justify-content:space-between;margin-top:16px;flex-wrap:wrap}
+.lib li{cursor:pointer}
+.toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#14202E;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:80;max-width:86vw;text-align:center}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:60vh;overflow:auto}
+.pgrid button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 10px;text-align:left;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.pgrid button span.g{font-size:11px;border-radius:4px;padding:1px 6px}
+@media (min-width:700px){.pgrid{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:430px){.apptabs a,.apptabs span{font-size:12px;padding:5px 6px}}
+</style><style>
+.th{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.th .d{font-size:12px;color:var(--sub)}
+.th .t{font-size:16px;font-weight:700;margin:2px 0 6px}
+.th .m{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--sub)}
+.pill{display:inline-block;font-size:11px;font-weight:700;border-radius:5px;padding:1px 7px;background:var(--chip);color:var(--ink);white-space:nowrap}
+.p-new{background:var(--red);color:#fff}
+.p-veo{background:#1A1A1A;color:#fff}
+.p-A{background:var(--ga);color:#fff}.p-B{background:var(--gb);color:#fff}.p-AB{background:var(--sub);color:#fff}
+.k-good{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.k-bad{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.k-q{background:color-mix(in srgb,var(--blue) 15%,transparent);color:var(--blue)}
+.p-z{background:color-mix(in srgb,#7B5CC4 16%,transparent);color:#7B5CC4}
+.veob{display:block;text-align:center;border:1px solid var(--blue);color:var(--blue);background:var(--surface);border-radius:10px;padding:9px 12px;font-weight:700;font-size:14px;text-decoration:none;margin:10px 0 4px}
+.flt{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:8px;padding-bottom:2px}
+.flt button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:13px;color:var(--ink)}
+.flt button.on{border-color:var(--blue);color:var(--blue);font-weight:700;background:var(--sel)}
+.post{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-top:10px}
+.post .h{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.post .vt{font-size:12px;font-weight:700;color:var(--blue);text-decoration:none}
+.post .who{font-size:12px;color:var(--sub);margin-top:4px}
+.post .tx{white-space:pre-line;font-size:14px;margin:6px 0 4px;overflow-wrap:anywhere}
+.post .f{display:flex;gap:12px;justify-content:flex-end;font-size:13px}
+.post .f button{border:0;background:none;color:var(--blue);padding:2px 0;font-size:13px}
+.post .f button.rd{color:var(--red)}
+.rp{border-left:3px solid var(--line);margin:6px 0 2px 2px;padding:2px 0 2px 10px;font-size:13px}
+.rp b{font-size:12px}.rp .x{border:0;background:none;color:var(--sub);font-size:12px;margin-left:6px;padding:0}
+.rp p{margin:0;white-space:pre-line;overflow-wrap:anywhere}
+.fab{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:20;border:0;background:var(--blue);color:#fff;border-radius:999px;padding:12px 18px;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.opts{display:flex;gap:6px;flex-wrap:wrap}
+.opts button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:7px 12px;font-size:14px}
+.opts button.on{border-color:var(--blue);background:var(--sel);color:var(--blue);font-weight:700}
+.spbox{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}
+.pitch{border-radius:10px;overflow:hidden;border:2px solid #2E7D4F;background:#3D9B63;display:flex;flex-direction:column}
+.pitch button{border:0;border-bottom:2px dashed rgba(255,255,255,.55);background:transparent;color:#fff;font-weight:700;font-size:14px;padding:9px 0}
+.pitch button:last-child{border-bottom:0}
+.pitch button small{font-weight:400;font-size:11px;margin-left:6px;opacity:.9}
+.pitch button.on{background:rgba(31,95,191,.9);box-shadow:inset 0 0 0 3px #fff}
+.pitch .dir{font-size:11px;color:#fff;text-align:right;padding:3px 8px 0;opacity:.9}
+.more{display:block;margin:12px auto 0}
+.hd2{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-top:4px}
+.hd2 h2{margin:2px 0 0;font-size:20px}
+.rvcnt{font-size:12px;color:var(--sub);margin-top:8px}
+</style></head><body data-page="rv">
+<header><div class="wrap"><div class="hrow"><h1>TMU FC App</h1></div>
+<nav class="apptabs" aria-label="アプリの切り替え"><a href="home.html">ホーム</a><a href="schedule.html">スケジュール</a><a href="./#pos">ポジション</a><a href="./#game">メンバー選考</a><a href="training.html">トレーニング</a><a href="condition.html">コンディション</a><span class="on" aria-current="page">振り返り</span><a href="chat.html">メッセージ</a></nav></div></header>
+<main class="wrap" id="main"><p class="empty">読み込んでいます…</p></main>
+<script>
+window.__RV_MAIN=(function(CTX){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ds=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const pd=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c);};
+const W='日月火水木金土';
+const fmt=s=>{const d=pd(s);return `${d.getMonth()+1}/${d.getDate()}（${W[d.getDay()]}）`;};
+const T=ds(new Date());
+const PAGE=30;
+const KIND={good:'良かった',bad:'改善したい',q:'質問'};
+const KCLS={good:'k-good',bad:'k-bad',q:'k-q'};
+const PH={hold:'保持',def:'非保持',pt:'ポジティブトランジション',nt:'ネガティブトランジション',sp:'セットプレー'};
+const PHS={hold:'保持',def:'非保持',pt:'ポジトラ',nt:'ネガトラ',sp:'セット'};
+const SPK=['FK','CK','ゴールキック','スローイン'];
+const TEAM={A:'A',B:'B',AB:'両方'};
+const ZN={3:['ゾーン3','敵陣'],2:['ゾーン2','中盤'],1:['ゾーン1','自陣']};
+const okUrl=u=>/^https:\/\/[^\s"'<>]+$/.test(u||'');
+let gid=null,posts=[],hasMore=false,lim=PAGE,F={team:'',kind:'',ph:'',zone:''};
+function toast(t){const o=document.createElement('div');o.className='toast';o.textContent=t;document.body.appendChild(o);setTimeout(()=>o.remove(),2200);}
+function ask(msg){return new Promise(res=>{const d=document.createElement('div');d.className='modal';d.innerHTML=`<div class="sheet"><p style="white-space:pre-line;margin:4px 0 0"></p><div class="sfoot" style="justify-content:flex-end"><button class="btn ghost" data-no>やめる</button><button class="btn" data-yes>はい</button></div></div>`;d.querySelector('p').textContent=msg;document.body.appendChild(d);d.querySelector('[data-no]').onclick=()=>{d.remove();res(false);};d.querySelector('[data-yes]').onclick=()=>{d.remove();res(true);};});}
+function sheet(html){closeSheet();const d=document.createElement('div');d.className='modal';d.id='sheet';d.innerHTML=`<div class="sheet">${html}</div>`;d.onclick=e=>{if(e.target===d)closeSheet();};document.body.appendChild(d);return d;}
+function closeSheet(){const d=$('#sheet');if(d)d.remove();}
+const seenKey='tmu-rv-seen';
+const seen=()=>{try{return JSON.parse(localStorage.getItem(seenKey)||'{}');}catch(e){return {};}};
+const markSeen=(id,t)=>{try{const s=seen();s[id]=t||Date.now();localStorage.setItem(seenKey,JSON.stringify(s));}catch(e){}};
+const typeTxt=m=>m.type==='official'?'公式戦':'練習試合';
+const games=()=>Object.values(CTX.metas).filter(m=>m.date&&m.date<=T).sort((a,b)=>b.date.localeCompare(a.date));
+function scoreHtml(m){const s=m.score||{};return ['A','B'].filter(k=>s[k]).map(k=>`<span class="pill p-${k}">${k} ${esc(s[k])}</span>`).join('');}
+
+// ---------- 一覧 ----------
+function listView(){
+  const L=games();const sn=seen();
+  $('#main').innerHTML=`<h2 style="margin-top:6px">試合の振り返り</h2>
+${L.length?L.map(m=>`<button class="th" data-g="${esc(m.id)}"><div class="d">${fmt(m.date)}　${typeTxt(m)}</div><div class="t">${esc(m.opp||'（相手未入力）')}</div><div class="m">${scoreHtml(m)}${m.last&&(sn[m.id]||0)<m.last&&m.n?'<span class="pill p-new">新着</span>':''}<span>投稿 ${m.n||0}</span>${m.veo?'<span class="pill p-veo">Veo</span>':''}</div></button>`).join(''):'<div class="card empty">まだ試合がありません。<br>メンバー選考で試合を登録すると、ここに振り返りができます。</div>'}
+<p class="note">試合を登録すると、試合の日から振り返りを書けます。投稿は名前付きで、チーム全員とスタッフが見られます。</p>`;
+  document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{location.hash=b.dataset.g;});
+  window.scrollTo(0,0);
+}
+
+// ---------- 試合の中 ----------
+function openGame(id){
+  gid=id;lim=PAGE;posts=[];hasMore=false;F={team:'',kind:'',ph:'',zone:''};
+  const m=CTX.metas[id];if(!m){location.hash='';return;}
+  threadView(true);
+  CTX.open(id,lim,onPosts);
+}
+function onPosts(list,more){if(list===null){toast('読み込めませんでした');return;}posts=list;hasMore=more;const m=CTX.metas[gid];if(m)markSeen(gid,Math.max(Date.now(),m.last||0));if(!$('#sheet'))threadView(false);}
+function chips(key,arr){return `<div class="flt">${arr.map(([v,l])=>`<button data-f="${key}" data-v="${v}" class="${F[key]===v?'on':''}">${l}</button>`).join('')}</div>`;}
+function vtHtml(p,m){if(!p.vt)return '';const url=okUrl(p.vlink)?p.vlink:(okUrl(m.veo)?m.veo:'');return url?`<a class="vt" href="${esc(url)}" target="_blank" rel="noopener">▶ Veo ${esc(p.vt)}</a>`:`<span class="vt">Veo ${esc(p.vt)}</span>`;}
+function postHtml(p,m){
+  const mine=p.uid===CTX.me.uid;
+  const ph=p.ph==='sp'?`<span class="pill">${esc(p.spk||'セット')}${p.side?'（'+esc(p.side)+'）':''}</span>`:`<span class="pill">${esc(PHS[p.ph]||'')}</span>`;
+  return `<div class="post"><div class="h"><span class="pill ${KCLS[p.kind]||''}">${esc(KIND[p.kind]||'')}</span>${p.team?`<span class="pill p-${esc(p.team)}">${esc(TEAM[p.team]||p.team)}</span>`:''}${ph}${p.zone?`<span class="pill p-z">ゾーン${esc(p.zone)}</span>`:''}${vtHtml(p,m)}</div>
+<div class="who">${esc(p.name)}${p.grade?`（${p.grade}年）`:''}${p.edited?'・編集済み':''}</div>
+<p class="tx">${esc(p.text)}</p>
+${(p.replies||[]).slice().sort((a,b)=>a.at-b.at).map(r=>`<div class="rp"><b>${esc(r.name)}</b>${r.uid===CTX.me.uid||CTX.canMod?`<button class="x" data-unr="${esc(p.id)}" data-r="${esc(r.id)}">削除</button>`:''}<p>${esc(r.text)}</p></div>`).join('')}
+<div class="f">${mine?`<button data-ed="${esc(p.id)}">直す</button>`:''}${mine||CTX.canMod?`<button class="rd" data-del="${esc(p.id)}">消す</button>`:''}<button data-rep="${esc(p.id)}">返信する${(p.replies||[]).length?`（${p.replies.length}）`:''}</button></div></div>`;}
+function threadView(top){
+  const m=CTX.metas[gid];if(!m)return;
+  const L=posts.filter(p=>(!F.team||p.team===F.team||p.team==='AB')&&(!F.kind||p.kind===F.kind)&&(!F.ph||p.ph===F.ph)&&(!F.zone||String(p.zone)===F.zone));
+  $('#main').innerHTML=`<button class="back" id="bk">‹ 試合の一覧</button>
+<div class="hd2"><div><div style="font-size:12px;color:var(--sub)">${fmt(m.date)}　${typeTxt(m)}</div><h2>${esc(m.opp||'（相手未入力）')}</h2><div style="margin-top:4px;display:flex;gap:6px">${scoreHtml(m)}</div></div>${CTX.canMod?'<button class="btn ghost sm" id="setm">Veo・結果</button>':''}</div>
+${okUrl(m.veo)?`<a class="veob" href="${esc(m.veo)}" target="_blank" rel="noopener">▶ Veoで試合の映像を開く</a>`:''}
+${chips('team',[['','すべて'],['A','A'],['B','B']])}
+${chips('kind',[['','全種類'],['good','良かった'],['bad','改善したい'],['q','質問']])}
+${chips('ph',[['','全局面'],...Object.keys(PHS).map(k=>[k,PHS[k]])])}
+${chips('zone',[['','全ゾーン'],['1','ゾーン1'],['2','ゾーン2'],['3','ゾーン3']])}
+<div class="rvcnt">${posts.length?`${L.length}件${L.length!==posts.length?`（全${posts.length}件中）`:''}`:''}</div>
+${L.length?L.map(p=>postHtml(p,m)).join(''):`<div class="card empty" style="margin-top:10px">${posts.length?'条件に合う投稿はありません':'まだ投稿がありません。<br>気づいたことを最初に書いてみましょう。'}</div>`}
+${hasMore?'<button class="btn ghost sm more" id="more">前の投稿をもっと見る</button>':''}
+<div style="height:70px"></div>`;
+  if(!$('.fab')){const f=document.createElement('button');f.className='fab';f.textContent='＋ 振り返りを書く';document.body.appendChild(f);}
+  $('.fab').onclick=()=>editPost(null);
+  $('#bk').onclick=()=>{location.hash='';};
+  const sm=$('#setm');if(sm)sm.onclick=()=>editMeta(m);
+  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{F[b.dataset.f]=b.dataset.v;const y=window.scrollY;threadView(false);window.scrollTo(0,y);});
+  const mo=$('#more');if(mo)mo.onclick=()=>{lim+=PAGE;CTX.open(gid,lim,onPosts);};
+  document.querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>editPost(posts.find(p=>p.id===b.dataset.ed)));
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(!await ask('この投稿を消しますか？（返信も一緒に消えます）'))return;try{await CTX.del(gid,b.dataset.del);toast('消しました');}catch(e){toast('消せませんでした');}});
+  document.querySelectorAll('[data-rep]').forEach(b=>b.onclick=()=>replyTo(posts.find(p=>p.id===b.dataset.rep)));
+  document.querySelectorAll('[data-unr]').forEach(b=>b.onclick=async()=>{const p=posts.find(x=>x.id===b.dataset.unr);const r=p&&(p.replies||[]).find(x=>x.id===b.dataset.r);if(!r||!await ask('この返信を削除しますか？'))return;try{await CTX.unreply(gid,p.id,r);}catch(e){toast('削除できませんでした');}});
+  if(top)window.scrollTo(0,0);
+}
+
+// ---------- 投稿 ----------
+function opts(key,arr,cur){return `<div class="opts" data-o="${key}">${arr.map(([v,l])=>`<button type="button" data-v="${v}" class="${String(cur)===String(v)?'on':''}">${l}</button>`).join('')}</div>`;}
+function editPost(p){
+  const x=p?{...p}:{team:CTX.myTeam||'',kind:'',ph:'',spk:'',side:'',zone:'',vt:'',vlink:'',text:''};
+  const d=sheet(`<div class="shead">${p?'振り返りを直す':'振り返りを書く'}<button class="btn ghost sm" data-x>閉じる</button></div>
+<label class="fl">チーム</label>${opts('team',[['A','A'],['B','B'],['AB','両方']],x.team)}
+<label class="fl">種類</label>${opts('kind',[['good','良かった'],['bad','改善したい'],['q','質問']],x.kind)}
+<label class="fl">局面</label>${opts('ph',[['hold','保持'],['def','非保持'],['pt','ポジトラ'],['nt','ネガトラ'],['sp','セットプレー']],x.ph)}
+<div class="spbox" id="spb" style="${x.ph==='sp'?'':'display:none'}"><label class="fl" style="margin-top:0">セットプレーの種類</label>${opts('spk',SPK.map(k=>[k,k]),x.spk)}<label class="fl">攻撃・守備</label>${opts('side',[['攻撃','攻撃'],['守備','守備']],x.side)}</div>
+<label class="fl">ゾーン（プレーが起きた場所）</label><div class="pitch" data-o="zone"><div class="dir">攻撃方向 ↑</div>${[3,2,1].map(z=>`<button type="button" data-v="${z}" class="${String(x.zone)===String(z)?'on':''}">${ZN[z][0]}<small>${ZN[z][1]}</small></button>`).join('')}</div>
+<label class="fl">Veoの時間（あれば）</label><div class="row2"><input class="in" id="e_vt" inputmode="numeric" placeholder="例：31:05" value="${esc(x.vt)}" maxlength="8"><input class="in" id="e_vl" type="url" placeholder="Veoのリンク（任意）" value="${esc(x.vlink)}"></div>
+<p class="note">Veoの画面に出ている再生時間を入れます。時間付きのリンクを作れる人は、貼るとその場面から再生できます。</p>
+<label class="fl">内容</label><textarea class="in" id="e_tx" maxlength="1000" style="min-height:110px" placeholder="例：失った直後、近くの3人が寄せきれずに一気に運ばれた。即時奪回の距離が遠かった。">${esc(x.text)}</textarea>
+<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="e_ok">${p?'保存':'投稿する'}</button></div>`);
+  d.querySelector('[data-x]').onclick=closeSheet;
+  d.querySelectorAll('[data-o]').forEach(g=>g.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const k=g.dataset.o;const on=b.classList.contains('on');g.querySelectorAll('[data-v]').forEach(y=>y.classList.remove('on'));
+    if(k==='zone'&&on){x.zone='';return;}b.classList.add('on');x[k]=b.dataset.v;if(k==='ph')d.querySelector('#spb').style.display=x.ph==='sp'?'':'none';}));
+  d.querySelector('#e_ok').onclick=async()=>{
+    x.text=d.querySelector('#e_tx').value.trim();x.vt=d.querySelector('#e_vt').value.trim();x.vlink=d.querySelector('#e_vl').value.trim();
+    if(!x.team)return toast('チームを選んでください');if(!x.kind)return toast('種類を選んでください');if(!x.ph)return toast('局面を選んでください');
+    if(x.ph==='sp'&&!x.spk)return toast('セットプレーの種類を選んでください');if(!x.text)return toast('内容を入れてください');
+    if(x.vt&&!/^\d{1,3}:\d{2}(:\d{2})?$/.test(x.vt))return toast('Veoの時間は「31:05」の形で入れてください');
+    if(x.vlink&&!okUrl(x.vlink))return toast('リンクは https:// から始まるものを貼ってください');
+    const data={team:x.team,kind:x.kind,ph:x.ph,spk:x.ph==='sp'?x.spk:'',side:x.ph==='sp'?(x.side||''):'',zone:x.zone?Number(x.zone):0,vt:x.vt,vlink:x.vlink,text:x.text};
+    const b=d.querySelector('#e_ok');b.disabled=true;
+    try{if(p)await CTX.edit(gid,p.id,data);else await CTX.add(gid,data);closeSheet();toast(p?'保存しました':'投稿しました');if(!p)window.scrollTo(0,0);threadView(false);}
+    catch(e){console.error(e);b.disabled=false;toast('送れませんでした。通信状況を確認してください');}};
+}
+function replyTo(p){if(!p)return;
+  const d=sheet(`<div class="shead">返信する<button class="btn ghost sm" data-x>閉じる</button></div>
+<div class="rp" style="margin-bottom:10px"><b>${esc(p.name)}</b><p>${esc(p.text.length>120?p.text.slice(0,120)+'…':p.text)}</p></div>
+<textarea class="in" id="r_tx" maxlength="500" style="min-height:90px" placeholder="例：中から見ると逆サイドが空いていた。次は声をかける"></textarea>
+<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="r_ok">返信する</button></div>`);
+  d.querySelector('[data-x]').onclick=closeSheet;
+  d.querySelector('#r_ok').onclick=async()=>{const t=d.querySelector('#r_tx').value.trim();if(!t)return toast('内容を入れてください');const b=d.querySelector('#r_ok');b.disabled=true;
+    try{await CTX.reply(gid,p.id,t);closeSheet();toast('返信しました');threadView(false);}catch(e){console.error(e);b.disabled=false;toast('送れませんでした');}};
+}
+function editMeta(m){
+  const s=m.score||{};
+  const d=sheet(`<div class="shead">Veo・結果<button class="btn ghost sm" data-x>閉じる</button></div>
+<label class="fl">Veoの試合映像のリンク</label><input class="in" id="m_veo" type="url" placeholder="https://app.veo.co/…" value="${esc(m.veo||'')}">
+<p class="note">Veoで映像の公開設定を確認してから、共有リンクを貼ってください。振り返りの上に「Veoで試合の映像を開く」が出ます。</p>
+<label class="fl">結果（任意）</label><div class="row2"><input class="in" id="m_a" placeholder="A　例：2-1" value="${esc(s.A||'')}" maxlength="10"><input class="in" id="m_b" placeholder="B　例：0-0" value="${esc(s.B||'')}" maxlength="10"></div>
+<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="m_ok">保存</button></div>`);
+  d.querySelector('[data-x]').onclick=closeSheet;
+  d.querySelector('#m_ok').onclick=async()=>{const v=d.querySelector('#m_veo').value.trim();if(v&&!okUrl(v))return toast('リンクは https:// から始まるものを貼ってください');
+    try{await CTX.setMeta(gid,{veo:v,score:{A:d.querySelector('#m_a').value.trim(),B:d.querySelector('#m_b').value.trim()}});closeSheet();toast('保存しました');}catch(e){console.error(e);toast('保存できませんでした');}};
+}
+
+// ---------- 画面の切り替え ----------
+function route(){const id=decodeURIComponent(location.hash.slice(1));const f=$('.fab');
+  if(id&&CTX.metas[id]){openGame(id);}else{gid=null;CTX.close();if(f)f.remove();listView();}}
+window.addEventListener('hashchange',()=>{closeSheet();route();});
+CTX.onMeta(()=>{if($('#sheet')||$('.modal'))return;const y=window.scrollY;if(gid)threadView(false);else listView();window.scrollTo(0,y);});
+route();
+});
+</script>
+<script type="module" src="fb.js"></script>
+</body></html>

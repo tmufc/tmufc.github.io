@@ -353,7 +353,7 @@ function stats(){
 function shell(){
   $('#root').innerHTML=`
 <header><div class="wrap" style="position:relative"><button class="helpbtn" id="helpbtn" aria-label="使い方">？ 使い方</button><h1>TMU FC App</h1><p>東京都立大学サッカー部</p>
-<div class="sys" role="tablist"><a class="systab" href="schedule.html">スケジュール</a>${[['pos','ポジション'],['game','メンバー選考']].map(([k,l])=>`<button role="tab" data-tab="${k}">${l}</button>`).join('')}<a class="systab" href="training.html">トレーニング</a><a class="systab" href="condition.html">コンディション</a></div></div></header>
+<div class="sys" role="tablist"><a class="systab" href="home.html">ホーム</a><a class="systab" href="schedule.html">スケジュール</a>${[['pos','ポジション'],['game','メンバー選考']].map(([k,l])=>`<button role="tab" data-tab="${k}">${l}</button>`).join('')}<a class="systab" href="training.html">トレーニング</a><a class="systab" href="condition.html">コンディション</a><a class="systab" href="review.html">振り返り</a><a class="systab" href="chat.html">メッセージ</a></div></div></header>
 <div class="wrap" id="posview">
 <div class="scope"><span>システム</span><div class="seg">${['3421','3412'].map(k=>`<button class="num" data-sys="${k}">${SYS[k].label}</button>`).join('')}</div></div>
 <div class="scope"><span>集計対象</span><div class="seg" id="scope">${[['all','全体'],['A','Aチーム'],['B','Bチーム']].map(([k,l])=>`<button data-scope="${k}">${l}</button>`).join('')}</div></div>

@@ -192,7 +192,7 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--sel)}
 .past button{font:inherit;font-size:13px;border:1px solid var(--blue);color:var(--blue);background:transparent;border-radius:999px;padding:4px 12px;margin:0 6px 6px 0;cursor:pointer}
 </style></head><body data-page="cond">
 <header><div class="wrap"><div class="hrow"><h1>TMU FC App</h1></div>
-<nav class="apptabs" aria-label="アプリの切り替え"><a href="schedule.html">スケジュール</a><a href="./#pos">ポジション</a><a href="./#game">メンバー選考</a><a href="training.html">トレーニング</a><span class="on" aria-current="page">コンディション</span></nav>
+<nav class="apptabs" aria-label="アプリの切り替え"><a href="home.html">ホーム</a><a href="schedule.html">スケジュール</a><a href="./#pos">ポジション</a><a href="./#game">メンバー選考</a><a href="training.html">トレーニング</a><span class="on" aria-current="page">コンディション</span><a href="review.html">振り返り</a><a href="chat.html">メッセージ</a></nav>
 <div class="role" role="tablist" aria-label="表示の切り替え"><button data-role="player" role="tab">自分の入力</button><button data-role="staff" role="tab">チームの管理</button></div><div id="who"></div></div></header>
 <main class="wrap" id="main"></main>
 <nav class="nav" id="nav" aria-label="メニュー"><div class="wrap" id="navin"></div></nav>
@@ -599,7 +599,11 @@ ${[0,1,2,3].map(k=>`<h2>${STG[k]}<small>${STGD[k]}</small></h2><div class="card 
 <h2>通院・再評価など</h2><div class="card pad"><div id="evs" style="display:flex;flex-direction:column;gap:8px">${evHtml()}</div><button class="btn ghost sm" id="ev_add" style="margin-top:10px">＋予定を追加</button></div>
 <div class="submit"><p class="err" id="ie_err"></p><button class="btn block" id="ie_ok">保存する</button></div>`;}
 CTX.onRemote(()=>{const top=stack[stack.length-1];if(top===formView||document.querySelector('.modal')||document.querySelector('#nj_ok,#rp_ok'))return;const y=window.scrollY;render();window.scrollTo(0,y);});
+// ホームから開いたとき：#am #pm #abs #pain は選手の入力画面、#today #list #inj はスタッフの画面
+const HJ=location.hash.slice(1);
+if(HJ){try{history.replaceState(null,'',location.pathname);}catch(e){}if(CTX.role==='leader'&&['am','pm','abs','pain'].includes(HJ)){UI.role='player';UI.tab='home';}if(UI.role!=='player'&&['today','list','inj'].includes(HJ))UI.stab=HJ;}
 render();
+if(HJ&&UI.role==='player'&&byId(UI.me)&&['am','pm','abs','pain'].includes(HJ))openForm(HJ);
 });
 </script>
 <script type="module" src="fb.js"></script>

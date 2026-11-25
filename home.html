@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#13294B"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="TMU FC App">
+<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-192.png"><link rel="manifest" href="manifest.webmanifest">
+<title>ホーム｜TMU FC App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF2F7;--surface:#FFFFFF;--ink:#14202E;--sub:#5B6B7E;--line:#D5DDE7;--navy:#13294B;--blue:#1F5FBF;--ok:#23885C;--warn:#B98510;--red:#C93C34;--chip:#E3EAF3;--sel:#DCE8FA;--ga:#1F5FBF;--gb:#23885C;--gr:#B98510;color-scheme:light;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D1520;--surface:#162130;--ink:#E5ECF4;--sub:#93A3B6;--line:#273548;--navy:#0B1A30;--blue:#6FA2EE;--ok:#45B985;--warn:#E0B13E;--red:#EE6A61;--chip:#203047;--sel:#1E3354;--ga:#6FA2EE;--gb:#45B985;--gr:#E0B13E;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0D1520;--surface:#162130;--ink:#E5ECF4;--sub:#93A3B6;--line:#273548;--navy:#0B1A30;--blue:#6FA2EE;--ok:#45B985;--warn:#E0B13E;--red:#EE6A61;--chip:#203047;--sel:#1E3354;--ga:#6FA2EE;--gb:#45B985;--gr:#E0B13E;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.55;padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.num{font-family:"Barlow Condensed","Zen Kaku Gothic New",system-ui,sans-serif;font-weight:700;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+header{background:var(--navy);color:#fff;padding:calc(12px + env(safe-area-inset-top,0px)) 0 12px}
+.hrow{display:flex;align-items:center;gap:8px}
+.hrow h1{margin:0;font-size:18px;flex:1}
+.apptabs{display:inline-flex;max-width:100%;overflow-x:auto;background:rgba(255,255,255,.1);border-radius:999px;padding:3px;margin-top:10px;scrollbar-width:none}
+.apptabs a,.apptabs span{color:rgba(255,255,255,.8);font-size:14px;padding:5px 11px;border-radius:999px;text-decoration:none;white-space:nowrap}
+.apptabs .on{background:#fff;color:var(--navy);font-weight:700}
+main{padding:14px 0 10px}
+h2{font-size:16px;margin:22px 0 8px;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+h2 small{font-size:12px;font-weight:400;color:var(--sub)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.pad{padding:14px}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.list li:last-child{border-bottom:0}
+.list .m{flex:1;min-width:0}
+.list .m small{display:block;font-size:12px;color:var(--sub)}
+.tap{cursor:pointer}.tap:hover{background:var(--sel)}
+.go{color:var(--sub);font-size:18px}
+.tag{font-size:11px;border-radius:4px;padding:1px 7px;white-space:nowrap;background:var(--chip);color:var(--sub)}
+.t-a{background:color-mix(in srgb,var(--ga) 15%,transparent);color:var(--ga)}
+.t-b{background:color-mix(in srgb,var(--gb) 15%,transparent);color:var(--gb)}
+.t-r{background:color-mix(in srgb,var(--gr) 18%,transparent);color:var(--gr)}
+.t-red{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
+.btn{border:1px solid var(--blue);background:var(--blue);color:#fff;font-weight:700;font-size:15px;padding:11px 18px;border-radius:10px}
+.btn.ghost{background:transparent;color:var(--blue)}
+.btn.sm{font-size:13px;padding:6px 12px;font-weight:400;border-radius:8px}
+.btn.block{width:100%}
+.btn.red{background:transparent;color:var(--red);border-color:var(--red)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.note{font-size:12px;color:var(--sub);margin:8px 2px 0}
+.empty{padding:18px;text-align:center;color:var(--sub);font-size:13px}
+.back{border:0;background:none;color:var(--blue);font-size:15px;padding:4px 0}
+.top{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.dhead{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:6px 0 4px}
+.dhead h2{margin:0;font-size:22px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--sub)}
+.meta b{color:var(--ink)}
+.in{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-size:16px}
+textarea.in{min-height:76px;resize:vertical}
+.fl{display:block;font-size:12px;color:var(--sub);margin:12px 0 4px}
+.fl:first-child{margin-top:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--bg)}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:999px;font-size:14px;color:var(--sub)}
+.seg button.on{background:var(--blue);color:#fff;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.stat small{display:block;font-size:11px;color:var(--sub)}
+.stat b{font-size:24px;line-height:1.1}
+.grp{padding:10px 14px;border-bottom:1px solid var(--line)}
+.grp:last-child{border-bottom:0}
+.grp h3{margin:0 0 6px;font-size:14px;display:flex;align-items:center;gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 11px;font-size:13px;display:inline-flex;align-items:center;gap:4px}
+.chip i{font-style:normal;font-size:10px;border-radius:3px;padding:0 4px;background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.menu{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;gap:10px}
+.menu:last-child{border-bottom:0}
+.menu .no{flex:0 0 26px;height:26px;border-radius:50%;background:var(--chip);display:flex;align-items:center;justify-content:center;font-size:14px}
+.menu .b{flex:1;min-width:0}
+.menu .t{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.menu .t b{font-size:16px}
+.menu .d{font-size:13px;color:var(--sub);margin-top:2px}
+.menu .x{white-space:pre-line;font-size:14px;margin-top:6px}
+.menu .ops{display:flex;flex-direction:column;gap:4px}
+.menu .ops button{border:1px solid var(--line);background:none;border-radius:6px;width:30px;height:26px;font-size:12px;color:var(--sub)}
+.refl{padding:10px 14px;border-bottom:1px solid var(--line)}
+.refl:last-child{border-bottom:0}
+.refl .w{font-size:13px;font-weight:700;display:flex;gap:8px;align-items:center}
+.refl p{margin:2px 0 0;font-size:14px;white-space:pre-line}
+.rv{white-space:pre-line;font-size:14px;margin:0}
+.rvh{font-size:12px;color:var(--sub);margin:10px 0 2px}.rvh:first-child{margin-top:0}
+.vid a{color:var(--blue);word-break:break-all}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(5,12,24,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:90vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.shead{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700;font-size:17px;margin-bottom:10px}
+.sfoot{display:flex;gap:8px;justify-content:space-between;margin-top:16px;flex-wrap:wrap}
+.lib li{cursor:pointer}
+.toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#14202E;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:80;max-width:86vw;text-align:center}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:60vh;overflow:auto}
+.pgrid button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 10px;text-align:left;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.pgrid button span.g{font-size:11px;border-radius:4px;padding:1px 6px}
+@media (min-width:700px){.pgrid{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:430px){.apptabs a,.apptabs span{font-size:12px;padding:5px 6px}}
+</style><style>
+.hi{font-size:13px;color:var(--sub);margin-top:8px}
+.hi b{display:block;font-size:21px;color:var(--ink);margin-top:2px}
+.hc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:12px}
+.hc h3{margin:0 0 6px;font-size:13px;color:var(--sub);display:flex;justify-content:space-between;align-items:center}
+.hc h3 a{color:var(--blue);font-weight:400;text-decoration:none}
+.today{background:#13294B;color:#fff;border-radius:14px;padding:13px 15px;margin-top:12px}
+.today .d{font-size:12px;opacity:.75}
+.ev{display:flex;gap:12px;margin-top:6px;font-size:15px;align-items:baseline}
+.ev b{font-size:17px;min-width:48px;font-variant-numeric:tabular-nums}
+.ev small{opacity:.7;font-size:12px}
+.att{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin-top:9px;opacity:.92}
+.att b{font-size:17px;margin:0 2px}
+.today a{display:inline-block;margin-top:8px;color:#9CC0FF;font-size:13px;text-decoration:none}
+.today .none{font-size:14px;margin-top:6px;opacity:.85}
+.todo{display:flex;align-items:center;gap:11px;padding:9px 0;border-top:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.todo:first-of-type{border-top:0}
+.ck{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700}
+.ck.done{background:var(--ok);border-color:var(--ok)}
+.todo .t{flex:1;font-size:15px;font-weight:700}
+.todo .t small{display:block;font-weight:400;color:var(--sub);font-size:12px;margin-top:1px}
+.go{background:var(--blue);color:#fff;font-size:12px;font-weight:700;border-radius:8px;padding:6px 11px;white-space:nowrap}
+.go.sub{background:transparent;color:var(--blue);border:1px solid var(--blue)}
+.al{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:14px;color:var(--ink);text-decoration:none;width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font-family:inherit}
+.al:first-of-type{border-top:0}
+.al .n{font-size:22px;font-weight:700;min-width:34px;text-align:center;font-variant-numeric:tabular-nums}
+.al .n.r{color:var(--red)}.al .n.w{color:var(--warn)}.al .n.z{color:var(--sub)}
+.al .x{flex:1}.al i{font-style:normal;color:var(--blue);font-size:12px}
+.nt{font-size:14px;padding:7px 0;border-top:1px solid var(--line);white-space:pre-line;overflow-wrap:anywhere}
+.nt:first-of-type{border-top:0}
+.nt.imp{color:var(--red);font-weight:700}
+.rvn{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;padding:7px 0;border-top:1px solid var(--line);color:var(--ink);text-decoration:none}
+.rvn:first-of-type{border-top:0}
+.rvn small{color:var(--sub);font-size:12px}
+.new{background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:5px;padding:1px 7px;white-space:nowrap}
+.cnt0{color:var(--sub);font-size:13px}
+</style></head><body data-page="hm">
+<header><div class="wrap"><div class="hrow"><h1>TMU FC App</h1></div>
+<nav class="apptabs" aria-label="アプリの切り替え"><span class="on" aria-current="page">ホーム</span><a href="schedule.html">スケジュール</a><a href="./#pos">ポジション</a><a href="./#game">メンバー選考</a><a href="training.html">トレーニング</a><a href="condition.html">コンディション</a><a href="review.html">振り返り</a><a href="chat.html">メッセージ</a></nav></div></header>
+<main class="wrap" id="main"><p class="empty">読み込んでいます…</p></main>
+<script>
+window.__HM_MAIN=(function(C){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const W='日月火水木金土';
+const d0=new Date();
+const dateTxt=`${d0.getMonth()+1}月${d0.getDate()}日（${W[d0.getDay()]}）`;
+const h=d0.getHours();const greet=h<11?'おはよう':h<18?'こんにちは':'おつかれさま';
+const R=C.roster||[];const byId=id=>R.find(p=>p.id===id);
+const PRACTICE=/練習|ＴＲ|TR|vs|ｖｓ/i;
+const evs=(C.events||[]).slice().sort((a,b)=>(a.allDay?0:1)-(b.allDay?0:1)||String(a.start||'').localeCompare(String(b.start||'')));
+const prac=evs.find(e=>!e.allDay&&PRACTICE.test(e.title||''));
+const day=C.day;
+const tr=(C.trainings||[])[0];
+const sumMin=t=>{const ms=t.mode==='ab'&&t.parts?[...((t.parts.A||{}).menus||[]),...((t.parts.B||{}).menus||[])]:(t.menus||[]);return {n:ms.length,min:ms.reduce((a,m)=>a+(+m.min||0),0)};};
+function todayCard(){
+  const list=evs.length?evs.map(e=>`<div class="ev"><b>${e.allDay?'終日':esc(e.start)}</b><span>${esc(e.title||'予定')}${e.allDay||!e.end?'':`<small>（〜${esc(e.end)}）</small>`}</span></div>`).join(''):'<div class="none">今日の予定はありません</div>';
+  let att='';
+  if(day&&prac){const join=day.join||[];const gk=join.filter(id=>(byId(id)||{}).p1==='GK').length;
+    att=`<div class="att"><span>参加${C.isStaff?'':'予定'}<b>${join.length}</b>人${C.isStaff?`（GK ${gk}・FP ${join.length-gk}）`:''}</span>${(day.inj||[]).length?`<span>ケガ<b>${day.inj.length}</b></span>`:''}${(day.rehab||[]).length?`<span>リハビリ<b>${day.rehab.length}</b></span>`:''}<span>休み<b>${(day.off||[]).length}</b></span>${(day.late||[]).length?`<span>遅刻・早退<b>${day.late.length}</b></span>`:''}</div>`;}
+  let link='';
+  if(C.isStaff&&tr){const s=sumMin(tr);link=`<a href="training.html#${encodeURIComponent(tr.id)}">練習メニュー：${s.n}本・${s.min}分${tr.theme?`（${esc(tr.theme)}）`:''} ›</a>`;}
+  else if(prac)link='<a href="schedule.html">スケジュールで見る ›</a>';
+  return `<div class="today"><div class="d">今日の予定</div>${list}${att}${link}</div>`;
+}
+function todoCard(){
+  const t=C.today||{};const ab=C.absence;
+  const row=(done,title,sub,href,btn)=>`<a class="todo" href="${href}"><span class="ck${done?' done':''}">${done?'✓':''}</span><span class="t">${title}<small>${sub}</small></span>${done?'':`<span class="go${btn==='sub'?' sub':''}">${btn==='sub'?'連絡する':'入力する'}</span>`}</a>`;
+  return `<div class="hc"><h3>今日やること</h3>
+${row(!!t.am,'朝のチェック',t.am?'入力済み（直すときは押す）':'まだ入力していません','condition.html#am')}
+${prac?row(!!t.pm,'練習後のきつさ',t.pm?'入力済み':'練習のあとに入力','condition.html#pm'):''}
+${ab?`<a class="todo" href="condition.html#abs"><span class="ck done">✓</span><span class="t">${esc(ab.kind)}で連絡済み<small>${esc(ab.reason||'')}${ab.note?'・'+esc(ab.note):''}（直す・取り消すときは押す）</small></span></a>`:`<a class="todo" href="condition.html#abs"><span class="ck" style="border-style:dashed"></span><span class="t">欠席・遅刻の連絡<small>休む・遅れるときだけ</small></span><span class="go sub">連絡する</span></a>`}
+<a class="todo" href="condition.html#pain"><span class="ck" style="border-style:dashed"></span><span class="t">痛み・ケガの報告<small>痛いところがあるときだけ</small></span><span class="go sub">報告する</span></a></div>`;
+}
+function staffCard(){
+  const rows=[];const al=(n,cls,txt,href,id)=>`${href?`<a class="al" href="${href}">`:`<button class="al" id="${id}">`}<span class="n ${n?cls:'z'}">${n}</span><span class="x">${txt}</span><i>見る ›</i>${href?'</a>':'</button>'}`;
+  rows.push(al((C.newReports||[]).length,'r','痛みの報告（未確認）','condition.html#inj'));
+  rows.push(al((C.amMissing||[]).length,'w','朝のチェック未入力','condition.html#today'));
+  if(C.openUsers)rows.push(al(C.pending||0,'r','承認待ちのメンバー',null,'pend'));
+  return `<div class="hc"><h3>確認が必要なこと</h3>${rows.join('')}</div>`;
+}
+function msgCard(){
+  const un=(C.rooms||[]).filter(r=>r.lastAt&&r.lastBy!==C.me.uid&&((r.read||{})[C.me.uid]||0)<r.lastAt);
+  return `<div class="hc"><h3>メッセージ <a href="chat.html">開く ›</a></h3>${un.length?un.slice(0,3).map(r=>`<a class="rvn" href="chat.html#${encodeURIComponent(r.id)}"><span>${esc(r.type==='group'?(r.title||'グループ'):((r.names||{})[r.members.find(u=>u!==C.me.uid)]||'メッセージ'))}</span><span class="new">未読</span></a>`).join('')+(un.length>3?`<div class="cnt0">ほか ${un.length-3}件</div>`:''):'<div class="cnt0">未読のメッセージはありません</div>'}</div>`;
+}
+function noticeCard(){
+  const L=(C.notices||[]).filter(n=>!n.date||n.date>=C.T).sort((a,b)=>(b.important?1:0)-(a.important?1:0)||(b.at||0)-(a.at||0)).slice(0,3);
+  return `<div class="hc"><h3>連絡事項 <a href="schedule.html">${C.isStaff||C.me.role!=='player'?'＋ 書く・すべて見る ›':'すべて見る ›'}</a></h3>${L.length?L.map(n=>`<div class="nt${n.important?' imp':''}">${n.important?'【重要】':''}${esc(n.text.length>80?n.text.slice(0,80)+'…':n.text)}</div>`).join(''):'<div class="cnt0">新しい連絡事項はありません</div>'}</div>`;
+}
+function reviewCard(){
+  let seen={};try{seen=JSON.parse(localStorage.getItem('tmu-rv-seen')||'{}');}catch(e){}
+  const L=(C.reviews||[]).filter(m=>m.date&&m.date<=C.T).slice(0,3);
+  if(!L.length)return '';
+  return `<div class="hc"><h3>試合の振り返り <a href="review.html">開く ›</a></h3>${L.map(m=>{const nw=m.n&&m.last&&(seen[m.id]||0)<m.last;const [,mm,dd]=m.date.split('-');return `<a class="rvn" href="review.html#${encodeURIComponent(m.id)}"><span><small>${+mm}/${+dd}</small> ${esc(m.opp||'試合')}</span>${nw?'<span class="new">新着</span>':`<small>投稿 ${m.n||0}</small>`}</a>`;}).join('')}</div>`;
+}
+function view(){
+  const nm=C.isPlayer?(C.myName||'').split(/[\s　]/)[0]:(C.myName||'').split(/[\s　]/)[0];
+  $('#main').innerHTML=`<div class="hi">${dateTxt}<b>${C.isPlayer?`${greet}、${esc(nm)}さん`:'今日のチーム'}</b></div>
+${C.isPlayer&&!C.isStaff?todoCard()+todayCard():todayCard()}
+${C.isStaff?staffCard():''}
+${C.isPlayer&&C.isStaff?todoCard():''}
+${msgCard()}
+${noticeCard()}
+${reviewCard()}
+<p class="note" style="margin-top:14px">画面のいちばん上で下に引っぱるか、右上の ↻ で最新になります。</p>`;
+  const pe=$('#pend');if(pe)pe.onclick=()=>C.openUsers();
+}
+view();
+});
+</script>
+<script type="module" src="fb.js"></script>
+</body></html>
