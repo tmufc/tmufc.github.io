@@ -197,31 +197,26 @@ const TI={
  rv:'<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v3.8h3.8"/><path d="M10.5 9.2l4.3 2.8-4.3 2.8z"/>',
  ch:'<path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/>'};
 function tabDefs(){const r=ME.role;const full=FULL.includes(r),conds=CONDS.includes(r);
-  let lastTr='training.html',lastGm='./#game';try{lastTr=localStorage.getItem('tmu-last-tr')||lastTr;lastGm=localStorage.getItem('tmu-last-gm')||lastGm;}catch(e){}
-  const T=[['home','ホーム','home.html'],['sch','予定','schedule.html']];
-  // 幹部は選手でもあるので、自分の入力をタブで分ける
-  let lastCond='condition.html?v=me';try{lastCond=localStorage.getItem('tmu-last-cond')||lastCond;}catch(e){}
-  if(r==='leader')T.push(['cond','コンディション',lastCond],['tr','練習','training.html'],['gm','試合',lastGm]);
-  else if(full)T.push(['tr','練習',lastTr],['gm','試合',lastGm]);
-  else if(conds)T.push(['tr','練習',lastTr],['rv','振り返り','review.html']);
-  else T.push(['cond','コンディション','condition.html'],['rv','振り返り','review.html']);
+  let lastGm='./#game',lastCond=r==='leader'?'condition.html?v=me':'condition.html';
+  try{lastGm=localStorage.getItem('tmu-last-gm')||lastGm;if(r==='leader')lastCond=localStorage.getItem('tmu-last-cond')||lastCond;}catch(e){}
+  const T=[['home','ホーム','home.html'],['sch','予定','schedule.html'],['cond','コンディション',conds?lastCond:'condition.html']];
+  // スタッフ・幹部・トレーナー：コンディションと練習を分けて並べる
+  if(conds)T.push(['tr','練習','training.html']);
+  T.push(full?['gm','試合',lastGm]:['rv','振り返り','review.html']);
   T.push(['ch','メッセージ','chat.html']);return T;}
-function curTab(){const full=FULL.includes(ME.role),conds=CONDS.includes(ME.role);
-  const meView=ME.role==='leader'&&new URLSearchParams(location.search).get('v')==='me';
-  return {hm:'home',sch:'sch',tr:'tr',cond:ME.role==='leader'||!conds?'cond':'tr',pos:'gm',rv:full?'gm':'rv',ch:'ch'}[PAGE]||'';}
+function curTab(){const full=FULL.includes(ME.role);
+  return {hm:'home',sch:'sch',tr:'tr',cond:'cond',pos:'gm',rv:full?'gm':'rv',ch:'ch'}[PAGE]||'';}
 function buildNav(){if(document.querySelector('.tabbar'))return;const cur=curTab();const full=FULL.includes(ME.role),conds=CONDS.includes(ME.role);
   const meView=ME.role==='leader'&&new URLSearchParams(location.search).get('v')==='me';
   try{if(ME.role==='leader'&&PAGE==='cond')localStorage.setItem('tmu-last-cond',meView?'condition.html?v=me':'condition.html');}catch(e){}
-  try{if(PAGE==='tr'||(PAGE==='cond'&&conds&&cur==='tr'))localStorage.setItem('tmu-last-tr',PAGE==='tr'?'training.html':'condition.html');
-    if(full&&(PAGE==='pos'||PAGE==='rv'))localStorage.setItem('tmu-last-gm',PAGE==='rv'?'review.html':'./#'+(sessionStorage.getItem('tmu-tab')||'game'));}catch(e){}
+  try{if(full&&(PAGE==='pos'||PAGE==='rv'))localStorage.setItem('tmu-last-gm',PAGE==='rv'?'review.html':'./#'+(sessionStorage.getItem('tmu-tab')||'game'));}catch(e){}
   const bar=document.createElement('nav');bar.className='tabbar'+(tabDefs().length>5?' six':'');bar.setAttribute('aria-label','メニュー');
   bar.innerHTML=tabDefs().map(([k,l,h])=>`<a href="${h}" data-k="${k}" class="${k===cur?'on':''}"${k===cur?' aria-current="page"':''}><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TI[k]}</svg><i class="bd" hidden></i></span>${l}</a>`).join('');
   document.body.appendChild(bar);document.body.classList.add('has-tabbar');
   // 上の切り替え（練習・試合の中だけ）
   const seg=(items)=>`<div class="segnav">${items.map(([l,h,on])=>on?`<span class="on" aria-current="page">${l}</span>`:`<a href="${h}">${l}</a>`).join('')}</div>`;
   let items=null;
-  if(ME.role==='leader'){if(PAGE==='cond')items=[['自分の入力','condition.html?v=me',meView],['チームの管理','condition.html',!meView]];}
-  else if(conds&&(PAGE==='tr'||(PAGE==='cond'&&cur==='tr')))items=[['トレーニング','training.html',PAGE==='tr'],['コンディション','condition.html',PAGE==='cond']];
+  if(ME.role==='leader'&&PAGE==='cond')items=[['自分の入力','condition.html?v=me',meView],['チームの管理','condition.html',!meView]];
   if(full&&PAGE==='rv')items=[['ポジション','./#pos'],['メンバー選考','./#game'],['振り返り','review.html',true]];
   document.querySelectorAll('.apptabs').forEach(n=>{if(items)n.outerHTML=seg(items);else n.remove();});
   if(PAGE==='pos'){const sys=document.querySelector('.sys');if(sys){sys.querySelectorAll('a.systab').forEach(a=>a.remove());const a=document.createElement('a');a.className='systab';a.href='review.html';a.textContent='振り返り';sys.appendChild(a);sys.classList.add('segsys');
