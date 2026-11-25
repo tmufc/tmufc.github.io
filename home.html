@@ -168,10 +168,10 @@ function todoCard(){
   const t=C.today||{};const ab=C.absence;
   const row=(done,title,sub,href,btn)=>`<a class="todo" href="${href}"><span class="ck${done?' done':''}">${done?'✓':''}</span><span class="t">${title}<small>${sub}</small></span>${done?'':`<span class="go${btn==='sub'?' sub':''}">${btn==='sub'?'連絡する':'入力する'}</span>`}</a>`;
   return `<div class="hc"><h3>今日やること</h3>
-${row(!!t.am,'朝のチェック',t.am?'入力済み（直すときは押す）':'まだ入力していません','condition.html#am')}
-${prac?row(!!t.pm,'練習後のきつさ',t.pm?'入力済み':'練習のあとに入力','condition.html#pm'):''}
-${ab?`<a class="todo" href="condition.html#abs"><span class="ck done">✓</span><span class="t">${esc(ab.kind)}で連絡済み<small>${esc(ab.reason||'')}${ab.note?'・'+esc(ab.note):''}（直す・取り消すときは押す）</small></span></a>`:`<a class="todo" href="condition.html#abs"><span class="ck" style="border-style:dashed"></span><span class="t">欠席・遅刻の連絡<small>休む・遅れるときだけ</small></span><span class="go sub">連絡する</span></a>`}
-<a class="todo" href="condition.html#pain"><span class="ck" style="border-style:dashed"></span><span class="t">痛み・ケガの報告<small>痛いところがあるときだけ</small></span><span class="go sub">報告する</span></a></div>`;
+${row(!!t.am,'朝のチェック',t.am?'入力済み（直すときは押す）':'まだ入力していません','condition.html?v=me#am')}
+${prac?row(!!t.pm,'練習後のきつさ',t.pm?'入力済み':'練習のあとに入力','condition.html?v=me#pm'):''}
+${ab?`<a class="todo" href="condition.html?v=me#abs"><span class="ck done">✓</span><span class="t">${esc(ab.kind)}で連絡済み<small>${esc(ab.reason||'')}${ab.note?'・'+esc(ab.note):''}（直す・取り消すときは押す）</small></span></a>`:`<a class="todo" href="condition.html?v=me#abs"><span class="ck" style="border-style:dashed"></span><span class="t">欠席・遅刻の連絡<small>休む・遅れるときだけ</small></span><span class="go sub">連絡する</span></a>`}
+<a class="todo" href="condition.html?v=me#pain"><span class="ck" style="border-style:dashed"></span><span class="t">痛み・ケガの報告<small>痛いところがあるときだけ</small></span><span class="go sub">報告する</span></a></div>`;
 }
 function staffCard(){
   const rows=[];const al=(n,cls,txt,href,id)=>`${href?`<a class="al" href="${href}">`:`<button class="al" id="${id}">`}<span class="n ${n?cls:'z'}">${n}</span><span class="x">${txt}</span><i>見る ›</i>${href?'</a>':'</button>'}`;

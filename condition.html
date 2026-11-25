@@ -210,7 +210,7 @@ const ROSTER=CTX.roster.map(p=>({id:p.id,name:p.name,grade:p.grade||0,team:p.tea
 const byId=id=>ROSTER.find(p=>p.id===id)||{id,name:'（名簿にない選手）',grade:0,team:'',p1:'',gone:true};
 const SELFK=['筋トレ','ランニング','ボール・技術','ケア','リハビリ','その他'];
 let UI=jget(KU,{role:'player',me:'',tab:'home',stab:'today'});
-UI.role=CTX.role==='player'?'player':CTX.role==='leader'?(UI.role==='player'?'player':'staff'):'staff';if(CTX.role==='player'||CTX.role==='leader')UI.me=CTX.pid;
+UI.role=CTX.role==='player'?'player':CTX.role==='leader'?(new URLSearchParams(location.search).get('v')==='me'?'player':'staff'):'staff';if(CTX.role==='player'||CTX.role==='leader')UI.me=CTX.pid;
 function save(){CTX.save();syncPos();}
 function saveUI(){ls.set(KU,JSON.stringify(UI));}
 // ---------- dates ----------
@@ -341,7 +341,8 @@ function bind(){
   document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{UI.stab=b.dataset.goto;stack=[];saveUI();render();window.scrollTo(0,0);});
   if(window.__bind){const f=window.__bind;window.__bind=null;f();}
 }
-if(CTX.role!=='leader')document.querySelector('.role').style.display='none';
+// 幹部の「自分の入力」と「チームの管理」は下のタブ（自分の入力／練習）で分けるので、ここでの切り替えは出さない
+document.querySelector('.role').style.display='none';
 document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{UI.role=b.dataset.role;stack=[];saveUI();render();window.scrollTo(0,0);});
 // ================= PLAYER =================
 function pickMe(){const g={};ROSTER.forEach(p=>(g[p.grade]=g[p.grade]||[]).push(p));
@@ -601,7 +602,7 @@ ${[0,1,2,3].map(k=>`<h2>${STG[k]}<small>${STGD[k]}</small></h2><div class="card 
 CTX.onRemote(()=>{const top=stack[stack.length-1];if(top===formView||document.querySelector('.modal')||document.querySelector('#nj_ok,#rp_ok'))return;const y=window.scrollY;render();window.scrollTo(0,y);});
 // ホームから開いたとき：#am #pm #abs #pain は選手の入力画面、#today #list #inj はスタッフの画面
 const HJ=location.hash.slice(1);
-if(HJ){try{history.replaceState(null,'',location.pathname);}catch(e){}if(CTX.role==='leader'&&['am','pm','abs','pain'].includes(HJ)){UI.role='player';UI.tab='home';}if(UI.role!=='player'&&['today','list','inj'].includes(HJ))UI.stab=HJ;}
+if(HJ){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}if(CTX.role==='leader'&&['am','pm','abs','pain'].includes(HJ)){UI.role='player';UI.tab='home';if(!location.search.includes('v=me'))try{history.replaceState(null,'',location.pathname+'?v=me');}catch(e){}}if(UI.role!=='player'&&['today','list','inj'].includes(HJ))UI.stab=HJ;}
 render();
 if(HJ&&UI.role==='player'&&byId(UI.me)&&['am','pm','abs','pain'].includes(HJ))openForm(HJ);
 });

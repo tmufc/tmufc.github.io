@@ -43,6 +43,8 @@ css.textContent=`.tg{position:fixed;inset:0;z-index:100;background:#0E1A33;color
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;background:var(--surface,#fff);border-top:1px solid var(--line,#D5DDE7);padding:4px 2px calc(4px + env(safe-area-inset-bottom,0px));box-shadow:0 -2px 10px rgba(0,0,0,.04)}
 .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0 2px;font-size:10.5px;color:var(--sub,#5B6B7E);text-decoration:none;-webkit-tap-highlight-color:transparent;min-height:48px;justify-content:center}
 .tabbar a.on{color:var(--blue,#1F5FBF);font-weight:700}
+.tabbar a{white-space:nowrap;overflow:hidden}
+.tabbar.six a{font-size:9.5px;letter-spacing:-.04em}
 .tabbar .ti{position:relative;display:block;width:26px;height:26px}
 .tabbar svg{width:26px;height:26px}
 .tabbar a.on svg{stroke-width:2.2}
@@ -188,6 +190,7 @@ function reloadPage(){if(document.querySelector('.modal,.tmod,#sheet')&&!confirm
 const TI={
  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
  sch:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+ me:'<circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.8 3.6-5.6 7-5.6s6.2 1.8 7 5.6"/><path d="M16.5 4.5l1.3 1.3 2.6-2.6"/>',
  cond:'<path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.2a4.2 4.2 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z"/><path d="M7 12h2.5l1.2-2.2 2 4.4 1.3-2.2H17"/>',
  tr:'<path d="M10.2 4h3.6L18 19H6z"/><path d="M8.6 10h6.8M7.5 14h9"/><path d="M3.5 19.5h17"/>',
  gm:'<circle cx="12" cy="12" r="9"/><path d="M12 8.2l3.4 2.5-1.3 4h-4.2l-1.3-4z"/><path d="M12 8.2V3.2M15.4 10.7l4.6-1.5M14.1 14.7l2.9 4M9.9 14.7l-2.9 4M8.6 10.7L4 9.2"/>',
@@ -196,22 +199,29 @@ const TI={
 function tabDefs(){const r=ME.role;const full=FULL.includes(r),conds=CONDS.includes(r);
   let lastTr='training.html',lastGm='./#game';try{lastTr=localStorage.getItem('tmu-last-tr')||lastTr;lastGm=localStorage.getItem('tmu-last-gm')||lastGm;}catch(e){}
   const T=[['home','ホーム','home.html'],['sch','予定','schedule.html']];
-  if(full)T.push(['tr','練習',lastTr],['gm','試合',lastGm]);
+  // 幹部は選手でもあるので、自分の入力をタブで分ける
+  let lastCond='condition.html?v=me';try{lastCond=localStorage.getItem('tmu-last-cond')||lastCond;}catch(e){}
+  if(r==='leader')T.push(['cond','コンディション',lastCond],['tr','練習','training.html'],['gm','試合',lastGm]);
+  else if(full)T.push(['tr','練習',lastTr],['gm','試合',lastGm]);
   else if(conds)T.push(['tr','練習',lastTr],['rv','振り返り','review.html']);
   else T.push(['cond','コンディション','condition.html'],['rv','振り返り','review.html']);
   T.push(['ch','メッセージ','chat.html']);return T;}
 function curTab(){const full=FULL.includes(ME.role),conds=CONDS.includes(ME.role);
-  return {hm:'home',sch:'sch',tr:'tr',cond:conds?'tr':'cond',pos:'gm',rv:full?'gm':'rv',ch:'ch'}[PAGE]||'';}
+  const meView=ME.role==='leader'&&new URLSearchParams(location.search).get('v')==='me';
+  return {hm:'home',sch:'sch',tr:'tr',cond:ME.role==='leader'||!conds?'cond':'tr',pos:'gm',rv:full?'gm':'rv',ch:'ch'}[PAGE]||'';}
 function buildNav(){if(document.querySelector('.tabbar'))return;const cur=curTab();const full=FULL.includes(ME.role),conds=CONDS.includes(ME.role);
-  try{if(PAGE==='tr'||(PAGE==='cond'&&conds))localStorage.setItem('tmu-last-tr',PAGE==='tr'?'training.html':'condition.html');
+  const meView=ME.role==='leader'&&new URLSearchParams(location.search).get('v')==='me';
+  try{if(ME.role==='leader'&&PAGE==='cond')localStorage.setItem('tmu-last-cond',meView?'condition.html?v=me':'condition.html');}catch(e){}
+  try{if(PAGE==='tr'||(PAGE==='cond'&&conds&&cur==='tr'))localStorage.setItem('tmu-last-tr',PAGE==='tr'?'training.html':'condition.html');
     if(full&&(PAGE==='pos'||PAGE==='rv'))localStorage.setItem('tmu-last-gm',PAGE==='rv'?'review.html':'./#'+(sessionStorage.getItem('tmu-tab')||'game'));}catch(e){}
-  const bar=document.createElement('nav');bar.className='tabbar';bar.setAttribute('aria-label','メニュー');
+  const bar=document.createElement('nav');bar.className='tabbar'+(tabDefs().length>5?' six':'');bar.setAttribute('aria-label','メニュー');
   bar.innerHTML=tabDefs().map(([k,l,h])=>`<a href="${h}" data-k="${k}" class="${k===cur?'on':''}"${k===cur?' aria-current="page"':''}><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TI[k]}</svg><i class="bd" hidden></i></span>${l}</a>`).join('');
   document.body.appendChild(bar);document.body.classList.add('has-tabbar');
   // 上の切り替え（練習・試合の中だけ）
   const seg=(items)=>`<div class="segnav">${items.map(([l,h,on])=>on?`<span class="on" aria-current="page">${l}</span>`:`<a href="${h}">${l}</a>`).join('')}</div>`;
   let items=null;
-  if(conds&&(PAGE==='tr'||PAGE==='cond'))items=[['トレーニング','training.html',PAGE==='tr'],['コンディション','condition.html',PAGE==='cond']];
+  if(ME.role==='leader'){if(PAGE==='cond')items=[['自分の入力','condition.html?v=me',meView],['チームの管理','condition.html',!meView]];}
+  else if(conds&&(PAGE==='tr'||(PAGE==='cond'&&cur==='tr')))items=[['トレーニング','training.html',PAGE==='tr'],['コンディション','condition.html',PAGE==='cond']];
   if(full&&PAGE==='rv')items=[['ポジション','./#pos'],['メンバー選考','./#game'],['振り返り','review.html',true]];
   document.querySelectorAll('.apptabs').forEach(n=>{if(items)n.outerHTML=seg(items);else n.remove();});
   if(PAGE==='pos'){const sys=document.querySelector('.sys');if(sys){sys.querySelectorAll('a.systab').forEach(a=>a.remove());const a=document.createElement('a');a.className='systab';a.href='review.html';a.textContent='振り返り';sys.appendChild(a);sys.classList.add('segsys');
