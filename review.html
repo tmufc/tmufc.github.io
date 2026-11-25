@@ -275,8 +275,9 @@ function editMeta(m){
 <label class="fl">Veoの試合映像のリンク</label><input class="in" id="m_veo" type="url" placeholder="https://app.veo.co/…" value="${esc(m.veo||'')}">
 <p class="note">Veoで映像の公開設定を確認してから、共有リンクを貼ってください。振り返りの上に「Veoで試合の映像を開く」が出ます。</p>
 <label class="fl">結果（任意）</label><div class="row2"><input class="in" id="m_a" placeholder="A　例：2-1" value="${esc(s.A||'')}" maxlength="10"><input class="in" id="m_b" placeholder="B　例：0-0" value="${esc(s.B||'')}" maxlength="10"></div>
-<div class="sfoot" style="justify-content:flex-end"><button class="btn" id="m_ok">保存</button></div>`);
+<div class="sfoot" style="justify-content:space-between"><button class="btn ghost" id="m_del" style="color:var(--red);border-color:var(--red)">この振り返りを削除</button><button class="btn" id="m_ok">保存</button></div>`);
   d.querySelector('[data-x]').onclick=closeSheet;
+  d.querySelector('#m_del').onclick=async()=>{if(!await ask(`「${m.opp||'この試合'}」の振り返りを一覧から削除しますか？${m.n?`\n投稿${m.n}件も見られなくなります。`:''}`))return;try{await CTX.delMeta(gid);closeSheet();toast('削除しました');location.hash='';}catch(e){console.error(e);toast('削除できませんでした');}};
   d.querySelector('#m_ok').onclick=async()=>{const v=d.querySelector('#m_veo').value.trim();if(v&&!okUrl(v))return toast('リンクは https:// から始まるものを貼ってください');
     try{await CTX.setMeta(gid,{veo:v,score:{A:d.querySelector('#m_a').value.trim(),B:d.querySelector('#m_b').value.trim()}});closeSheet();toast('保存しました');}catch(e){console.error(e);toast('保存できませんでした');}};
 }

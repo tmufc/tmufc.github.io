@@ -278,7 +278,9 @@ const stateRef=()=>doc(db,'team','state');
 function rosterOf(st){return (st.players||[]).filter(p=>!p.out).map(p=>({id:p.id,name:p.name,grade:p.grade||0,team:p.team||'',p1:p.p1||''}));}
 // 試合 → 振り返り（試合ごとの見出しだけを、全員が読める場所に置く）
 async function pushGames(st){if(!FULL.includes(ME.role))return;let old={};try{old=JSON.parse(localStorage.getItem('tmu-rv-games')||'{}');}catch(e){}
-  const now={};(st.games||[]).forEach(g=>{if(!g||!g.id||!g.date)return;now[g.id]=JSON.stringify({date:g.date,opp:g.opp||'',type:g.type==='official'?'official':'practice'});});
+  const now={};(st.games||[]).forEach(g=>{if(!g||!g.id||!g.date||!String(g.opp||'').trim())return;now[g.id]=JSON.stringify({date:g.date,opp:g.opp||'',type:g.type==='official'?'official':'practice'});});
+  // 消した試合・相手が空の試合は、投稿がなければ振り返りからも消す
+  for(const id of Object.keys(old)){if(now[id])continue;try{const s=await getDoc(doc(db,'reviews',id));if(!s.exists()||!(s.data().n>0))await deleteDoc(doc(db,'reviews',id));delete old[id];}catch(e){console.error(e);}}
   for(const id of Object.keys(now)){if(old[id]===now[id])continue;try{await setDoc(doc(db,'reviews',id),{...JSON.parse(now[id]),upd:Date.now()},{merge:true});old[id]=now[id];}catch(e){console.error(e);return;}}
   try{localStorage.setItem('tmu-rv-games',JSON.stringify(old));}catch(e){}}
 async function pushRoster(st){pushGames(st);const r=rosterOf(st);const j=JSON.stringify(r);if(j===lastRoster)return;try{await setDoc(doc(db,'team','roster'),{players:r,at:serverTimestamp()});lastRoster=j;}catch(e){}}
@@ -488,9 +490,12 @@ async function chInit(){
 async function rvInit(roster){
   const M={};let onMeta=null,unsubT=null;
   // スタッフが開いたときは、試合の一覧を最新にしておく
-  if(FULL.includes(ME.role)){try{const s=await getDoc(stateRef());if(s.exists())await pushGames(JSON.parse(s.data().json||'{}'));}catch(e){console.error(e);}}
+  let liveIds=null;
+  if(FULL.includes(ME.role)){try{const s=await getDoc(stateRef());if(s.exists()){const st=JSON.parse(s.data().json||'{}');await pushGames(st);liveIds=new Set((st.games||[]).filter(g=>g&&g.id&&String(g.opp||'').trim()).map(g=>g.id));}}catch(e){console.error(e);}}
   await new Promise(res=>{let first=true;onSnapshot(query(collection(db,'reviews'),orderBy('date','desc'),limit(60)),s=>{const seen=new Set();s.docs.forEach(d=>{seen.add(d.id);M[d.id]={...d.data(),id:d.id};});Object.keys(M).forEach(k=>{if(!seen.has(k))delete M[k];});
     if(first){first=false;res();}else if(onMeta)onMeta();},e=>{console.error(e);if(first){first=false;res();}});});
+  // メンバー選考にない試合（消した試合・相手が空の試合）で、投稿がないものは片付ける
+  if(liveIds){for(const id of Object.keys(M)){if(!liveIds.has(id)&&!(M[id].n>0)){try{await deleteDoc(doc(db,'reviews',id));delete M[id];}catch(e){console.error(e);}}}}
   const me=roster.find(p=>p.id===ME.pid);const title=(ME.raw&&ME.raw.title)||'';
   const myName=me?me.name:(ME.name||'スタッフ')+(title?'（'+title+'）':'');
   const posts=gid=>collection(db,'reviews',gid,'posts');
@@ -504,7 +509,8 @@ async function rvInit(roster){
     del:async(gid,id)=>{await deleteDoc(doc(db,'reviews',gid,'posts',id));bump(gid,-1);},
     reply:async(gid,id,text)=>{await updateDoc(doc(db,'reviews',gid,'posts',id),{replies:arrayUnion({id:'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),uid:ME.uid,name:myName,staff:!me,text,at:Date.now()})});bump(gid,0);},
     unreply:async(gid,id,r)=>{await updateDoc(doc(db,'reviews',gid,'posts',id),{replies:arrayRemove(r)});},
-    setMeta:async(gid,x)=>{await setDoc(doc(db,'reviews',gid),x,{merge:true});}};
+    setMeta:async(gid,x)=>{await setDoc(doc(db,'reviews',gid),x,{merge:true});},
+    delMeta:async gid=>{await deleteDoc(doc(db,'reviews',gid));delete M[gid];}};
 }
 
 window.TMU={statePush,toast,get me(){return ME;}};
