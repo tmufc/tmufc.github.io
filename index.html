@@ -330,7 +330,7 @@ let lastSaved=null;
 let state=JSON.parse(JSON.stringify(saved));
 let dirty=false, sel=null, filter='all', scope='all', canSave=null, adding=false;
 let tab='pos';try{tab=sessionStorage.getItem('tmu-tab')||'pos'}catch(e){}
-if(location.hash==='#game'||location.hash==='#pos'){tab=location.hash.slice(1);try{history.replaceState(null,'',location.pathname)}catch(e){}}
+if(location.hash==='#game'||location.hash==='#pos'){tab=location.hash.slice(1);try{sessionStorage.setItem('tmu-in-pos','1');history.replaceState(null,'',location.pathname)}catch(e){}}
 
 function migrate(st){st.players.forEach(p=>{if(!p.id)p.id=p.no!=null&&p.no!==''?'n'+p.no:'p'+Math.random().toString(36).slice(2,9);if(p.team===undefined)p.team='';delete p.staff;});}
 migrate(state);

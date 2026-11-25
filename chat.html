@@ -253,6 +253,7 @@ function drawMsgs(){const box=$('#msgs');if(!box)return;let prev='',pby='';const
 }
 
 function route(){const id=decodeURIComponent(location.hash.slice(1));const c=$('.composer');
+  document.body.classList.toggle('in-room',!!(id&&(CTX.rooms[id]||id.split('_').includes(CTX.me.uid))));
   if(id&&(CTX.rooms[id]||id.split('_').includes(CTX.me.uid))){openRoom(id);}else{rid=null;CTX.close();if(c)c.remove();listView();}}
 window.addEventListener('hashchange',()=>{closeSheet();route();});
 CTX.onRooms(()=>{if(rid&&rid.charAt(0)==='g'&&!CTX.rooms[rid]){closeSheet();toast('このグループから外れました');location.hash='';return;}

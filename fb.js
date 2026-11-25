@@ -38,9 +38,29 @@ css.textContent=`.tg{position:fixed;inset:0;z-index:100;background:#0E1A33;color
 .tg .names button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;border-radius:10px;padding:10px;font:inherit;font-size:14px;text-align:left;cursor:pointer}
 .tg .names button.on{background:#4366B0;border-color:#4366B0}
 .tg .gh{font-size:12px;color:rgba(255,255,255,.6);margin:12px 0 0}
-.ptr{position:fixed;left:50%;top:-40px;transform:translate(-50%,0);z-index:90;background:#14202E;color:#fff;font-size:13px;padding:7px 14px;border-radius:999px;transition:transform .15s;pointer-events:none;white-space:nowrap}
-.ptr.go{background:#1F5FBF}
 .trf{font-size:15px!important;padding:2px 9px!important;line-height:1.2}
+:root{--tabh:58px}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;background:var(--surface,#fff);border-top:1px solid var(--line,#D5DDE7);padding:4px 2px calc(4px + env(safe-area-inset-bottom,0px));box-shadow:0 -2px 10px rgba(0,0,0,.04)}
+.tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0 2px;font-size:10.5px;color:var(--sub,#5B6B7E);text-decoration:none;-webkit-tap-highlight-color:transparent;min-height:48px;justify-content:center}
+.tabbar a.on{color:var(--blue,#1F5FBF);font-weight:700}
+.tabbar .ti{position:relative;display:block;width:26px;height:26px}
+.tabbar svg{width:26px;height:26px}
+.tabbar a.on svg{stroke-width:2.2}
+.tabbar .bd{position:absolute;top:-4px;left:17px;background:#C8443A;color:#fff;font-style:normal;font-size:10px;font-weight:700;border-radius:999px;min-width:17px;height:17px;line-height:17px;padding:0 4px;text-align:center}
+body.has-tabbar{padding-bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px))}
+body.has-tabbar.in-room{padding-bottom:0}
+body.in-room .tabbar{display:none}
+body.has-tabbar .savebar{bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px));padding-bottom:10px}
+body.has-tabbar .fab{bottom:calc(var(--tabh) + 16px + env(safe-area-inset-bottom,0px))}
+body.has-tabbar .toast{bottom:calc(var(--tabh) + 22px + env(safe-area-inset-bottom,0px))!important}
+.segnav{display:flex;gap:3px;margin-top:10px;background:rgba(255,255,255,.1);border-radius:12px;padding:3px}
+.segnav a,.segnav span{flex:1;text-align:center;font-size:13px;padding:7px 4px;border-radius:9px;color:#C9D6EE;text-decoration:none;white-space:nowrap}
+.segnav .on{background:#fff;color:#13294B;font-weight:700}
+.sys.segsys{display:flex;gap:3px;overflow:visible}
+.sys.segsys>*{flex:1;text-align:center}
+.nav.topnav{position:sticky!important;top:0;bottom:auto!important;z-index:6;border-top:0;border-bottom:1px solid var(--line,#D5DDE7);padding-bottom:0!important}
+.nav.topnav button{min-height:0!important;padding:7px 0 6px!important;flex-direction:row!important;gap:6px!important;font-size:13px!important;justify-content:center}
+.nav.topnav button svg{width:18px!important;height:18px!important}
 .tacct{border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font:inherit;font-size:12px;border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap;margin-left:8px;vertical-align:middle;position:relative}
 .tacct i{font-style:normal;background:#EE6A61;color:#fff;border-radius:999px;font-size:10px;padding:0 5px;margin-left:4px}
 .tbanner{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:90;background:#13294B;color:#fff;border:1px solid #4366B0;border-radius:12px;padding:10px 12px;font-size:13px;display:flex;gap:10px;align-items:center;max-width:92%;font-family:inherit}
@@ -124,7 +144,8 @@ async function route(user){
   if(r==='disabled'){showGate(`<p>このアカウントは利用停止になっています。監督に確認してください。</p><p style="font-size:12px;opacity:.7">${esc(ME.email)}</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}
   if(r==='pending')return pendingScreen();
   // アプリを開いたとき（ハッシュなしの index）はホームへ
-  if(PAGE==='pos'&&!location.hash){location.replace('home.html');return;}
+  let inPos=false;try{inPos=!!sessionStorage.getItem('tmu-in-pos');}catch(e){}
+  if(PAGE==='pos'&&!location.hash&&!inPos){location.replace('home.html');return;}
   if((!FULL.includes(r)&&PAGE==='pos')||(!CONDS.includes(r)&&PAGE==='tr')){location.replace('home.html');return;}
   if(NEEDPID.includes(r)&&!ME.pid){showGate(`<p>選手として承認されていますが、名簿の名前と結びついていません。監督に確認してください。</p><button class="tb ghost" id="tg_out">ログアウト</button>`);gate.querySelector('#tg_out').onclick=()=>signOut(auth);return;}
   started=true;showGate('<p>データを読み込んでいます…</p>');
@@ -163,21 +184,58 @@ let usersCache=[],usersUnsub=null;
 function reloadPage(){if(document.querySelector('.modal,.tmod,#sheet')&&!confirm('入力中の内容は消えます。画面を更新しますか？'))return;
   if(PAGE==='pos'&&(window.__TMU_SAVE_STATUS==='wait'||pushTimer)){toast('保存中です。少し待ってからもう一度押してください');return;}
   try{toast('更新しています…');}catch(e){}setTimeout(()=>location.reload(),150);}
-// 画面のいちばん上で下に引っぱると更新（アプリとして開いたときにブラウザの更新がないため）
-function pullToRefresh(){if(window.__ptr)return;window.__ptr=true;
-  const ind=document.createElement('div');ind.className='ptr';ind.textContent='↓ 引っぱって更新';document.body.appendChild(ind);
-  let y0=null,dy=0;const TH=80;
-  addEventListener('touchstart',e=>{if(window.scrollY>0||e.touches.length!==1||document.querySelector('.modal,.tmod,#sheet')){y0=null;return;}y0=e.touches[0].clientY;dy=0;},{passive:true});
-  addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy<=0||window.scrollY>0){ind.style.transform='';return;}const d=Math.min(dy,TH*1.4);ind.style.transform=`translate(-50%,${d}px)`;ind.textContent=dy>TH?'↻ はなすと更新':'↓ 引っぱって更新';ind.classList.toggle('go',dy>TH);},{passive:true});
-  addEventListener('touchend',()=>{if(y0==null)return;const go=dy>TH;y0=null;ind.style.transform='';ind.classList.remove('go');if(go)reloadPage();},{passive:true});}
+// ---------- 下のタブ（メニュー） ----------
+const TI={
+ home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+ sch:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+ cond:'<path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.2a4.2 4.2 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z"/><path d="M7 12h2.5l1.2-2.2 2 4.4 1.3-2.2H17"/>',
+ tr:'<path d="M10.2 4h3.6L18 19H6z"/><path d="M8.6 10h6.8M7.5 14h9"/><path d="M3.5 19.5h17"/>',
+ gm:'<circle cx="12" cy="12" r="9"/><path d="M12 8.2l3.4 2.5-1.3 4h-4.2l-1.3-4z"/><path d="M12 8.2V3.2M15.4 10.7l4.6-1.5M14.1 14.7l2.9 4M9.9 14.7l-2.9 4M8.6 10.7L4 9.2"/>',
+ rv:'<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v3.8h3.8"/><path d="M10.5 9.2l4.3 2.8-4.3 2.8z"/>',
+ ch:'<path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/>'};
+function tabDefs(){const r=ME.role;const full=FULL.includes(r),conds=CONDS.includes(r);
+  let lastTr='training.html',lastGm='./#game';try{lastTr=localStorage.getItem('tmu-last-tr')||lastTr;lastGm=localStorage.getItem('tmu-last-gm')||lastGm;}catch(e){}
+  const T=[['home','ホーム','home.html'],['sch','予定','schedule.html']];
+  if(full)T.push(['tr','練習',lastTr],['gm','試合',lastGm]);
+  else if(conds)T.push(['tr','練習',lastTr],['rv','振り返り','review.html']);
+  else T.push(['cond','コンディション','condition.html'],['rv','振り返り','review.html']);
+  T.push(['ch','メッセージ','chat.html']);return T;}
+function curTab(){const full=FULL.includes(ME.role),conds=CONDS.includes(ME.role);
+  return {hm:'home',sch:'sch',tr:'tr',cond:conds?'tr':'cond',pos:'gm',rv:full?'gm':'rv',ch:'ch'}[PAGE]||'';}
+function buildNav(){if(document.querySelector('.tabbar'))return;const cur=curTab();const full=FULL.includes(ME.role),conds=CONDS.includes(ME.role);
+  try{if(PAGE==='tr'||(PAGE==='cond'&&conds))localStorage.setItem('tmu-last-tr',PAGE==='tr'?'training.html':'condition.html');
+    if(full&&(PAGE==='pos'||PAGE==='rv'))localStorage.setItem('tmu-last-gm',PAGE==='rv'?'review.html':'./#'+(sessionStorage.getItem('tmu-tab')||'game'));}catch(e){}
+  const bar=document.createElement('nav');bar.className='tabbar';bar.setAttribute('aria-label','メニュー');
+  bar.innerHTML=tabDefs().map(([k,l,h])=>`<a href="${h}" data-k="${k}" class="${k===cur?'on':''}"${k===cur?' aria-current="page"':''}><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TI[k]}</svg><i class="bd" hidden></i></span>${l}</a>`).join('');
+  document.body.appendChild(bar);document.body.classList.add('has-tabbar');
+  // 上の切り替え（練習・試合の中だけ）
+  const seg=(items)=>`<div class="segnav">${items.map(([l,h,on])=>on?`<span class="on" aria-current="page">${l}</span>`:`<a href="${h}">${l}</a>`).join('')}</div>`;
+  let items=null;
+  if(conds&&(PAGE==='tr'||PAGE==='cond'))items=[['トレーニング','training.html',PAGE==='tr'],['コンディション','condition.html',PAGE==='cond']];
+  if(full&&PAGE==='rv')items=[['ポジション','./#pos'],['メンバー選考','./#game'],['振り返り','review.html',true]];
+  document.querySelectorAll('.apptabs').forEach(n=>{if(items)n.outerHTML=seg(items);else n.remove();});
+  if(PAGE==='pos'){const sys=document.querySelector('.sys');if(sys){sys.querySelectorAll('a.systab').forEach(a=>a.remove());const a=document.createElement('a');a.className='systab';a.href='review.html';a.textContent='振り返り';sys.appendChild(a);sys.classList.add('segsys');
+    sys.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{try{localStorage.setItem('tmu-last-gm','./#'+b.dataset.tab);}catch(e){}}));}}
+  // コンディションの中の切り替え（入力・チーム・自分の記録など）は画面の上へ
+  if(PAGE==='cond'){const n=document.getElementById('nav');const h=document.querySelector('header');if(n&&h){h.after(n);n.classList.add('topnav');}}
+  navBadges();}
+async function navBadges(){try{
+  const rooms=(await getDocs(query(collection(db,'rooms'),where('members','array-contains',ME.uid)))).docs.map(d=>d.data());
+  const un=rooms.filter(r=>r.lastAt&&r.lastBy!==ME.uid&&((r.read||{})[ME.uid]||0)<r.lastAt).length;setBadge('ch',un);
+  let seen={};try{seen=JSON.parse(localStorage.getItem('tmu-rv-seen')||'{}');}catch(e){}
+  const T=dstr(new Date());const rv=(await getDocs(query(collection(db,'reviews'),orderBy('date','desc'),limit(6)))).docs.map(d=>({...d.data(),id:d.id}));
+  const nw=rv.filter(m=>m.date<=T&&m.n&&m.last&&(seen[m.id]||0)<m.last).length;setBadge(FULL.includes(ME.role)?'gm':'rv',nw);
+}catch(e){console.error(e);}}
+function setBadge(k,n){const b=document.querySelector(`.tabbar [data-k="${k}"] .bd`);if(!b)return;b.hidden=!n;b.textContent=n>9?'9+':String(n);}
+window.TMU_setBadge=setBadge;
 function addAcct(){
+  buildNav();
   setTimeout(ntRefresh,3000);
   if(!FULL.includes(ME.role))document.querySelectorAll('.apptabs a[href^="./#"]').forEach(a=>a.remove());
   if(!CONDS.includes(ME.role))document.querySelectorAll('.apptabs a[href="training.html"]').forEach(a=>a.remove());
   try{const on=document.querySelector('.apptabs .on');if(on)on.scrollIntoView({inline:'center',block:'nearest'});}catch(e){}
   const host=PAGE==='pos'?document.querySelector('header p'):document.querySelector('header .hrow');if(!host||host.querySelector('.tacct'))return;
   const rf=document.createElement('button');rf.className='tacct trf';rf.type='button';rf.setAttribute('aria-label','画面を更新');rf.title='画面を更新';rf.textContent='↻';rf.onclick=reloadPage;host.appendChild(rf);
-  pullToRefresh();
   const b=document.createElement('button');b.className='tacct';b.type='button';b.innerHTML=`${esc((ME.name||ME.email).split(/[\s　@]/)[0])}<span class="cnt"></span>`;b.onclick=openAcct;host.appendChild(b);
   if(ME.role==='admin'){usersUnsub=onSnapshot(collection(db,'users'),s=>{usersCache=s.docs.map(d=>({uid:d.id,...d.data()}));pushDir();const n=usersCache.filter(u=>u.role==='pending').length;b.querySelector('.cnt').innerHTML=n?`<i>${n}</i>`:'';if(document.querySelector('.tmod.users'))renderUsers();},()=>{});}
 }
