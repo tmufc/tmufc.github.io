@@ -132,6 +132,8 @@ textarea.in{min-height:76px;resize:vertical}
 .bub.me{align-self:flex-end;align-items:flex-end}
 .bub.me .t{background:var(--blue);color:#fff;border-color:var(--blue)}
 .bub.me .t{cursor:pointer}
+.bub .tm .rdm{font-weight:700;color:var(--blue);margin-right:5px}
+.hint{font-size:11px;color:var(--sub);text-align:center;margin:-4px 0 8px}
 .composer{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px))}
 .composer .in2{display:flex;gap:8px;max-width:720px;margin:0 auto;align-items:flex-end}
 .composer textarea{flex:1;resize:none;min-height:40px;max-height:120px;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg);color:var(--ink)}
@@ -232,7 +234,7 @@ function roomView(first){
   const blocked=r&&(r.block||[]).length;const iBlock=r&&(r.block||[]).includes(CTX.me.uid);
   if(first)roomView.drawn=false;
   $('#main').innerHTML=`<div class="chhd"><button class="back" id="bk" style="margin:0">‹</button>${g?avHtml(r):`<span class="av${isStaff(p)?' st':''}">${esc(ini(nameOf(r,o)))}</span>`}<span class="nm">${esc(g?roomName(r):nameOf(r,o))}<small style="font-weight:400;font-size:12px;color:var(--sub);margin-left:6px">${g?(r.members||[]).length+'人':esc(subOf(p))}</small></span><button class="btn ghost sm" id="mn">${g?'メンバー':'…'}</button></div>
-<p class="priv">${g?'このグループのメンバーだけが見られます':'このやりとりは、2人だけが見られます'}</p>
+<p class="priv">${g?'このグループのメンバーだけが見られます':'このやりとりは、2人だけが見られます'}</p><p class="hint">自分のメッセージを押すと、送信を取り消せます</p>
 ${blocked?`<div class="blk">${iBlock?'あなたがブロックしています。メッセージは送れません。':'メッセージを送れない状態です。'}</div>`:''}
 <div class="msgs" id="msgs"></div>`;
   let c=$('.composer');if(!c){c=document.createElement('div');c.className='composer';c.innerHTML='<div class="in2"><textarea id="tx" rows="1" maxlength="1000" placeholder="メッセージを入力"></textarea><button class="btn" id="sd">送信</button></div>';document.body.appendChild(c);}
@@ -246,10 +248,13 @@ ${blocked?`<div class="blk">${iBlock?'あなたがブロックしています。
   drawMsgs();
 }
 function drawMsgs(){const box=$('#msgs');if(!box)return;let prev='',pby='';const r=CTX.rooms[rid];const g=isG(r);
+  const rd=(r&&r.read)||{};const others=r?(r.members||[]).filter(u=>u!==CTX.me.uid):[];
+  // 既読：1対1は相手が読んだら「既読」、グループは読んだ人数
+  const readMark=m=>{const n=others.filter(u=>(rd[u]||0)>=m.at).length;if(!n)return '';return g?`既読 ${n}`:'既読';};
   box.innerHTML=`${more?'<button class="btn ghost sm" id="mo" style="align-self:center">前のメッセージを見る</button>':''}${list.length?list.map(m=>{const k=dkey(m.at);const sep=k!==prev?`<div class="dsep">${esc(dlab(m.at))}</div>`:'';const showWho=g&&m.by!==CTX.me.uid&&(m.by!==pby||sep);prev=k;pby=m.by;const mine=m.by===CTX.me.uid;
-    return `${sep}<div class="bub${mine?' me':''}">${showWho?`<div class="who2">${esc(nameOf(r,m.by))}</div>`:''}<div class="t"${mine?` data-m="${esc(m.id)}"`:''}>${esc(m.text)}</div><div class="tm">${hm(m.at)}</div></div>`;}).join(''):'<p class="note" style="text-align:center">最初のメッセージを送ってみましょう</p>'}`;
+    return `${sep}<div class="bub${mine?' me':''}">${showWho?`<div class="who2">${esc(nameOf(r,m.by))}</div>`:''}<div class="t"${mine?` data-m="${esc(m.id)}"`:''}>${esc(m.text)}</div><div class="tm">${mine&&readMark(m)?`<b class="rdm">${readMark(m)}</b>`:''}${hm(m.at)}</div></div>`;}).join(''):'<p class="note" style="text-align:center">最初のメッセージを送ってみましょう</p>'}`;
   const mo=$('#mo');if(mo)mo.onclick=()=>{lim+=PAGE;const h=document.body.scrollHeight;CTX.open(rid,lim,(m,x)=>{list=m||list;more=x;drawMsgs();window.scrollTo(0,document.body.scrollHeight-h);});};
-  box.querySelectorAll('[data-m]').forEach(b=>b.onclick=async()=>{if(!await ask('このメッセージを取り消しますか？\n相手の画面からも消えます。'))return;try{await CTX.del(rid,b.dataset.m);}catch(e){toast('取り消せませんでした');}});
+  box.querySelectorAll('[data-m]').forEach(b=>b.onclick=async()=>{if(!await ask('このメッセージを取り消しますか？\n相手の画面からも消えます。'))return;const mm=list.find(x=>x.id===b.dataset.m);try{await CTX.del(rid,b.dataset.m,mm&&mm.at);toast('送信を取り消しました');}catch(e){toast('取り消せませんでした');}});
 }
 
 function route(){const id=decodeURIComponent(location.hash.slice(1));const c=$('.composer');
@@ -258,7 +263,7 @@ function route(){const id=decodeURIComponent(location.hash.slice(1));const c=$('
 window.addEventListener('hashchange',()=>{closeSheet();route();});
 CTX.onRooms(()=>{if(rid&&rid.charAt(0)==='g'&&!CTX.rooms[rid]){closeSheet();toast('このグループから外れました');location.hash='';return;}
   if(rid&&isG(CTX.rooms[rid])&&!$('#sheet')&&!$('.modal')){const y=window.scrollY;roomView(false);window.scrollTo(0,y);return;}
-  if($('#sheet')||$('.modal'))return;if(rid){const r=CTX.rooms[rid];const b=$('.blk');const want=!!(r&&(r.block||[]).length);if(!!b!==want){const y=window.scrollY;roomView(false);window.scrollTo(0,y);}}else listView();});
+  if($('#sheet')||$('.modal'))return;if(rid){const r=CTX.rooms[rid];const b=$('.blk');const want=!!(r&&(r.block||[]).length);if(!!b!==want){const y=window.scrollY;roomView(false);window.scrollTo(0,y);}else drawMsgs();}else listView();});
 route();
 });
 </script>

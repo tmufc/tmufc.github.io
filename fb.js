@@ -532,7 +532,7 @@ async function chInit(){
     open:(rid,n,cb)=>{if(unsubM)unsubM();unsubM=onSnapshot(query(msgs(rid),orderBy('at','desc'),limit(n)),s=>cb(s.docs.map(d=>({...d.data(),id:d.id})).reverse(),s.docs.length>=n),e=>{console.error(e);cb(null,false);});},
     close:()=>{if(unsubM){unsubM();unsubM=null;}},
     send:async(rid,text)=>{const at=Date.now();await setDoc(doc(msgs(rid)),{by:ME.uid,text,at});await updateDoc(doc(db,'rooms',rid),{lastAt:at,lastBy:ME.uid,lastText:text.slice(0,60),['read.'+ME.uid]:at,['names.'+ME.uid]:myName});},
-    del:async(rid,id)=>{await deleteDoc(doc(db,'rooms',rid,'msgs',id));},
+    del:async(rid,id,at)=>{await deleteDoc(doc(db,'rooms',rid,'msgs',id));const r=R[rid];if(r&&at&&r.lastAt===at){try{await updateDoc(doc(db,'rooms',rid),{lastText:'（送信が取り消されました）'});}catch(e){}}},
     read:async rid=>{try{await updateDoc(doc(db,'rooms',rid),{['read.'+ME.uid]:Date.now()});}catch(e){}},
     block:async(rid,on)=>{await updateDoc(doc(db,'rooms',rid),{block:on?arrayUnion(ME.uid):arrayRemove(ME.uid)});},
     // グループ
