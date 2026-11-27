@@ -40,7 +40,7 @@ css.textContent=`.tg{position:fixed;inset:0;z-index:100;background:#0E1A33;color
 .tg .gh{font-size:12px;color:rgba(255,255,255,.6);margin:12px 0 0}
 .trf{font-size:15px!important;padding:2px 9px!important;line-height:1.2}
 :root{--tabh:58px}
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);will-change:transform;-webkit-backface-visibility:hidden;display:flex;background:var(--surface,#fff);border-top:1px solid var(--line,#D5DDE7);padding:4px 2px calc(4px + env(safe-area-inset-bottom,0px));box-shadow:0 -2px 10px rgba(0,0,0,.04)}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;background:var(--surface,#fff);border-top:1px solid var(--line,#D5DDE7);padding:4px 2px calc(4px + env(safe-area-inset-bottom,0px));box-shadow:0 -2px 10px rgba(0,0,0,.04)}
 .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0 2px;font-size:10.5px;color:var(--sub,#5B6B7E);text-decoration:none;-webkit-tap-highlight-color:transparent;min-height:48px;justify-content:center}
 .tabbar a.on{color:var(--blue,#1F5FBF);font-weight:700}
 .tabbar a{white-space:nowrap;overflow:hidden}
@@ -246,17 +246,11 @@ function buildNav(){if(document.querySelector('.tabbar'))return;const cur=curTab
   const bar=document.createElement('nav');bar.className='tabbar'+(tabDefs().length>5?' six':'');bar.setAttribute('aria-label','メニュー');
   bar.innerHTML=tabDefs().map(([k,l,h])=>`<a href="${h}" data-k="${k}" class="${k===cur?'on':''}"${k===cur?' aria-current="page"':''}><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TI[k]}</svg><i class="bd" hidden></i></span>${l}</a>`).join('');
   document.body.appendChild(bar);document.body.classList.add('has-tabbar');
-  // iPhone（ホーム画面から開いたとき）でスクロールやキーボードのあとにメニューが画面の途中に残る不具合の対策
-  {let t=0,raf=0;const vv=window.visualViewport;
-   const typing=()=>{const a=document.activeElement;return a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!/^(checkbox|radio|button|submit)$/.test(a.type||'');};
-   const fix=()=>{raf=0;if(!vv)return;let n=0;if(!typing()){const r=bar.getBoundingClientRect();n=t+(vv.offsetTop+vv.height)-r.bottom;if(Math.abs(n)<1||Math.abs(n)>1500)n=0;}
-     if(Math.abs(n-t)>=1||(n===0&&t!==0)){t=n;bar.style.transform=t?`translate3d(0,${t}px,0)`:'';}};
-   const q=()=>{if(!raf)raf=requestAnimationFrame(fix);};
-   if(vv){vv.addEventListener('resize',q);vv.addEventListener('scroll',q);}
-   window.addEventListener('scroll',q,{passive:true});window.addEventListener('pageshow',q);window.addEventListener('orientationchange',()=>setTimeout(q,300));
-   document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(q,100);});
-   document.addEventListener('focusout',()=>{setTimeout(q,50);setTimeout(q,400);});document.addEventListener('focusin',q);
-   window.addEventListener('touchend',()=>setTimeout(q,120),{passive:true});setTimeout(q,500);}
+  // iPhone：キーボードを閉じた後などにメニューが途中に残ることがあるので、軽く再計算させる
+  {const typing=()=>{const a=document.activeElement;return a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!/^(checkbox|radio|button|submit)$/.test(a.type||'');};
+   const nudge=()=>{if(typing())return;const y=window.scrollY;if(y>0){window.scrollTo(window.scrollX,y-1);window.scrollTo(window.scrollX,y);}else{window.scrollTo(window.scrollX,1);window.scrollTo(window.scrollX,0);}};
+   document.addEventListener('focusout',()=>setTimeout(nudge,350));
+   document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(nudge,200);});}
   // 上の切り替え（練習・試合の中だけ）
   const seg=(items)=>`<div class="segnav">${items.map(([l,h,on])=>on?`<span class="on" aria-current="page">${l}</span>`:`<a href="${h}">${l}</a>`).join('')}</div>`;
   let items=null;
