@@ -338,6 +338,7 @@ function bind(){
   document.querySelectorAll('[data-injury]').forEach(b=>b.onclick=()=>go(()=>sInjury(b.dataset.injury)));
   document.querySelectorAll('[data-newinj]').forEach(b=>b.onclick=()=>go(()=>sInjNew(b.dataset.newinj)));
   document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{UI.filter=b.dataset.filter;saveUI();render();});
+  {const c=document.getElementById('csvBtn');if(c)c.onclick=csvOpen;}
   document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{UI.stab=b.dataset.goto;stack=[];saveUI();render();window.scrollTo(0,0);});
   if(window.__bind){const f=window.__bind;window.__bind=null;f();}
 }
@@ -502,7 +503,48 @@ function sList(){const f=UI.filter||'all';const al=allAlerts();const ap=new Set(
   return `<div class="chips">${[['all','全員'],...(hasTeam?[['A','A'],['B','B']]:[]),['warn','要注意'],['none','未入力']].map(([k,l])=>`<button data-filter="${k}" class="${f===k?'on':''}">${l}</button>`).join('')}</div>
 <div class="card tbl"><table><thead><tr><th>選手</th><th>疲労</th><th>張り</th><th>睡眠</th><th>気分</th><th>前日RPE</th><th>自主トレ<br>7日</th></tr></thead><tbody>${ps.map(p=>{const a=ent(T,p.id).am,pm=ent(yd,p.id).pm,inj=activeInj(p.id);
     return `<tr data-player="${p.id}"><td>${ap.has(p.id)?'<span class="al al-'+(al.some(x=>x.pid===p.id&&x.lv==='red')?'red':'warn')+'" style="display:inline-block;margin-right:6px"></span>':''}${esc(p.name)}${inj?` <span class="tag ${inj.stage<2?'t-red':'t-blue'}">${STG[inj.stage]}</span>`:''}</td>${a?`<td><span class="dot ${lv(a.fat)}">${a.fat}</span></td><td><span class="dot ${lv(a.sore)}">${a.sore}</span></td><td><span class="dot ${slv(a.sleep)}">${a.sleep}</span></td><td><span class="dot ${lv(a.mood,true)}">${a.mood}</span></td>`:'<td colspan="4" style="color:var(--sub);font-size:12px">未入力</td>'}<td class="num" style="font-size:16px">${pm?pm.rpe:'－'}</td><td class="num" style="font-size:16px">${(()=>{const m=(DB.self||[]).filter(x=>x.pid===p.id&&x.date>=days(7)[0]).reduce((a,x)=>a+x.min,0);return m?m+"'":'－';})()}</td></tr>`;}).join('')||'<tr><td colspan="7" class="empty">該当する選手はいません</td></tr>'}</tbody></table></div>
-<p class="note">疲労・張りは1〜5（大きいほど悪い）、気分は1〜5（大きいほど良い）、睡眠は時間です。色は緑＝良い、黄＝注意、赤＝悪い。</p>`;}
+<p class="note">疲労・張りは1〜5（大きいほど悪い）、気分は1〜5（大きいほど良い）、睡眠は時間です。色は緑＝良い、黄＝注意、赤＝悪い。</p>
+<div class="acts" style="margin-top:14px"><button class="btn ghost sm" id="csvBtn">⤓ CSVで出力（期間を指定）</button></div>`;}
+// ---------- CSV出力 ----------
+function csvOpen(){const t=TODAY,first=ds(new Date(t.getFullYear(),t.getMonth(),1));const hasTeam=ROSTER.some(p=>p.team);
+  const pre=[['直近7日',ds(addD(t,-6)),T],['直近30日',ds(addD(t,-29)),T],['今月',first,T],['先月',ds(new Date(t.getFullYear(),t.getMonth()-1,1)),ds(new Date(t.getFullYear(),t.getMonth(),0))]];
+  const m=modal(`<h3 style="margin:0 0 10px">コンディションをCSVで出力</h3>
+<div class="chips" style="margin-bottom:8px">${pre.map(([l,a,b])=>`<button data-pre="${a}|${b}">${l}</button>`).join('')}</div>
+<div style="display:flex;gap:8px;align-items:center"><input type="date" class="in" id="cx_a" value="${ds(addD(t,-29))}" max="${T}"><span>〜</span><input type="date" class="in" id="cx_b" value="${T}" max="${T}"></div>
+<div class="ql" style="margin:12px 0 6px">対象</div><select class="in" id="cx_who"><option value="all">全員</option>${hasTeam?'<option value="A">Aのみ</option><option value="B">Bのみ</option>':''}${ROSTER.map(p=>`<option value="${p.id}">${p.grade?p.grade+'年 ':''}${esc(p.name)}</option>`).join('')}</select>
+<label style="display:flex;gap:8px;align-items:center;margin:12px 0 4px;font-size:14px"><input type="checkbox" id="cx_all"> 入力のない日も行に含める</label>
+<p class="note" style="margin:6px 0 12px">1行＝1日×1選手。朝のチェック・練習後のきつさ・自主トレ・欠席遅刻・痛みの報告・ケガをまとめて出します。Excelでそのまま開けます。</p>
+<p id="cx_err" class="note" style="color:var(--red)"></p>
+<div class="acts" style="justify-content:flex-end;margin:0"><button class="btn ghost sm" data-no>やめる</button><button class="btn sm" id="cx_go">出力する</button></div>`);
+  m.querySelectorAll('[data-pre]').forEach(b=>b.onclick=()=>{const[a,c]=b.dataset.pre.split('|');m.querySelector('#cx_a').value=a;m.querySelector('#cx_b').value=c;});
+  m.querySelector('[data-no]').onclick=()=>m.remove();
+  m.querySelector('#cx_go').onclick=async()=>{const a=m.querySelector('#cx_a').value,b=m.querySelector('#cx_b').value,who=m.querySelector('#cx_who').value,all=m.querySelector('#cx_all').checked;const er=m.querySelector('#cx_err');
+    if(!a||!b||a>b){er.textContent='期間を正しく選んでください';return;}
+    if((pd(b)-pd(a))/864e5>366){er.textContent='期間は1年以内にしてください';return;}
+    const go=m.querySelector('#cx_go');go.disabled=true;go.textContent='読み込み中…';
+    try{const X=CTX.exportRange?await CTX.exportRange(a,b):{entries:DB.entries,reports:DB.reports,absences:DB.absences,self:DB.self||[],injuries:DB.injuries};
+      const ps=ROSTER.filter(p=>who==='all'||(who==='A'||who==='B'?p.team===who:p.id===who));
+      const n=csvMake(X,a,b,ps,all);m.remove();toast(n?`${n}行を出力しました`:'該当するデータがありません');}
+    catch(e){console.error(e);go.disabled=false;go.textContent='出力する';er.textContent='読み込めませんでした。通信状態を確認してもう一度試してください';}};}
+function csvMake(X,a,b,ps,all){
+  const H=['日付','曜日','学年','名前','A/B','ポジション','睡眠時間','睡眠の質(1-5)','疲労(1-5)','筋肉の張り(1-5)','気分(1-5)','痛み','朝の入力時刻','練習きつさ(RPE)','練習時間(分)','練習負荷(RPE×分)','練習メモ','自主トレ(分)','自主トレ負荷','自主トレ内容','欠席・遅刻','理由','連絡メモ','痛みの報告','ケガ','ケガの段階'];
+  const injOn=(pid,d)=>X.injuries.filter(j=>!j.sample&&j.pid===pid&&j.date&&j.date<=d).map(j=>{const ac=j.actual||[j.date];const end=ac[3];if(end?d>=end:!j.active)return null;let st=0;for(let i=0;i<3;i++)if(ac[i]&&ac[i]<=d)st=i;if(!ac[1]&&!ac[2])st=Math.min(j.stage||0,2);return {j,st};}).filter(Boolean);
+  const rows=[];for(let x=pd(a);ds(x)<=b;x=addD(x,1)){const d=ds(x);ps.forEach(p=>{const e=(X.entries[d]||{})[p.id]||{},am=e.am,pm=e.pm;
+    const sf=X.self.filter(s=>s.pid===p.id&&s.date===d),ab=X.absences.filter(s=>s.pid===p.id&&s.date===d),rp=X.reports.filter(s=>s.pid===p.id&&s.date===d),ij=injOn(p.id,d);
+    if(!all&&!am&&!pm&&!sf.length&&!ab.length&&!rp.length&&!ij.length)return;
+    const sm=sf.reduce((t,s)=>t+(+s.min||0),0),sl=sf.reduce((t,s)=>t+(+s.min||0)*(+s.rpe||0),0);
+    rows.push([d,WD[x.getDay()],p.grade||'',p.name,p.team,p.p1,
+      am?am.sleep:'',am?am.sq:'',am?am.fat:'',am?am.sore:'',am?am.mood:'',am?(am.pain?'あり':'なし'):'',am?am.at||'':'',
+      pm?pm.rpe:'',pm?pm.min:'',pm?(pm.rpe*pm.min):'',pm?pm.note||'':'',
+      sf.length?sm:'',sf.length?sl:'',sf.map(s=>(s.kinds||[]).join('・')+(s.note?`（${s.note}）`:'')).join(' / '),
+      ab.map(s=>s.kind).join(' / '),ab.map(s=>s.reason||'').join(' / '),ab.map(s=>s.note||'').join(' / '),
+      rp.map(r=>`${r.side||''}${r.part||''} 程度${r.level}${r.join?'・'+r.join:''}${r.when?'・'+r.when:''}`).join(' / '),
+      ij.map(o=>`${o.j.side||''}${o.j.part||''}${o.j.what?'（'+o.j.what+'）':''}`).join(' / '),ij.map(o=>STG[o.st]).join(' / ')]);});}
+  if(!rows.length)return 0;
+  const q=v=>{v=String(v??'');if(/^[=+\-@]/.test(v)&&isNaN(+v))v="'"+v;return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const csv='\ufeff'+[H,...rows].map(r=>r.map(q).join(',')).join('\r\n');
+  const bl=new Blob([csv],{type:'text/csv;charset=utf-8'});const u=URL.createObjectURL(bl);const l=document.createElement('a');l.href=u;l.download=`condition_${a}_${b}.csv`;document.body.appendChild(l);l.click();setTimeout(()=>{l.remove();URL.revokeObjectURL(u);},4000);
+  return rows.length;}
 function sPlayer(pid){const p=byId(pid),D=days(14),lab=D.map((d,i)=>i%2===1?md(d):''),ams=D.map(d=>ent(d,pid).am);const al=alertsFor(pid);
   const injs=DB.injuries.filter(j=>j.pid===pid),reps=DB.reports.filter(r=>r.pid===pid),abs=DB.absences.filter(a=>a.pid===pid).sort((a,b)=>b.date.localeCompare(a.date));
   const ldT=D.map(d=>pmLoad(pid,d)),ldS=D.map(d=>selfLoad(pid,d));

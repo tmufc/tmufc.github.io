@@ -99,6 +99,9 @@ textarea.in{min-height:76px;resize:vertical}
 .pgrid button span.g{font-size:11px;border-radius:4px;padding:1px 6px}
 @media (min-width:700px){.pgrid{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:430px){.apptabs a,.apptabs span{font-size:12px;padding:5px 6px}}
+
+button.trl{border:0;background:none;padding:0;font:inherit;cursor:pointer;text-align:left}
+.trl.tre{margin-left:10px;font-size:12px;opacity:.85}
 </style><style>
 .today{background:var(--navy);color:#fff;border-radius:14px;padding:16px;margin-top:2px}
 .today .d{font-size:13px;color:rgba(255,255,255,.75)}
@@ -169,7 +172,9 @@ function closeSheet(){const d=$('#sheet');if(d)d.remove();}
 const evOf=date=>Object.values(CTX.events).filter(e=>e.date===date||(e.allDay&&e.date<=date&&e.endDate>date)).sort((a,b)=>(a.allDay?0:1)-(b.allDay?0:1)||(a.start||'').localeCompare(b.start||''));
 const ntOf=date=>Object.values(CTX.notices).filter(n=>n.date===date).sort((a,b)=>(b.important?1:0)-(a.important?1:0)||(a.at||0)-(b.at||0));
 const general=()=>Object.values(CTX.notices).filter(n=>!n.date).sort((a,b)=>(b.important?1:0)-(a.important?1:0)||(b.at||0)-(a.at||0));
-const trOf=date=>CTX.trainings?Object.values(CTX.trainings).filter(t=>t.date===date):[];
+const trOf=date=>Object.values(CTX.trPub||{}).filter(t=>t.date===date);
+const trTheme=t=>t.theme||(t.mode==='ab'&&t.parts?['A','B'].filter(k=>t.parts[k]&&t.parts[k].theme).map(k=>k+'：'+t.parts[k].theme).join('／'):'')||'テーマ未設定';
+const trLink=(t,short)=>`<button class="trl" data-trm="${esc(t.id)}">練習メニュー（${esc(trTheme(t))}）${short?'':'を見る '}›</button>${CTX.trainings?`<a class="trl tre" href="training.html#${encodeURIComponent(t.id)}">編集</a>`:''}`;
 function evHtml(e){return `<div class="ev"><div class="tm num">${e.allDay?'終日':esc(e.start)+(e.end?`<small>〜${esc(e.end)}</small>`:'')}</div><div class="bd"><b>${esc(e.title||'（予定）')}</b>${e.location?`<div class="loc">📍 ${esc(e.location)}</div>`:''}${e.desc?`<div class="ds">${esc(e.desc)}</div>`:''}</div></div>`;}
 function ntHtml(n){const mine=canPost;return `<div class="nt${n.important?' imp':''}"><p>${esc(n.text)}</p><div class="by">${esc(n.byName||'')}${n.at?'・'+new Date(n.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}):''}${mine?`<button data-ned="${n.id}">編集</button>`:''}</div></div>`;}
 function attHtml(date,light){const a=CTX.days[date];if(!a)return '';
@@ -180,17 +185,18 @@ ${open[date]?`<div class="names"><div><em>参加予定</em>${list(join,true)}</d
 function render(){
   const ev=evOf(T),nt=ntOf(T),tr=trOf(T);
   let h=`<div class="today"><div class="d">今日</div><h2>${fmt(T)}</h2>${ev.length?ev.map(evHtml).join(''):'<p class="noev">今日の予定はありません</p>'}
-${tr.map(t=>`<a class="trl" href="training.html#${t.id}">練習メニュー（${esc(t.theme||'テーマ未設定')}）を見る ›</a>`).join('<br>')}
+${tr.map(t=>trLink(t)).join('<br>')}
 ${attHtml(T)}${nt.length?`<div style="margin-top:10px">${nt.map(ntHtml).join('')}</div>`:''}</div>`;
   const g=general();
   h+=`<h2>連絡事項${canPost?'<button class="btn ghost sm" id="nadd">＋ 連絡を書く</button>':''}</h2>${g.length?`<div class="card">${g.map(ntHtml).join('')}</div>`:'<div class="card empty">連絡事項はありません</div>'}`;
   h+='<h2>これからの予定<small>2週間</small></h2>';let any=false;
   for(let i=1;i<DAYS;i++){const d=addD(T,i),e=evOf(d),n=ntOf(d),t=trOf(d);if(!e.length&&!n.length&&!t.length)continue;any=true;const w=pd(d).getDay();
-    h+=`<div class="card day"><div class="dh"><span class="${w===0?'sun':w===6?'sat':''}">${fmt(d)}</span>${i===1?'<small>明日</small>':''}</div><div class="bx">${e.map(evHtml).join('')}${t.map(x=>`<a class="trl" href="training.html#${x.id}">練習メニュー（${esc(x.theme||'テーマ未設定')}）›</a>`).join('<br>')}${attHtml(d,true)}${n.length?`<div style="margin-top:6px">${n.map(ntHtml).join('')}</div>`:''}</div></div>`;}
+    h+=`<div class="card day"><div class="dh"><span class="${w===0?'sun':w===6?'sat':''}">${fmt(d)}</span>${i===1?'<small>明日</small>':''}</div><div class="bx">${e.map(evHtml).join('')}${t.map(x=>trLink(x,true)).join('<br>')}${attHtml(d,true)}${n.length?`<div style="margin-top:6px">${n.map(ntHtml).join('')}</div>`:''}</div></div>`;}
   if(!any)h+='<div class="card empty">2週間以内の予定はありません</div>';
   h+=`<p class="note">予定は部のGoogleカレンダーから自動で取り込みます（10〜15分ごと）。参加予定は、欠席連絡（休み）とケガの状況から出しています。</p>`;
   $('#main').innerHTML=h;
   document.querySelectorAll('[data-att]').forEach(b=>b.onclick=()=>{open[b.dataset.att]=!open[b.dataset.att];render();});
+  document.querySelectorAll('[data-trm]').forEach(b=>b.onclick=()=>CTX.showMenu(CTX.trPub[b.dataset.trm]));
   const na=$('#nadd');if(na)na.onclick=()=>editNotice(null);
   document.querySelectorAll('[data-ned]').forEach(b=>b.onclick=()=>editNotice(CTX.notices[b.dataset.ned]));}
 function editNotice(n){

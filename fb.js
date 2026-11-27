@@ -71,6 +71,18 @@ body.has-tabbar .toast{bottom:calc(var(--tabh) + 22px + env(safe-area-inset-bott
 .tmod .sh{background:var(--surface,#fff);color:var(--ink,#14202E);width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));font-family:inherit}
 .tmod .hd{display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:17px;margin-bottom:10px}
 .tmod .x{border:1px solid var(--line,#D5DDE7);background:none;border-radius:8px;padding:5px 12px;font:inherit;cursor:pointer;color:inherit}
+.tm-top{font-size:13px;color:var(--sub,#5B6B7E)}
+.tm-th{font-size:18px;font-weight:700;margin:2px 0 6px}
+.tm-sum{font-size:12px;color:var(--sub,#5B6B7E);margin-bottom:4px}
+.tm-part{margin-top:12px}.tm-ph{font-weight:700;font-size:15px;border-left:4px solid var(--blue,#1F5FBF);padding-left:8px;display:flex;gap:8px;align-items:baseline}.tm-ph small{font-weight:400;font-size:12px;color:var(--sub,#5B6B7E)}
+.tm-m{border:1px solid var(--line,#D5DDE7);border-radius:12px;padding:10px 12px;margin-top:8px}
+.tm-slot{font-size:12px;font-weight:700;color:var(--blue,#1F5FBF)}
+.tm-h{display:flex;justify-content:space-between;gap:8px;font-size:15px}.tm-h span{white-space:nowrap;color:var(--sub,#5B6B7E);font-size:13px}
+.tm-s{font-size:12px;color:var(--sub,#5B6B7E);margin-top:2px}
+.tm-a{font-size:13px;margin-top:6px;font-weight:700}
+.tm-d{font-size:13px;margin-top:4px;white-space:pre-line;line-height:1.6}
+.tm-gap{font-size:12px;color:var(--sub,#5B6B7E);padding:4px 0 0 14px}
+.tm-e{color:var(--sub,#5B6B7E);font-size:13px}
 .tmod .u{border-bottom:1px solid var(--line,#D5DDE7);padding:10px 0;display:grid;grid-template-columns:1fr;gap:6px}
 .tmod .u b{font-size:15px}.tmod .u small{color:var(--sub,#5B6B7E);font-size:12px}
 .tmod .u .r{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -186,6 +198,27 @@ let usersCache=[],usersUnsub=null;
 function reloadPage(){if(document.querySelector('.modal,.tmod,#sheet')&&!confirm('入力中の内容は消えます。画面を更新しますか？'))return;
   if(PAGE==='pos'&&(window.__TMU_SAVE_STATUS==='wait'||pushTimer)){toast('保存中です。少し待ってからもう一度押してください');return;}
   try{toast('更新しています…');}catch(e){}setTimeout(()=>location.reload(),150);}
+// ---------- 練習メニューを全員に見せる ----------
+// スタッフのメモや練習後の振り返りは載せず、メニューの中身だけを trainingsPub に置く
+const pubMenus=ms=>(ms||[]).map(m=>({name:m.name||'',min:+m.min||0,play:+m.play||0,sets:+m.sets||0,rest:+m.rest||0,players:m.players||'',size:m.size||'',aim:m.aim||'',desc:m.desc||'',from:m.from||'',to:m.to||'',gap:+m.gap||0}));
+function pubTr(t){const o={date:t.date||'',start:t.start||'',place:t.place||'',theme:t.theme||'',mode:t.mode||'all',menus:pubMenus(t.menus),upd:Date.now()};
+  if(t.parts){o.parts={};Object.keys(t.parts).forEach(k=>{o.parts[k]={theme:(t.parts[k]||{}).theme||'',menus:pubMenus((t.parts[k]||{}).menus)};});}return o;}
+async function publishTr(t){try{const o=pubTr(t);const key='tmu-pub-'+t.id;const j=JSON.stringify({...o,upd:0});if(localStorage.getItem(key)===j)return;await setDoc(doc(db,'trainingsPub',t.id),o);localStorage.setItem(key,j);}catch(e){console.error(e);}}
+const fixMin=m=>{const v=+m.min||0;if(m.play&&m.rest&&v===Math.round((m.play*(m.sets||1)+m.rest*Math.max(0,(m.sets||1)-1))*10)/10)return Math.round((m.play+m.rest)*(m.sets||1)*10)/10;return v;};
+function showTrainingMenu(t){if(!t)return;const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const W='日月火水木金土';const[y,mo,d]=String(t.date).split('-').map(Number);const dt=new Date(y,mo-1,d);
+  const list=(ms)=>ms.length?ms.map((m,i)=>`${i&&m.gap>0?`<div class="tm-gap">↓ 間 ${m.gap}分</div>`:''}<div class="tm-m">${m.from?`<div class="tm-slot">${e(m.from.replace(/^0/,''))}〜${e((m.to||'').replace(/^0/,''))}</div>`:''}<div class="tm-h"><b>${i+1}. ${e(m.name||'（名前なし）')}</b><span>${fixMin(m)}分</span></div>
+${m.play?`<div class="tm-s">${m.play}分×${m.sets||1}セット${m.rest?`（レスト${m.rest}分）`:''}${m.players?`・${e(m.players)}`:''}${m.size?`・${e(m.size)}`:''}</div>`:(m.players||m.size?`<div class="tm-s">${e([m.players,m.size].filter(Boolean).join('・'))}</div>`:'')}
+${m.aim?`<div class="tm-a">狙い：${e(m.aim)}</div>`:''}${m.desc?`<div class="tm-d">${e(m.desc)}</div>`:''}</div>`).join(''):'<p class="tm-e">メニューはまだ入っていません</p>';
+  const sum=ms=>ms.reduce((a,m)=>a+fixMin(m),0);
+  let body='';
+  if(t.mode==='ab'&&t.parts)body=['A','B'].filter(k=>t.parts[k]).map(k=>{const ms=t.parts[k].menus||[];return `<div class="tm-part"><div class="tm-ph">${k}チーム${t.parts[k].theme?`：${e(t.parts[k].theme)}`:''}<small>${ms.length}本・${sum(ms)}分</small></div>${list(ms)}</div>`;}).join('');
+  else{const ms=t.menus||[];body=`<div class="tm-sum">${ms.length}本・${sum(ms)}分</div>${list(ms)}`;}
+  const m=document.createElement('div');m.className='tmod';m.innerHTML=`<div class="sh"><div class="hd">練習メニュー<button class="x" data-x>閉じる</button></div>
+<div class="tm-top">${mo}/${d}（${W[dt.getDay()]}）${t.start?` ${e(t.start)}〜`:''}${t.place?`・${e(t.place)}`:''}</div>${t.theme?`<div class="tm-th">${e(t.theme)}</div>`:''}${body}</div>`;
+  m.onclick=ev=>{if(ev.target===m)m.remove();};m.querySelector('[data-x]').onclick=()=>m.remove();document.body.appendChild(m);}
+window.TMU_showMenu=showTrainingMenu;
+
 // ---------- 下のタブ（メニュー） ----------
 const TI={
  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
@@ -442,7 +475,16 @@ async function condInit(role,pid,roster){
     if(!jobs.length)return;
     try{await Promise.all(jobs);}catch(e){console.error(e);toast('保存できませんでした（'+(e.code||'エラー')+'）');}
   }
-  return {role,pid,roster,db:DB,save,syncInj,onRemote:f=>{onRemote=f;},me:ME};
+  async function exportRange(a,b){
+    const months=[];let x=new Date(+a.slice(0,4),+a.slice(5,7)-1,1);const end=b.slice(0,7);
+    while(true){const k=`${x.getFullYear()}-${pad(x.getMonth()+1)}`;if(k>end||months.length>36)break;months.push(k);x=new Date(x.getFullYear(),x.getMonth()+1,1);}
+    const ch=[];for(let i=0;i<months.length;i+=10)ch.push(months.slice(i,i+10));
+    const rng=c=>getDocs(query(collection(db,c),where('date','>=',a),where('date','<=',b)));
+    const [ens,rp,ab,sf,inj]=await Promise.all([Promise.all(ch.map(c=>getDocs(query(collection(db,'entries'),where('ym','in',c))))),rng('reports'),rng('absences'),rng('self'),getDocs(collection(db,'injuries'))]);
+    const entries={};ens.forEach(sn=>sn.docs.forEach(d=>{const v=d.data();Object.entries(v.d||{}).forEach(([date,o])=>{if(date<a||date>b)return;(entries[date]=entries[date]||{})[v.pid]=o;});}));
+    const L=sn=>sn.docs.map(d=>({...d.data(),id:d.id}));
+    return {entries,reports:L(rp),absences:L(ab),self:L(sf),injuries:L(inj)};}
+  return {role,pid,roster,db:DB,save,syncInj,onRemote:f=>{onRemote=f;},me:ME,exportRange:staff?exportRange:null};
 }
 
 // ---------- トレーニング ----------
@@ -451,6 +493,7 @@ async function trInit(roster){
   const watch=(coll,store)=>new Promise((res,rej)=>{let first=true;onSnapshot(collection(db,coll),s=>{const seen=new Set();s.docs.forEach(d=>{seen.add(d.id);store[d.id]={...d.data(),id:d.id};});Object.keys(store).forEach(k=>{if(!seen.has(k))delete store[k];});
     if(first){first=false;res();}else if(onRemote)onRemote();},e=>{if(first){first=false;rej(e);}});});
   await Promise.all([watch('trainings',T),watch('menus',M)]);
+  {const y=dstr(new Date(Date.now()-86400000));Object.values(T).filter(t=>t.date>=y).forEach(t=>publishTr(t));}
   const put=(coll,o)=>{const data=clean(o);delete data.id;data.by=ME.email;data.at=serverTimestamp();return setDoc(doc(db,coll,o.id),data).catch(e=>{console.error(e);toast('保存できませんでした（'+(e.code||'エラー')+'）');});};
   async function loadDay(date){
     try{const [ab,inj,en]=await Promise.all([getDocs(query(collection(db,'absences'),where('date','==',date))),getDocs(collection(db,'injuries')),getDocs(query(collection(db,'entries'),where('ym','==',date.slice(0,7))))]);
@@ -458,7 +501,7 @@ async function trInit(roster){
       return {abs:ab.docs.map(d=>d.data()),inj:inj.docs.map(d=>d.data()).filter(j=>j.active&&j.stage<3&&(!j.date||j.date<=date)),ent};}
     catch(e){console.error(e);toast('コンディションを読み込めませんでした');return {abs:[],inj:[],ent:{}};}}
   return {roster,trainings:T,menus:M,me:ME,loadDay,
-    saveTraining:t=>{T[t.id]=t;return put('trainings',t);},deleteTraining:id=>{delete T[id];return deleteDoc(doc(db,'trainings',id)).catch(e=>toast('削除できませんでした'));},
+    saveTraining:t=>{T[t.id]=t;publishTr(t);return put('trainings',t);},deleteTraining:id=>{delete T[id];deleteDoc(doc(db,'trainingsPub',id)).catch(()=>{});try{localStorage.removeItem('tmu-pub-'+id);}catch(e){}return deleteDoc(doc(db,'trainings',id)).catch(e=>toast('削除できませんでした'));},
     saveMenu:m=>{M[m.id]=m;return put('menus',m);},deleteMenu:id=>{delete M[id];return deleteDoc(doc(db,'menus',id)).catch(e=>toast('削除できませんでした'));},
     setCount:(t,n)=>{if(n!=null&&t.cnt!==n){t.cnt=n;put('trainings',t);}},
     onRemote:f=>{onRemote=f;}};
@@ -483,7 +526,8 @@ async function schInit(roster){
       if(j&&j.stage<2&&a)r.absent.push(p.id);if(j&&j.stage===0)r.inj.push(p.id);else if(j&&j.stage===1)r.rehab.push(p.id);else if(a&&a.kind==='欠席')r.off.push(p.id);
       else{r.join.push(p.id);if(j&&j.stage===2)r.partial.push(p.id);if(a)r.late.push(p.id);}});return r;};
   const dayMap=new Proxy(D,{get:(o,k)=>{if(live&&typeof k==='string'&&k>=T&&k<=dstr(new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()+6)))return calcDay(k);return Object.values(o).find(v=>v.date===k);}});
-  return {roster,events:E,days:dayMap,notices:N,trainings:CONDS.includes(ME.role)?TR:null,me:ME,canPost:ME.role!=='player',
+  const TP={};try{(await getDocs(query(collection(db,'trainingsPub'),where('date','>=',T)))).docs.forEach(d=>{TP[d.id]={...d.data(),id:d.id};});}catch(e){console.error(e);}
+  return {roster,events:E,days:dayMap,notices:N,trainings:CONDS.includes(ME.role)?TR:null,trPub:TP,showMenu:showTrainingMenu,me:ME,canPost:ME.role!=='player',
     saveNotice:async(x,isNew)=>{const data={text:x.text,date:x.date||'',important:!!x.important,byName:isNew?(ME.name||''):(x.byName||ME.name||''),by:isNew?ME.uid:(x.by||ME.uid),at:isNew?Date.now():(x.at||Date.now()),editedBy:ME.uid};N[x.id]={...data,id:x.id};try{await setDoc(doc(db,'notices',x.id),data);}catch(e){console.error(e);toast('保存できませんでした（'+(e.code||'')+'）');}},
     deleteNotice:async id=>{delete N[id];try{await deleteDoc(doc(db,'notices',id));}catch(e){toast('削除できませんでした');}},
     onRemote:f=>{onRemote=f;}};
@@ -495,13 +539,14 @@ async function hmInit(roster){
   const d0=new Date();const T=dstr(d0);const ym=T.slice(0,7);const isStaffR=CONDS.includes(ME.role);const pid=ME.pid||'';
   const safe=async(f,dflt)=>{try{return await f();}catch(e){console.error(e);return dflt;}};
   const docs=s=>s.docs.map(d=>({...d.data(),id:d.id}));
-  const [ev,day,nt,rv,rooms]=await Promise.all([
+  const [ev,day,nt,rv,rooms,tp]=await Promise.all([
     safe(async()=>docs(await getDocs(query(collection(db,'events'),where('date','==',T)))),[]),
     safe(async()=>{const s=await getDoc(doc(db,'days',T));return s.exists()?s.data():null;},null),
     safe(async()=>docs(await getDocs(query(collection(db,'notices'),orderBy('at','desc'),limit(6)))),[]),
     safe(async()=>docs(await getDocs(query(collection(db,'reviews'),orderBy('date','desc'),limit(4)))),[]),
-    safe(async()=>docs(await getDocs(query(collection(db,'rooms'),where('members','array-contains',ME.uid)))),[])]);
-  const out={roster,me:ME,T,events:ev,day,notices:nt,reviews:rv,rooms,isStaff:isStaffR,isFull:FULL.includes(ME.role),isPlayer:NEEDPID.includes(ME.role)&&!!pid,
+    safe(async()=>docs(await getDocs(query(collection(db,'rooms'),where('members','array-contains',ME.uid)))),[]),
+    safe(async()=>docs(await getDocs(query(collection(db,'trainingsPub'),where('date','==',T)))),[])]);
+  const out={roster,me:ME,T,events:ev,day,notices:nt,reviews:rv,rooms,trPub:tp,showMenu:showTrainingMenu,isStaff:isStaffR,isFull:FULL.includes(ME.role),isPlayer:NEEDPID.includes(ME.role)&&!!pid,
     openUsers:ME.role==='admin'?()=>openUsers():null};
   if(out.isPlayer){const me=roster.find(p=>p.id===pid);out.myName=me?me.name:(ME.name||'');
     const [en,ab]=await Promise.all([safe(async()=>{const s=await getDoc(doc(db,'entries',pid+'_'+ym));return s.exists()?((s.data().d||{})[T]||{}):{};},{}),
