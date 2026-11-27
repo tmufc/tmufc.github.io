@@ -276,7 +276,14 @@ async function navBadges(){try{
   let seen={};try{seen=JSON.parse(localStorage.getItem('tmu-rv-seen')||'{}');}catch(e){}
   const T=dstr(new Date());const rv=(await getDocs(query(collection(db,'reviews'),orderBy('date','desc'),limit(6)))).docs.map(d=>({...d.data(),id:d.id}));
   const nw=rv.filter(m=>m.date<=T&&m.n&&m.last&&(seen[m.id]||0)<m.last).length;setBadge(FULL.includes(ME.role)?'gm':'rv',nw);
+  let pain=0;if(CONDS.includes(ME.role)){try{pain=(await getDocs(query(collection(db,'reports'),where('status','==','new')))).size;}catch(e){}setBadge('cond',pain);}
+  let mine=0;if(NEEDPID.includes(ME.role)&&ME.pid){try{const T0=dstr(new Date());const e=await getDoc(doc(db,'entries',ME.pid+'_'+T0.slice(0,7)));const d=e.exists()?(e.data().d||{}):{};mine=d[T0]&&d[T0].am?0:1;}catch(e){}}
+  appBadge(un+pain+mine);
 }catch(e){console.error(e);}}
+// ホーム画面のアイコンの数字（未読メッセージ＋スタッフは未確認の痛みの報告）
+function appBadge(n){try{if(!('setAppBadge' in navigator))return;if(n>0)navigator.setAppBadge(n).catch(()=>{});else navigator.clearAppBadge().catch(()=>{});}catch(e){}
+  try{navigator.serviceWorker&&navigator.serviceWorker.controller&&navigator.serviceWorker.controller.postMessage({type:'badge',n});}catch(e){}}
+window.TMU_appBadge=appBadge;
 function setBadge(k,n){const b=document.querySelector(`.tabbar [data-k="${k}"] .bd`);if(!b)return;b.hidden=!n;b.textContent=n>9?'9+':String(n);}
 window.TMU_setBadge=setBadge;
 function addAcct(){
@@ -487,6 +494,7 @@ async function condInit(role,pid,roster){
       Object.keys(synced).filter(k=>k.startsWith(coll+'/')&&!seen.has(k.slice(coll.length+1))).forEach(k=>{delete synced[k];jobs.push(deleteDoc(doc(db,coll,k.slice(coll.length+1))));});});
     if(!jobs.length)return;
     try{await Promise.all(jobs);}catch(e){console.error(e);toast('保存できませんでした（'+(e.code||'エラー')+'）');}
+    clearTimeout(window.__nbT);window.__nbT=setTimeout(navBadges,1500);
   }
   async function exportRange(a,b){
     const months=[];let x=new Date(+a.slice(0,4),+a.slice(5,7)-1,1);const end=b.slice(0,7);
