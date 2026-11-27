@@ -239,6 +239,18 @@ function tabDefs(){const r=ME.role;const full=FULL.includes(r),conds=CONDS.inclu
   T.push(['ch','メッセージ','chat.html']);return T;}
 function curTab(){const full=FULL.includes(ME.role);
   return {hm:'home',sch:'sch',tr:'tr',cond:'cond',pos:'gm',rv:full?'gm':'rv',ch:'ch'}[PAGE]||'';}
+// 画面全体（ドキュメント）をスクロールさせず、本文だけをスクロールさせる。
+// iPhoneでスクロール時に下のメニューが揺れたり途中に残ったりするのを防ぐ。
+function shellMode(){if(document.documentElement.classList.contains('shell'))return;const S=document.body,y0=window.scrollY;
+  const st=document.createElement('style');st.textContent='html.shell{height:100%;overflow:hidden;overscroll-behavior:none}html.shell body{position:fixed;top:0;left:0;right:0;bottom:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}';document.head.appendChild(st);
+  document.documentElement.classList.add('shell');
+  const to=(x,y)=>{if(x&&typeof x==='object')S.scrollTo(x);else S.scrollTo(+x||0,+y||0);};
+  const by=(x,y)=>{if(x&&typeof x==='object')S.scrollBy(x);else S.scrollBy(+x||0,+y||0);};
+  window.scrollTo=to;window.scroll=to;window.scrollBy=by;
+  ['scrollY','pageYOffset'].forEach(k=>{try{Object.defineProperty(window,k,{get:()=>S.scrollTop,configurable:true});}catch(e){}});
+  ['scrollX','pageXOffset'].forEach(k=>{try{Object.defineProperty(window,k,{get:()=>S.scrollLeft,configurable:true});}catch(e){}});
+  S.addEventListener('scroll',()=>window.dispatchEvent(new Event('scroll')),{passive:true});
+  if(y0)S.scrollTop=y0;}
 function buildNav(){if(document.querySelector('.tabbar'))return;const cur=curTab();const full=FULL.includes(ME.role),conds=CONDS.includes(ME.role);
   const meView=ME.role==='leader'&&new URLSearchParams(location.search).get('v')==='me';
   try{if(ME.role==='leader'&&PAGE==='cond')localStorage.setItem('tmu-last-cond',meView?'condition.html?v=me':'condition.html');}catch(e){}
@@ -246,11 +258,7 @@ function buildNav(){if(document.querySelector('.tabbar'))return;const cur=curTab
   const bar=document.createElement('nav');bar.className='tabbar'+(tabDefs().length>5?' six':'');bar.setAttribute('aria-label','メニュー');
   bar.innerHTML=tabDefs().map(([k,l,h])=>`<a href="${h}" data-k="${k}" class="${k===cur?'on':''}"${k===cur?' aria-current="page"':''}><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TI[k]}</svg><i class="bd" hidden></i></span>${l}</a>`).join('');
   document.body.appendChild(bar);document.body.classList.add('has-tabbar');
-  // iPhone：キーボードを閉じた後などにメニューが途中に残ることがあるので、軽く再計算させる
-  {const typing=()=>{const a=document.activeElement;return a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!/^(checkbox|radio|button|submit)$/.test(a.type||'');};
-   const nudge=()=>{if(typing())return;const y=window.scrollY;if(y>0){window.scrollTo(window.scrollX,y-1);window.scrollTo(window.scrollX,y);}else{window.scrollTo(window.scrollX,1);window.scrollTo(window.scrollX,0);}};
-   document.addEventListener('focusout',()=>setTimeout(nudge,350));
-   document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(nudge,200);});}
+  shellMode();
   // 上の切り替え（練習・試合の中だけ）
   const seg=(items)=>`<div class="segnav">${items.map(([l,h,on])=>on?`<span class="on" aria-current="page">${l}</span>`:`<a href="${h}">${l}</a>`).join('')}</div>`;
   let items=null;
