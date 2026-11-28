@@ -250,7 +250,13 @@ function shellMode(){if(document.documentElement.classList.contains('shell'))ret
   ['scrollY','pageYOffset'].forEach(k=>{try{Object.defineProperty(window,k,{get:()=>S.scrollTop,configurable:true});}catch(e){}});
   ['scrollX','pageXOffset'].forEach(k=>{try{Object.defineProperty(window,k,{get:()=>S.scrollLeft,configurable:true});}catch(e){}});
   S.addEventListener('scroll',()=>window.dispatchEvent(new Event('scroll')),{passive:true});
-  if(y0)S.scrollTop=y0;}
+  if(y0)S.scrollTop=y0;
+  // iOS 26.1以降のホーム画面アプリは、画面の下にシステムの帯が入り、アプリが届かない。
+  // そのときは下の余白（ホームバー分）を詰め、帯の色をメニューと同じ色にする。
+  const st2=document.createElement('style');st2.textContent='html.iosgap .tabbar{padding-bottom:2px}html.iosgap body.has-tabbar{padding-bottom:var(--tabh)}html.iosgap{background:var(--surface,#fff)}html.iosgap body.has-tabbar .savebar{bottom:var(--tabh)}';document.head.appendChild(st2);
+  const chk=()=>{const sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;const land=innerWidth>innerHeight;
+    const H=land?Math.min(screen.width,screen.height):Math.max(screen.width,screen.height);document.documentElement.classList.toggle('iosgap',!!sa&&!land&&H-innerHeight>20);};
+  chk();window.addEventListener('resize',chk);window.addEventListener('orientationchange',()=>setTimeout(chk,300));}
 function buildNav(){if(document.querySelector('.tabbar'))return;const cur=curTab();const full=FULL.includes(ME.role),conds=CONDS.includes(ME.role);
   const meView=ME.role==='leader'&&new URLSearchParams(location.search).get('v')==='me';
   try{if(ME.role==='leader'&&PAGE==='cond')localStorage.setItem('tmu-last-cond',meView?'condition.html?v=me':'condition.html');}catch(e){}
