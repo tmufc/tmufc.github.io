@@ -250,13 +250,7 @@ function shellMode(){if(document.documentElement.classList.contains('shell'))ret
   ['scrollY','pageYOffset'].forEach(k=>{try{Object.defineProperty(window,k,{get:()=>S.scrollTop,configurable:true});}catch(e){}});
   ['scrollX','pageXOffset'].forEach(k=>{try{Object.defineProperty(window,k,{get:()=>S.scrollLeft,configurable:true});}catch(e){}});
   S.addEventListener('scroll',()=>window.dispatchEvent(new Event('scroll')),{passive:true});
-  if(y0)S.scrollTop=y0;
-  // iOS 26.1以降のホーム画面アプリは、画面の下にシステムの帯が入り、アプリが届かない。
-  // そのときは下の余白（ホームバー分）を詰め、帯の色をメニューと同じ色にする。
-  const st2=document.createElement('style');st2.textContent='html.iosgap .tabbar{padding-bottom:2px}html.iosgap body.has-tabbar{padding-bottom:var(--tabh)}html.iosgap{background:var(--surface,#fff)}html.iosgap body.has-tabbar .savebar{bottom:var(--tabh)}';document.head.appendChild(st2);
-  const chk=()=>{const sa=matchMedia('(display-mode: standalone)').matches||navigator.standalone;const land=innerWidth>innerHeight;
-    const H=land?Math.min(screen.width,screen.height):Math.max(screen.width,screen.height);document.documentElement.classList.toggle('iosgap',!!sa&&!land&&H-innerHeight>20);};
-  chk();window.addEventListener('resize',chk);window.addEventListener('orientationchange',()=>setTimeout(chk,300));}
+  if(y0)S.scrollTop=y0;}
 function buildNav(){if(document.querySelector('.tabbar'))return;const cur=curTab();const full=FULL.includes(ME.role),conds=CONDS.includes(ME.role);
   const meView=ME.role==='leader'&&new URLSearchParams(location.search).get('v')==='me';
   try{if(ME.role==='leader'&&PAGE==='cond')localStorage.setItem('tmu-last-cond',meView?'condition.html?v=me':'condition.html');}catch(e){}
@@ -308,11 +302,12 @@ function openAcct(){
 <p style="margin:0">${esc(ME.name)}${ME.raw.title?`<small style="color:var(--sub)">（${esc(ME.raw.title)}）</small>`:''}<br><small style="color:var(--sub)">${esc(ME.email)}</small></p><p>権限：<b>${ROLE_LABEL[ME.role]||ME.role}</b></p>
 ${NAMED.includes(ME.role)?`<div class="r" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input class="nm" data-mynm value="${esc(ME.name)}" placeholder="名前"><select data-myti>${TITLES.map(t=>`<option ${ME.raw.title===t?'selected':''}>${t}</option>`).join('')}</select><button class="sv" data-mysv>名前を保存</button></div>`:''}
 ${ntKinds().length?'<div class="nt" data-nt></div>':''}
-<div class="btnrow">${ME.role==='admin'?'<button data-users>メンバー管理</button>':''}<button data-tout>ログアウト</button></div></div>`;
+<div class="btnrow">${ME.role==='admin'?'<button data-users>メンバー管理</button><button data-roster>メンバーリスト</button>':''}<button data-tout>ログアウト</button></div></div>`;
   m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);
   m.querySelector('[data-x]').onclick=()=>m.remove();
   m.querySelector("[data-tout]").onclick=async()=>{if(confirmBox('ログアウトしますか？'))await signOut(auth);};
   const u=m.querySelector('[data-users]');if(u)u.onclick=()=>{m.remove();openUsers();};
+  const rl=m.querySelector('[data-roster]');if(rl)rl.onclick=()=>{m.remove();openRoster();};
   const nt=m.querySelector('[data-nt]');if(nt)renderNotif(nt);
   const ms=m.querySelector('[data-mysv]');if(ms)ms.onclick=async()=>{const name=m.querySelector('[data-mynm]').value.trim();if(!name){toast('名前を入れてください');return;}try{await setDoc(doc(db,'users',ME.uid),{name,title:m.querySelector('[data-myti]').value},{merge:true});ME.name=name;toast('保存しました');m.remove();const b=document.querySelector('.tacct');if(b&&b.firstChild)b.firstChild.textContent=name.split(/[\s　]/)[0];}catch(e){toast('保存できませんでした');}};
 }
@@ -392,6 +387,42 @@ function renderUsers(){
     const dl=el.querySelector('[data-del]');if(dl)dl.onclick=async()=>{const u=usersCache.find(x=>x.uid===el.dataset.uid)||{};if(!confirm(`${u.name||u.email||'このアカウント'}（${u.email||''}）をメンバーから削除しますか？\n\nアプリを使えなくなります。同じGoogleアカウントでまたログインすると、承認待ちから始まります。\nこれまでの入力（コンディションなど）は選手の記録として残ります。`))return;
       try{await deleteDoc(doc(db,'users',el.dataset.uid));toast('削除しました');}catch(e){toast('削除できませんでした（'+(e.code||'')+'）');}};});
 }
+
+// ---------- メンバーリスト（名簿の名前・学年・A/Bを直す。管理者のみ） ----------
+let rosterQ='';
+async function openRoster(){const m=document.createElement('div');m.className='tmod roster';m.innerHTML='<div class="sh"><p>読み込んでいます…</p></div>';m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);
+  try{const s=await getDoc(stateRef());if(!s.exists())throw new Error('nostate');renderRoster(m,JSON.parse(s.data().json));}
+  catch(e){console.error(e);m.querySelector('.sh').innerHTML='<div class="hd">メンバーリスト<button class="x" data-x>閉じる</button></div><p>名簿を読み込めませんでした。</p>';m.querySelector('[data-x]').onclick=()=>m.remove();}}
+function renderRoster(m,st){const sh=m.querySelector('.sh');const P=(st.players||[]).filter(p=>!p.out).slice().sort((a,b)=>((b.grade||0)-(a.grade||0))||String(a.name).localeCompare(String(b.name),'ja'));
+  const acc={};(usersCache||[]).forEach(u=>{if(NEEDPID.includes(u.role)&&u.pid)acc[u.pid]=u;});
+  const q=rosterQ.trim();const L=q?P.filter(p=>String(p.name).replace(/[\s　]/g,'').includes(q.replace(/[\s　]/g,''))):P;
+  const gsel=p=>`<select data-gr>${[0,1,2,3,4].map(g=>`<option value="${g}" ${(p.grade||0)===g?'selected':''}>${g?g+'年':'学年なし'}</option>`).join('')}</select>`;
+  const tsel=p=>`<select data-tm><option value="" ${!p.team?'selected':''}>A/Bなし</option><option ${p.team==='A'?'selected':''}>A</option><option ${p.team==='B'?'selected':''}>B</option></select>`;
+  sh.innerHTML=`<div class="hd">メンバーリスト<button class="x" data-x>閉じる</button></div>
+<p style="font-size:13px;color:var(--sub,#5B6B7E);margin:0 0 8px">名前の漢字・学年・A/Bを直して「保存」を押します。ポジション・コンディション・練習など、すべての画面に反映されます。</p>
+<input class="nm" data-rq placeholder="名前で探す" value="${esc(rosterQ)}" style="width:100%;box-sizing:border-box;margin-bottom:4px">
+<p style="font-size:12px;color:var(--sub,#5B6B7E);margin:4px 0">${P.length}人${q?`（${L.length}人が該当）`:''}</p>
+${L.map(p=>`<div class="u" data-id="${esc(p.id)}"><div class="r"><input class="nm" data-nm value="${esc(p.name)}" style="flex:1;min-width:9em">${gsel(p)}${tsel(p)}<button class="sv" data-sv disabled>保存</button></div>
+<small>${acc[p.id]?'アカウント登録済み':'未登録'}${p.p1?'・'+esc(p.p1):''}</small></div>`).join('')||'<p style="color:var(--sub,#5B6B7E)">該当する選手はいません。</p>'}
+<p style="font-size:12px;color:var(--sub,#5B6B7E);margin-top:10px">選手の追加・削除は「ポジション」画面の選手一覧で行います。名前を直す前に送ったメッセージや振り返りの投稿には、前の名前が残ります。</p>`;
+  sh.querySelector('[data-x]').onclick=()=>m.remove();
+  const rq=sh.querySelector('[data-rq]');rq.oninput=()=>{rosterQ=rq.value;const pos=rq.selectionStart;renderRoster(m,st);const n=m.querySelector('[data-rq]');n.focus();try{n.setSelectionRange(pos,pos);}catch(e){}};
+  sh.querySelectorAll('.u[data-id]').forEach(el=>{const p=P.find(x=>x.id===el.dataset.id);const nm=el.querySelector('[data-nm]'),gr=el.querySelector('[data-gr]'),tm=el.querySelector('[data-tm]'),sv=el.querySelector('[data-sv]');
+    const ch=()=>{sv.disabled=nm.value.trim()===String(p.name)&&+gr.value===(p.grade||0)&&tm.value===(p.team||'');};[nm,gr,tm].forEach(x=>{x.oninput=ch;x.onchange=ch;});
+    sv.onclick=async()=>{const name=nm.value.trim().replace(/\s+/g,' ');if(!name){toast('名前を入れてください');return;}
+      if(P.some(x=>x.id!==p.id&&String(x.name).replace(/[\s　]/g,'')===name.replace(/[\s　]/g,''))&&!confirmBox(`「${name}」という選手がすでにいます。このまま保存しますか？`))return;
+      sv.disabled=true;sv.textContent='保存中…';
+      try{const ns=await saveRosterPlayer(p.id,{name,grade:+gr.value,team:tm.value});toast('保存しました');renderRoster(m,ns);}
+      catch(e){console.error(e);toast('保存できませんでした（'+(e.code||e.message||'')+'）');sv.disabled=false;sv.textContent='保存';}};});}
+async function saveRosterPlayer(id,patch){let st=null,oldName='';
+  await runTransaction(db,async tx=>{const s=await tx.get(stateRef());if(!s.exists())throw new Error('nostate');const d=s.data();st=JSON.parse(d.json);
+    const p=(st.players||[]).find(x=>x.id===id);if(!p)throw new Error('選手が見つかりません');oldName=p.name;Object.assign(p,patch);
+    tx.set(stateRef(),{json:JSON.stringify(st),rev:(d.rev||0)+1,client:'roster-'+CLIENT,by:ME.email,at:serverTimestamp()});});
+  const r=rosterOf(st);await setDoc(doc(db,'team','roster'),{players:r,at:serverTimestamp()});lastRoster=JSON.stringify(r);rosterCache=r;
+  if(patch.name&&patch.name!==oldName){const us=(usersCache||[]).filter(u=>u.pid===id);await Promise.all(us.map(u=>setDoc(doc(db,'users',u.uid),{name:patch.name},{merge:true}).catch(e=>console.error(e))));}
+  pushDir();
+  if(PAGE!=='pos')try{const L=JSON.parse(localStorage.getItem(KEY)||'null');if(L&&L.players){const q=L.players.find(x=>x.id===id);if(q){Object.assign(q,patch);localStorage.setItem(KEY,JSON.stringify(L));}}}catch(e){}
+  return st;}
 
 // ---------- ポジション整理・メンバー選考（team/state） ----------
 const KEY='tmu-pos-data';
